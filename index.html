@@ -350,7 +350,7 @@
 <div id="bg"></div>
 
 <!-- MUSIC BUTTON -->
-<button id="music-btn" onclick="handleMusicBtn()">♪ Load Music</button>
+<button id="music-btn" onclick="handleMusicBtn()">♪ Play Music</button>
 
 <!-- HEADER -->
 <div id="header-divider"></div>
@@ -358,7 +358,6 @@
   <div id="header-left">
     <div id="wordmark">
       <div class="dh-logo"><span class="d-letter">D</span>isneyland Hotel</div>
-      <div class="dh-sub">Anaheim, California</div>
     </div>
     <div id="welcome-block">
       <div id="greeting-line">Good Evening</div>
@@ -482,8 +481,10 @@
 </div>
 
 <!-- BACKGROUND AUDIO -->
-<audio id="bg-audio" loop></audio>
-<input type="file" id="audio-picker" accept="audio/*" style="display:none" onchange="loadLocalAudio(this)">
+<audio id="bg-audio" loop crossorigin="anonymous">
+  <source src="https://archive.org/download/C08.MainStreetUSAAreaBackgroundMusic/C08.MainStreetUSAAreaBackgroundMusic_vbr.mp3" type="audio/mpeg">
+  <source src="https://archive.org/download/11DisneylandSongParade/11DisneylandSongParade_vbr.mp3" type="audio/mpeg">
+</audio>
 
 <script>
 // ── CLOCK ──
@@ -552,34 +553,17 @@ if (navigator.geolocation) {
 
 // ── MUSIC ──
 const audio = document.getElementById('bg-audio');
-const picker = document.getElementById('audio-picker');
 audio.volume = 0.4;
-let musicLoaded = false;
-
-function loadLocalAudio(input) {
-  if (!input.files || !input.files[0]) return;
-  const url = URL.createObjectURL(input.files[0]);
-  audio.src = url;
-  audio.play().then(() => {
-    musicLoaded = true;
-    document.getElementById('music-btn').textContent = '♪ Pause Music';
-  }).catch(e => console.log(e));
-}
 
 function handleMusicBtn() {
   const btn = document.getElementById('music-btn');
-  if (!musicLoaded) {
-    // First time — open file picker
-    picker.click();
-  } else {
-    // Toggle play/pause
-    if (audio.paused) {
-      audio.play();
+  if (audio.paused) {
+    audio.play().then(() => {
       btn.textContent = '♪ Pause Music';
-    } else {
-      audio.pause();
-      btn.textContent = '♪ Play Music';
-    }
+    }).catch(e => console.log('Audio error:', e));
+  } else {
+    audio.pause();
+    btn.textContent = '♪ Play Music';
   }
 }
 </script>
