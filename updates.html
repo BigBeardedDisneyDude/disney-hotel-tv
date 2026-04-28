@@ -129,7 +129,7 @@
 
 <div id="main">
   <div id="toolbar">
-    <div id="status-text">Loading… <span class="ai-badge"><span class="ai-dot"></span>AI Powered</span></div>
+    <div id="status-text">Loading…</div>
     <div id="source-wrapper">
       <select id="source-select" onchange="loadFeed()">
         <option value="micechat">MiceChat</option>
@@ -143,7 +143,7 @@
   <div id="loading">
     <div class="spinner"></div>
     <p>Searching for latest updates…</p>
-    <small id="proxy-label">Powered by Claude AI web search</small>
+    <small id="proxy-label">Via rss2json.com</small>
   </div>
   <div id="error">
     <p>Unable to load updates right now.</p>
@@ -156,10 +156,19 @@
 </div>
 
 <script>
+// ─── CONFIG — paste your free rss2json.com API key below ─────────────────────
+const RSS2JSON_KEY = 'evvzclxihwktagsralfqealxgysb8tbxjpzbs4if';
+// ─────────────────────────────────────────────────────────────────────────────
+
 const SOURCES = {
-  micechat:    { label: 'MiceChat',          query: 'site:micechat.com Disneyland news' },
-  disneyparks: { label: 'Disney Parks Blog', query: 'site:disneyparks.disney.go.com/blog Disneyland' },
-  both:        { label: 'Disney News',       query: 'Disneyland news announcements MiceChat OR disneyparks.disney.go.com' }
+  micechat:    { label: 'MiceChat',          feeds: ['https://micechat.com/feed/'] },
+  disneyparks: { label: 'Disney Parks Blog', feeds: ['https://disneyparks.disney.go.com/blog/feed/'] },
+  both:        { label: 'All Sources',       feeds: ['https://micechat.com/feed/', 'https://disneyparks.disney.go.com/blog/feed/'] }
+};
+
+const SOURCE_LABELS = {
+  'https://micechat.com/feed/': 'MiceChat',
+  'https://disneyparks.disney.go.com/blog/feed/': 'Disney Parks Blog'
 };
 
 function timeAgo(dateStr) {
@@ -183,6 +192,12 @@ function noImg() {
   return `<div class="no-img"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>`;
 }
 
+function stripHtml(html) {
+  const d = document.createElement('div');
+  d.innerHTML = html || '';
+  return d.textContent || d.innerText || '';
+}
+
 function setState(s) {
   document.getElementById('loading').style.display  = s==='loading' ? 'flex'  : 'none';
   document.getElementById('error').style.display    = s==='error'   ? 'block' : 'none';
@@ -190,11 +205,9 @@ function setState(s) {
   document.getElementById('articles').style.display = s==='done'    ? 'flex'  : 'none';
 }
 
-function renderArticles(items, label) {
+function renderArticles(items) {
   if (!items || !items.length) { setState('empty'); return; }
-
-  document.getElementById('status-text').innerHTML =
-    `${items.length} update${items.length!==1?'s':''} found <span class="ai-badge"><span class="ai-dot"></span>AI Powered</span>`;
+  document.getElementById('status-text').textContent = `${items.length} update${items.length !== 1 ? 's' : ''} found`;
 
   const c = document.getElementById('articles');
   c.innerHTML = '';
@@ -204,13 +217,15 @@ function renderArticles(items, label) {
     card.href = it.link || '#';
     card.target = '_blank';
     card.rel = 'noopener noreferrer';
-    const srcLabel = it.source || label;
-    const dateDisplay = it.pubDate ? timeAgo(it.pubDate) : (it.dateLabel || '');
+    const dateDisplay = it.pubDate ? timeAgo(it.pubDate) : '';
+    const thumb = it.thumb
+      ? `<img src="${it.thumb}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=\`${noImg()}\`">`
+      : noImg();
     card.innerHTML = `
-      <div class="article-thumb">${it.thumb ? `<img src="${it.thumb}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=\`${noImg()}\`">` : noImg()}</div>
+      <div class="article-thumb">${thumb}</div>
       <div class="article-body">
         <div class="article-meta">
-          <span class="article-source">${srcLabel}</span>
+          <span class="article-source">${it.source}</span>
           ${dateDisplay ? `<span class="article-date">${dateDisplay}</span>` : ''}
           ${isNew(it.pubDate) ? '<span class="article-new">New</span>' : ''}
         </div>
@@ -223,98 +238,67 @@ function renderArticles(items, label) {
   setState('done');
 }
 
-async function callClaude(messages, systemPrompt) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      system: systemPrompt,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages
-    })
-  });
-  if (!response.ok) {
-    const errData = await response.json().catch(() => ({}));
-    throw new Error(errData.error?.message || `API error ${response.status}`);
-  }
-  return response.json();
-}
+async function fetchFeed(feedUrl) {
+  const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&api_key=${RSS2JSON_KEY}&count=15&order_by=pubDate&order_dir=desc`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`rss2json error ${res.status}`);
+  const data = await res.json();
+  if (data.status !== 'ok') throw new Error(data.message || 'Feed error');
 
-function extractJsonArray(text) {
-  if (!text) return null;
-  const clean = text.replace(/```json|```/gi, '').trim();
-  const start = clean.indexOf('[');
-  const end = clean.lastIndexOf(']');
-  if (start === -1 || end === -1) return null;
-  return JSON.parse(clean.slice(start, end + 1));
+  const label = SOURCE_LABELS[feedUrl] || 'Disney';
+  return (data.items || []).map(item => {
+    // Pull thumbnail from enclosure, media content, or first img in content
+    let thumb = item.enclosure?.link || item.thumbnail || '';
+    if (!thumb && item.content) {
+      const m = item.content.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (m) thumb = m[1];
+    }
+    // Clean description
+    const rawDesc = item.description || item.content || '';
+    const desc = stripHtml(rawDesc).replace(/\s+/g, ' ').trim().slice(0, 200);
+
+    return {
+      title:   item.title || '',
+      link:    item.link  || '',
+      pubDate: item.pubDate ? new Date(item.pubDate).toISOString() : '',
+      source:  label,
+      thumb,
+      desc
+    };
+  });
 }
 
 async function loadFeed() {
   const key = document.getElementById('source-select').value;
   const src = SOURCES[key];
   setState('loading');
-  document.getElementById('status-text').innerHTML = 'Loading… <span class="ai-badge"><span class="ai-dot"></span>AI Powered</span>';
-  document.getElementById('proxy-label').textContent = 'Powered by Claude AI web search';
+  document.getElementById('status-text').textContent = 'Loading…';
+  document.getElementById('proxy-label').textContent = 'Via rss2json.com';
 
-  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-
-  const systemPrompt = `You are a Disney news aggregator. Search the web for recent Disneyland and Disney Parks news, then return ONLY a valid JSON array — no preamble, no markdown fences, no explanation. Just the raw JSON array.
-
-Each object in the array must have:
-- title: string
-- link: string (full URL)
-- desc: string (1-2 sentence plain text summary)
-- pubDate: string (ISO 8601 if known, else "")
-- dateLabel: string (readable date like "April 25, 2026" if pubDate unknown)
-- source: string (e.g. "MiceChat" or "Disney Parks Blog")
-- thumb: string (image URL if available, else "")
-
-Return 5–12 articles. Most recent first. Output ONLY the JSON array.`;
-
-  const userPrompt = `Today is ${today}. Search for the latest Disneyland and Disney Parks news from ${src.label === 'Disney News' ? 'MiceChat and the Disney Parks Blog' : src.label} — articles from the past 2 weeks. Return as a JSON array only.`;
+  if (RSS2JSON_KEY === 'YOUR_API_KEY_HERE') {
+    setState('error');
+    document.getElementById('err-detail').textContent = 'Add your rss2json.com API key to the top of the script.';
+    document.getElementById('status-text').textContent = 'Setup required';
+    return;
+  }
 
   try {
-    // Turn 1: initial request, model will use web_search tool
-    let messages = [{ role: 'user', content: userPrompt }];
-    let data = await callClaude(messages, systemPrompt);
+    // Fetch all feeds in parallel
+    const results = await Promise.allSettled(src.feeds.map(fetchFeed));
 
-    // Agentic loop: keep going while the model is using tools
-    let iterations = 0;
-    while (data.stop_reason === 'tool_use' && iterations < 5) {
-      iterations++;
-      document.getElementById('proxy-label').textContent = `Searching the web… (step ${iterations})`;
+    let allItems = [];
+    const errors = [];
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled') allItems = allItems.concat(r.value);
+      else errors.push(`${SOURCE_LABELS[src.feeds[i]]}: ${r.reason?.message}`);
+    });
 
-      // Build tool_result blocks for every tool_use block in the response
-      const toolResults = (data.content || [])
-        .filter(b => b.type === 'tool_use')
-        .map(b => ({
-          type: 'tool_result',
-          tool_use_id: b.id,
-          content: b.type === 'tool_use' ? (b.content || '') : ''
-        }));
+    // Sort combined results newest-first
+    allItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
 
-      // Append assistant turn + user turn with tool results
-      messages = [
-        ...messages,
-        { role: 'assistant', content: data.content },
-        { role: 'user', content: toolResults }
-      ];
+    if (!allItems.length && errors.length) throw new Error(errors.join(' | '));
 
-      data = await callClaude(messages, systemPrompt);
-    }
-
-    // Now extract the final text response
-    const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text);
-    const fullText = textBlocks.join('');
-
-    if (!fullText.trim()) throw new Error('No text in final response');
-
-    const items = extractJsonArray(fullText);
-    if (!items || !Array.isArray(items)) throw new Error('Could not parse JSON from response');
-
-    renderArticles(items, src.label);
+    renderArticles(allItems);
 
   } catch (e) {
     console.error('Feed load failed:', e);
