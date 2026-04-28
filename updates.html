@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disney Updates — Disneyland Hotel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #c9a84c; --gold-light: #e8cc7a;
+    --teal-dark: #1a3a4a; --warm-white: #fff8ee;
+  }
+  html, body {
+    width: 100%; min-height: 100%;
+    background: var(--teal-dark);
+    font-family: 'Raleway', sans-serif;
+    color: var(--warm-white);
+  }
+
+  /* ── HEADER ── */
+  #header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: linear-gradient(180deg, rgba(22,52,68,1) 0%, rgba(22,52,68,.98) 100%);
+    box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    border-bottom: 2px solid var(--gold);
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; min-height: 64px;
+  }
+  #header-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  #back-btn {
+    font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 10px; letter-spacing: .22em;
+    color: var(--gold); text-transform: uppercase; background: none;
+    border: 1px solid rgba(201,168,76,.35); border-radius: 3px; padding: 6px 12px;
+    cursor: pointer; transition: all .25s; white-space: nowrap; flex-shrink: 0;
+  }
+  #back-btn:hover { background: rgba(201,168,76,.12); border-color: var(--gold); }
+  #back-btn::before { content: '← '; }
+  #wordmark { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .dh-logo {
+    font-family: 'Cinzel', serif; font-weight: 400;
+    font-size: clamp(13px, 3.5vw, 18px);
+    letter-spacing: .10em; color: var(--warm-white); white-space: nowrap;
+  }
+  .d-letter { font-style: italic; color: var(--gold-light); }
+  .dh-sub {
+    font-family: 'Raleway', sans-serif; font-weight: 200; font-size: 8px;
+    letter-spacing: .35em; color: var(--gold); text-transform: uppercase; opacity: .85;
+  }
+  #header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+  #page-title {
+    font-family: 'Cinzel', serif; font-weight: 600;
+    font-size: clamp(15px, 4vw, 22px);
+    letter-spacing: .08em; color: var(--warm-white);
+  }
+  #page-subtitle {
+    font-family: 'Raleway', sans-serif; font-weight: 200; font-size: clamp(8px, 2vw, 10px);
+    letter-spacing: .25em; color: var(--gold-light); text-transform: uppercase;
+  }
+
+  /* ── MAIN ── */
+  #main { padding: 80px 16px 60px; max-width: 900px; margin: 0 auto; }
+  @media (min-width: 600px) { #main { padding: 90px 40px 60px; } }
+
+  /* toolbar */
+  #toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px; padding-bottom: 14px;
+    border-bottom: 1px solid rgba(201,168,76,.2);
+    gap: 12px; flex-wrap: wrap;
+  }
+  #status-text {
+    font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 11px;
+    letter-spacing: .2em; color: rgba(255,248,238,.45); text-transform: uppercase;
+  }
+  #source-wrapper { position: relative; }
+  #source-select {
+    appearance: none; -webkit-appearance: none;
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: .15em;
+    color: var(--gold); background: rgba(22,52,68,.9);
+    border: 1px solid rgba(201,168,76,.4); border-radius: 3px;
+    padding: 7px 32px 7px 12px; cursor: pointer; outline: none; transition: border-color .2s;
+  }
+  #source-select:focus { border-color: var(--gold); }
+  #source-select option { background: #1a3a4a; color: var(--warm-white); font-family: sans-serif; }
+  #source-arrow { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--gold); font-size: 10px; }
+
+  /* states */
+  #loading { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 80px 0; }
+  .spinner { width: 40px; height: 40px; border: 2px solid rgba(201,168,76,.2); border-top-color: var(--gold); border-radius: 50%; animation: spin .9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading p { font-family: 'Raleway', sans-serif; font-weight: 200; font-size: 11px; letter-spacing: .3em; color: rgba(255,248,238,.4); text-transform: uppercase; }
+  #loading small { font-size: 10px; color: rgba(255,248,238,.25); letter-spacing: .1em; }
+  #error { display: none; text-align: center; padding: 60px 0; }
+  #error p { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 13px; letter-spacing: .06em; color: rgba(255,248,238,.5); margin-bottom: 8px; line-height: 1.9; }
+  #error .err-detail { font-size: 11px; color: rgba(255,248,238,.25); letter-spacing: .1em; margin-bottom: 24px; }
+  #retry-btn { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 11px; letter-spacing: .25em; color: var(--gold); text-transform: uppercase; background: none; border: 1px solid rgba(201,168,76,.4); border-radius: 3px; padding: 8px 22px; cursor: pointer; transition: all .25s; }
+  #retry-btn:hover { background: rgba(201,168,76,.1); }
+  #empty { display: none; text-align: center; padding: 80px 0; }
+  #empty p { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; color: rgba(255,248,238,.3); }
+  #digest { display: none; flex-direction: column; gap: 40px; }
+
+  .digest-section { animation: fadeIn .4s ease both; }
+  .digest-section:nth-child(1){animation-delay:.05s}
+  .digest-section:nth-child(2){animation-delay:.10s}
+  .digest-section:nth-child(3){animation-delay:.15s}
+  .digest-section:nth-child(4){animation-delay:.20s}
+  .digest-section:nth-child(5){animation-delay:.25s}
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .section-icon { font-size: 14px; opacity: .8; flex-shrink: 0; }
+  .section-title { font-family: 'Cinzel', serif; font-weight: 600; font-size: clamp(11px, 2.5vw, 13px); letter-spacing: .12em; color: var(--gold); text-transform: uppercase; white-space: nowrap; }
+  .section-count { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 10px; letter-spacing: .2em; color: rgba(255,248,238,.25); text-transform: uppercase; white-space: nowrap; }
+  .section-divider { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(201,168,76,.25) 0%, transparent 100%); min-width: 20px; }
+
+  .section-links { display: flex; flex-direction: column; }
+  .article-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 6px; margin: 0 -6px;
+    border-bottom: 1px solid rgba(255,248,238,.05);
+    text-decoration: none; border-radius: 3px; transition: background .15s;
+    /* tap target */
+    min-height: 48px;
+  }
+  .article-row:last-child { border-bottom: none; }
+  .article-row:hover, .article-row:active { background: rgba(255,248,238,.05); }
+  .article-row:hover .article-row-title, .article-row:active .article-row-title { color: var(--gold-light); }
+
+  .article-row-bullet { flex-shrink: 0; width: 4px; height: 4px; border-radius: 50%; background: var(--gold); opacity: .35; }
+  .article-row-body { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .article-row-title {
+    font-family: 'Raleway', sans-serif; font-weight: 400; font-size: clamp(12px, 3vw, 13px);
+    color: rgba(255,248,238,.85); line-height: 1.4; transition: color .2s;
+    /* allow wrapping on mobile */
+    white-space: normal;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .article-row-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .article-row-source { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: .18em; color: rgba(201,168,76,.5); text-transform: uppercase; }
+  .article-row-date { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 9px; letter-spacing: .1em; color: rgba(255,248,238,.22); text-transform: uppercase; }
+  .article-row-new { font-family: 'Raleway', sans-serif; font-size: 8px; font-weight: 600; letter-spacing: .15em; color: #1a3a4a; background: var(--gold); padding: 1px 5px; border-radius: 2px; text-transform: uppercase; }
+  .article-row-arrow { flex-shrink: 0; font-size: 14px; color: rgba(201,168,76,.4); transition: opacity .2s; opacity: 0; }
+  .article-row:hover .article-row-arrow { opacity: 1; }
+
+  .ornament { text-align: center; margin: 44px 0 8px; color: rgba(201,168,76,.2); font-size: 14px; letter-spacing: .5em; }
+  .last-updated { text-align: center; font-family: 'Raleway', sans-serif; font-weight: 200; font-size: 10px; letter-spacing: .2em; color: rgba(255,248,238,.18); text-transform: uppercase; margin-bottom: 40px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div id="header-left">
+    <button id="back-btn" onclick="window.location.href='index.html'">Home</button>
+    <div id="wordmark">
+      <div class="dh-logo"><span class="d-letter">D</span>isneyland Hotel</div>
+      <div class="dh-sub">Anaheim · California</div>
+    </div>
+  </div>
+  <div id="header-right">
+    <div id="page-title">Disney Updates</div>
+    <div id="page-subtitle">Resort News</div>
+  </div>
+</div>
+
+<div id="main">
+  <div id="toolbar">
+    <div id="status-text">Loading…</div>
+    <div id="source-wrapper">
+      <select id="source-select" onchange="loadFeed()">
+        <option value="micechat">MiceChat</option>
+        <option value="disneyparks">Disney Parks Blog</option>
+        <option value="both">All Sources</option>
+      </select>
+      <span id="source-arrow">▾</span>
+    </div>
+  </div>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Fetching latest updates…</p>
+    <small>Via rss2json.com</small>
+  </div>
+  <div id="error">
+    <p>Unable to load updates right now.</p>
+    <p class="err-detail" id="err-detail"></p>
+    <button id="retry-btn" onclick="loadFeed()">Try Again</button>
+  </div>
+  <div id="empty"><p>No updates found recently.</p></div>
+  <div id="digest"></div>
+  <div class="ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+  <div class="last-updated" id="last-updated"></div>
+</div>
+
+<script>
+const RSS2JSON_KEY = 'evvzclxihwktagsralfqealxgysb8tbxjpzbs4if';
+
+const SOURCES = {
+  micechat:    { label: 'MiceChat',          feeds: ['https://news.google.com/rss/search?q=Disneyland+site:micechat.com&hl=en-US&gl=US&ceid=US:en'] },
+  disneyparks: { label: 'Disney Parks Blog', feeds: ['https://news.google.com/rss/search?q=Disneyland+site:disneyparks.disney.go.com&hl=en-US&gl=US&ceid=US:en'] },
+  both:        { label: 'All Sources',       feeds: [
+    'https://news.google.com/rss/search?q=Disneyland+site:micechat.com&hl=en-US&gl=US&ceid=US:en',
+    'https://news.google.com/rss/search?q=Disneyland+site:disneyparks.disney.go.com&hl=en-US&gl=US&ceid=US:en'
+  ]}
+};
+
+const SOURCE_LABELS = {
+  'https://news.google.com/rss/search?q=Disneyland+site:micechat.com&hl=en-US&gl=US&ceid=US:en': 'MiceChat',
+  'https://news.google.com/rss/search?q=Disneyland+site:disneyparks.disney.go.com&hl=en-US&gl=US&ceid=US:en': 'Disney Parks Blog'
+};
+
+const CATEGORIES = [
+  { id:'attractions', label:'Attractions & Entertainment', icon:'🎢', keywords:['attraction','ride','coaster','show','entertainment','opening','opens','debut','launch','experience','adventure','galaxy','marvel','star wars','fantasy','haunted','carousel','train','monorail','tram','theater','theatre','stage'] },
+  { id:'construction', label:'Park Updates & Construction', icon:'🏗️', keywords:['construction','refurb','refurbishment','closure','closed','reopen','renovation','expansion','land','project','permit','building','coming soon','update','changes','new area','announced'] },
+  { id:'events', label:'Events & Celebrations', icon:'🎉', keywords:['event','festival','anniversary','celebration','holiday','halloween','christmas','oogie','merriest','party','after hours','nighttime','fireworks','parade','special','70th','season','lunar','pride','dapper'] },
+  { id:'food', label:'Dining & Merchandise', icon:'🍽️', keywords:['food','dining','restaurant','snack','eat','menu','merchandise','merch','shop','collection','souvenir','drink','treat','bakery','market','popcorn','dole','lounge','bar','cafe','churro'] },
+  { id:'news', label:'General News', icon:'📰', keywords:[] }
+];
+
+function categorize(title, desc) {
+  const text = (title + ' ' + desc).toLowerCase();
+  for (const cat of CATEGORIES) {
+    if (cat.keywords.length === 0) return cat.id;
+    if (cat.keywords.some(kw => text.includes(kw))) return cat.id;
+  }
+  return 'news';
+}
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff/60000), hours = Math.floor(diff/3600000), days = Math.floor(diff/86400000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
+}
+function isNew(d) { return d && (Date.now() - new Date(d).getTime()) < 86400000; }
+function stripHtml(html) { const d = document.createElement('div'); d.innerHTML = html||''; return d.textContent||d.innerText||''; }
+
+function setState(s) {
+  document.getElementById('loading').style.display = s==='loading' ? 'flex'  : 'none';
+  document.getElementById('error').style.display   = s==='error'   ? 'block' : 'none';
+  document.getElementById('empty').style.display   = s==='empty'   ? 'block' : 'none';
+  document.getElementById('digest').style.display  = s==='done'    ? 'flex'  : 'none';
+}
+
+function renderDigest(items) {
+  if (!items || !items.length) { setState('empty'); return; }
+  const buckets = {};
+  CATEGORIES.forEach(c => buckets[c.id] = []);
+  items = items.filter(it => !it.pubDate || (Date.now() - new Date(it.pubDate).getTime()) < 7*24*60*60*1000);
+  items.forEach(it => buckets[categorize(it.title, it.desc)].push(it));
+
+  const container = document.getElementById('digest');
+  container.innerHTML = '';
+  let totalSections = 0;
+
+  CATEGORIES.forEach(cat => {
+    const articles = buckets[cat.id];
+    if (!articles.length) return;
+    totalSections++;
+    const section = document.createElement('div');
+    section.className = 'digest-section';
+    const linksHtml = articles.map(it => {
+      const dateDisplay = it.pubDate ? timeAgo(it.pubDate) : '';
+      const newBadge = isNew(it.pubDate) ? '<span class="article-row-new">New</span>' : '';
+      return `<a class="article-row" href="${it.link}" target="_blank" rel="noopener noreferrer">
+        <div class="article-row-bullet"></div>
+        <div class="article-row-body">
+          <div class="article-row-title">${it.title}</div>
+          <div class="article-row-meta">
+            <span class="article-row-source">${it.source}</span>
+            ${dateDisplay ? `<span class="article-row-date">${dateDisplay}</span>` : ''}
+            ${newBadge}
+          </div>
+        </div>
+        <div class="article-row-arrow">›</div>
+      </a>`;
+    }).join('');
+    section.innerHTML = `
+      <div class="section-header">
+        <span class="section-icon">${cat.icon}</span>
+        <span class="section-title">${cat.label}</span>
+        <span class="section-count">${articles.length} article${articles.length!==1?'s':''}</span>
+        <div class="section-divider"></div>
+      </div>
+      <div class="section-links">${linksHtml}</div>`;
+    container.appendChild(section);
+  });
+
+  if (!totalSections) { setState('empty'); return; }
+  document.getElementById('status-text').textContent = `${items.length} update${items.length!==1?'s':''} · ${totalSections} topic${totalSections!==1?'s':''}`;
+  document.getElementById('last-updated').textContent = `Fetched ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+  setState('done');
+}
+
+async function fetchFeed(feedUrl) {
+  const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&api_key=${RSS2JSON_KEY}&count=20&order_by=pubDate&order_dir=desc`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`rss2json error ${res.status}`);
+  const data = await res.json();
+  if (data.status !== 'ok') throw new Error(data.message || 'Feed error');
+  const label = SOURCE_LABELS[feedUrl] || 'Disney';
+  return (data.items||[]).map(item => ({
+    title: item.title||'',
+    link:  item.link||'',
+    pubDate: item.pubDate ? new Date(item.pubDate).toISOString() : '',
+    source: label,
+    desc: stripHtml(item.description||item.content||'').replace(/\s+/g,' ').trim().slice(0,300)
+  }));
+}
+
+async function loadFeed() {
+  const key = document.getElementById('source-select').value;
+  const src = SOURCES[key];
+  setState('loading');
+  document.getElementById('status-text').textContent = 'Loading…';
+  try {
+    const results = await Promise.allSettled(src.feeds.map(fetchFeed));
+    let allItems = [];
+    const errors = [];
+    results.forEach((r,i) => {
+      if (r.status === 'fulfilled') allItems = allItems.concat(r.value);
+      else errors.push(`${SOURCE_LABELS[src.feeds[i]]||src.feeds[i]}: ${r.reason?.message}`);
+    });
+    allItems.sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate));
+    if (!allItems.length && errors.length) throw new Error(errors.join(' | '));
+    renderDigest(allItems);
+  } catch(e) {
+    setState('error');
+    document.getElementById('err-detail').textContent = e.message||'Unknown error';
+    document.getElementById('status-text').textContent = 'Failed to load';
+  }
+}
+
+loadFeed();
+</script>
+</body>
+</html>
