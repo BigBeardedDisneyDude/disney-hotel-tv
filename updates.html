@@ -189,17 +189,17 @@
 const RSS2JSON_KEY = 'evvzclxihwktagsralfqealxgysb8tbxjpzbs4if';
 
 const SOURCES = {
-  micechat:    { label: 'MiceChat',          feeds: ['https://news.google.com/rss/search?q=site:micechat.com&hl=en-US&gl=US&ceid=US:en'] },
-  disneyparks: { label: 'Disney Parks Blog', feeds: ['https://news.google.com/rss/search?q=site:disneyparks.disney.go.com&hl=en-US&gl=US&ceid=US:en'] },
+  micechat:    { label: 'MiceChat',          feeds: ['https://news.google.com/rss/search?q=Disneyland+site:micechat.com&hl=en-US&gl=US&ceid=US:en'] },
+  disneyparks: { label: 'Disney Parks Blog', feeds: ['https://news.google.com/rss/search?q=Disneyland+site:disneyparks.disney.go.com&hl=en-US&gl=US&ceid=US:en'] },
   both:        { label: 'All Sources',       feeds: [
-    'https://news.google.com/rss/search?q=site:micechat.com&hl=en-US&gl=US&ceid=US:en',
-    'https://news.google.com/rss/search?q=site:disneyparks.disney.go.com&hl=en-US&gl=US&ceid=US:en'
+    'https://news.google.com/rss/search?q=Disneyland+site:micechat.com&hl=en-US&gl=US&ceid=US:en',
+    'https://news.google.com/rss/search?q=Disneyland+site:disneyparks.disney.go.com&hl=en-US&gl=US&ceid=US:en'
   ]}
 };
 
 const SOURCE_LABELS = {
-  'https://news.google.com/rss/search?q=site:micechat.com&hl=en-US&gl=US&ceid=US:en': 'MiceChat',
-  'https://news.google.com/rss/search?q=site:disneyparks.disney.go.com&hl=en-US&gl=US&ceid=US:en': 'Disney Parks Blog'
+  'https://news.google.com/rss/search?q=Disneyland+site:micechat.com&hl=en-US&gl=US&ceid=US:en': 'MiceChat',
+  'https://news.google.com/rss/search?q=Disneyland+site:disneyparks.disney.go.com&hl=en-US&gl=US&ceid=US:en': 'Disney Parks Blog'
 };
 
 const CATEGORIES = [
@@ -207,31 +207,31 @@ const CATEGORIES = [
     id: 'attractions',
     label: 'Attractions & Entertainment',
     icon: '🎢',
-    keywords: ['attraction', 'disneyland', 'ride', 'coaster', 'show', 'entertainment', 'opening', 'opens', 'debut', 'launch', 'experience', 'adventure', 'galaxy', 'marvel', 'star wars', 'fantasy', 'haunted', 'carousel', 'train', 'monorail', 'tram', 'theater', 'theatre', 'stage']
+    keywords: ['attraction', 'ride', 'coaster', 'show', 'entertainment', 'opening', 'opens', 'debut', 'launch', 'experience', 'adventure', 'galaxy', 'marvel', 'star wars', 'fantasy', 'haunted', 'carousel', 'train', 'monorail', 'tram', 'theater', 'theatre', 'stage']
   },
   {
     id: 'construction',
     label: 'Park Updates & Construction',
     icon: '🏗️',
-    keywords: ['construction', 'disneyland', 'refurb', 'refurbishment', 'closure', 'closed', 'reopen', 'renovation', 'expansion', 'land', 'project', 'permit', 'building', 'coming soon', 'update', 'changes', 'new area', 'announced']
+    keywords: ['construction', 'refurb', 'refurbishment', 'closure', 'closed', 'reopen', 'renovation', 'expansion', 'land', 'project', 'permit', 'building', 'coming soon', 'update', 'changes', 'new area', 'announced']
   },
   {
     id: 'events',
     label: 'Events & Celebrations',
     icon: '🎉',
-    keywords: ['event', 'festival', 'disneyland', 'anniversary', 'celebration', 'holiday', 'halloween', 'christmas', 'oogie', 'merriest', 'party', 'after hours', 'nighttime', 'fireworks', 'parade', 'special', '70th', 'season', 'lunar', 'pride', 'dapper']
+    keywords: ['event', 'festival', 'anniversary', 'celebration', 'holiday', 'halloween', 'christmas', 'oogie', 'merriest', 'party', 'after hours', 'nighttime', 'fireworks', 'parade', 'special', '70th', 'season', 'lunar', 'pride', 'dapper']
   },
   {
     id: 'food',
     label: 'Dining & Merchandise',
     icon: '🍽️',
-    keywords: ['food', 'dining', 'disneyland', 'restaurant', 'snack', 'eat', 'menu', 'merchandise', 'merch', 'shop', 'collection', 'souvenir', 'drink', 'treat', 'bakery', 'market', 'popcorn', 'dole', 'lounge', 'bar', 'cafe', 'churro']
+    keywords: ['food', 'dining', 'restaurant', 'snack', 'eat', 'menu', 'merchandise', 'merch', 'shop', 'collection', 'souvenir', 'drink', 'treat', 'bakery', 'market', 'popcorn', 'dole', 'lounge', 'bar', 'cafe', 'churro']
   },
   {
     id: 'news',
     label: 'General News',
     icon: '📰',
-    keywords: ['disneyland']
+    keywords: []
   }
 ];
 
