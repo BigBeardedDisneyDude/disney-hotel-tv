@@ -71,7 +71,6 @@
       font-family: 'Raleway', sans-serif; font-weight: 200; font-size: clamp(8px, 2vw, 10px);
       letter-spacing: .22em; color: var(--gold-light); text-transform: uppercase;
     }
-    /* On very narrow screens, stack header vertically */
     @media (max-width: 420px) {
       #header { flex-direction: column; align-items: flex-start; padding: 10px 16px 8px; }
       #header-right { align-items: flex-start; width: 100%;
@@ -117,7 +116,6 @@
       letter-spacing: .2em; color: var(--gold); text-transform: uppercase;
       background: none; border: 1px solid rgba(201,168,76,.35); border-radius: 3px;
       padding: 6px 12px; cursor: pointer; transition: all .25s; white-space: nowrap;
-      /* good tap target */
       min-height: 34px;
     }
     #refresh-btn:hover { background: rgba(201,168,76,.12); border-color: var(--gold); }
@@ -131,7 +129,7 @@
     }
     .legend-pip { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
-    /* stats bar — scrollable on mobile */
+    /* stats bar */
     #stats-bar {
       display: flex; gap: 16px; flex-wrap: nowrap;
       overflow-x: auto; -webkit-overflow-scrolling: touch;
@@ -175,7 +173,6 @@
     .land-title { font-family: 'Cinzel', serif; font-weight: 600; font-size: clamp(10px, 2.5vw, 12px); letter-spacing: .14em; color: var(--gold); text-transform: uppercase; white-space: nowrap; }
     .land-divider { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(201,168,76,.22) 0%, transparent 100%); }
 
-    /* Ride grid: 1 col on small, 2 on medium, 3 on large */
     .ride-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -195,7 +192,6 @@
       border-left: 3px solid rgba(255,248,238,.1);
       border-radius: 0 3px 3px 0;
       transition: background .15s;
-      /* good tap target */
       min-height: 44px;
     }
     .ride-card:hover { background: rgba(255,248,238,.06); }
@@ -232,7 +228,7 @@
 
 <div id="header">
   <div id="header-left">
-    <button id="back-btn" onclick="window.location.href='index.html'">Home</button>
+    <button id="back-btn" onclick="goHome()">Home</button>
     <div id="wordmark">
       <div class="dh-logo"><span class="d-letter">D</span>isneyland Hotel</div>
       <div class="dh-sub">Anaheim · California</div>
@@ -423,5 +419,26 @@ function x(s) {
 
 fetchAll();
 </script>
+
+<script>
+// ── HOME NAVIGATION — preserves family name & trip date ──────
+const LS_KEY = 'dh_tv_settings';
+function goHome() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      const p = new URLSearchParams();
+      if (s.name) p.set('family', s.name);
+      if (s.trip)  p.set('trip',   s.trip);
+      const qs = p.toString();
+      window.location.href = 'index.html' + (qs ? '?' + qs : '');
+      return;
+    }
+  } catch(e) {}
+  window.location.href = 'index.html';
+}
+</script>
+
 </body>
 </html>
