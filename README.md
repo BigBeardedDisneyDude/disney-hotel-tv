@@ -11,3 +11,4 @@ Current features
   <br>An animated background showing the hotel monorail pool with water fall, palm trees and clouds moving in the wind
   <br>Optimized for mobile devices
   <br>Music can be played just like at the hotel
+  <br>A ride survey is now available! You can select which rides are most important to you, and they will be broken down by land! Mutliple people per trip can submit their own surveys and the results will display where the highest priorities are
