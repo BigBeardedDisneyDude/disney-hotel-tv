@@ -29,12 +29,16 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html { overflow-x: hidden; }
+
   body {
     background: var(--bg);
     color: var(--cream);
     font-family: 'Lato', sans-serif;
     font-weight: 300;
     min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
   }
 
   /* ── HEADER ── */
@@ -120,6 +124,8 @@
   }
   input[type=text], input[type=date] {
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     background: rgba(255,255,255,0.05);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -130,9 +136,11 @@
     outline: none;
     margin-bottom: 18px;
     transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
   }
   input[type=text]:focus, input[type=date]:focus { border-color: var(--gold); }
-  input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.7); }
+  input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
 
   .btn {
     display: inline-flex;
@@ -432,7 +440,7 @@
 <header>
   <a class="header-home" href="index.html">← Home</a>
   <div class="header-title">Ride Planner</div>
-  <div class="header-right"></div>
+  <a class="header-home" href="trips.html" style="font-size:12px;opacity:0.7;white-space:nowrap;">All Trips</a>
 </header>
 
 <div class="page">
