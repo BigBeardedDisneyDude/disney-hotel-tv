@@ -77,10 +77,7 @@
   .view.active { display: block; }
 
   /* ── HOME / CREATE TRIP ── */
-  .home-hero {
-    text-align: center;
-    padding: 48px 0 40px;
-  }
+  .home-hero { text-align: center; padding: 48px 0 40px; }
   .home-hero h1 {
     font-family: 'Cinzel', serif;
     font-size: 28px;
@@ -134,9 +131,7 @@
     margin-bottom: 18px;
     transition: border-color 0.2s;
   }
-  input[type=text]:focus, input[type=date]:focus {
-    border-color: var(--gold);
-  }
+  input[type=text]:focus, input[type=date]:focus { border-color: var(--gold); }
   input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.7); }
 
   .btn {
@@ -155,18 +150,13 @@
     border: none;
     text-decoration: none;
   }
-  .btn-gold {
-    background: var(--gold);
-    color: var(--teal-dark);
-  }
+  .btn-gold { background: var(--gold); color: var(--teal-dark); }
   .btn-gold:hover { background: var(--gold-light); }
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--cream);
-    opacity: 0.8;
-  }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--cream); opacity: 0.8; }
   .btn-outline:hover { border-color: var(--gold); opacity: 1; }
+  /* FIX 4: danger button style for delete */
+  .btn-danger { background: transparent; border: 1px solid rgba(212,80,80,0.4); color: var(--veto-red); opacity: 0.85; }
+  .btn-danger:hover { border-color: var(--veto-red); opacity: 1; background: var(--veto-red-bg); }
   .btn-sm { padding: 7px 16px; font-size: 13px; }
   .btn-full { width: 100%; }
 
@@ -186,11 +176,7 @@
     font-weight: 700;
     margin-bottom: 8px;
   }
-  .share-url-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
+  .share-url-row { display: flex; gap: 8px; align-items: center; }
   .share-url {
     flex: 1;
     background: rgba(0,0,0,0.3);
@@ -233,26 +219,12 @@
     flex-wrap: wrap;
     gap: 12px;
   }
-  .trip-banner-name {
-    font-family: 'Cinzel', serif;
-    font-size: 18px;
-    color: var(--gold);
-  }
-  .trip-banner-date {
-    font-size: 13px;
-    color: var(--cream-dark);
-    opacity: 0.7;
-    margin-top: 3px;
-  }
+  .trip-banner-name { font-family: 'Cinzel', serif; font-size: 18px; color: var(--gold); }
+  .trip-banner-date { font-size: 13px; color: var(--cream-dark); opacity: 0.7; margin-top: 3px; }
   .trip-banner-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
   /* ── TABS ── */
-  .tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 28px;
-    gap: 0;
-  }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
   .tab {
     padding: 12px 22px;
     font-family: 'Lato', sans-serif;
@@ -271,18 +243,11 @@
   }
   .tab.active { color: var(--gold); opacity: 1; border-bottom-color: var(--gold); }
   .tab:hover:not(.active) { opacity: 0.7; }
-
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
   /* ── RESPONDENTS ── */
-  .respondent-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-    align-items: center;
-  }
+  .respondent-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; align-items: center; }
   .resp-pill {
     padding: 5px 12px;
     border-radius: 20px;
@@ -298,38 +263,16 @@
   .resp-count { font-size: 12px; color: var(--gold-dim); }
 
   /* ── NAME FORM ── */
-  .name-form {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
+  .name-form { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
   .name-form input { flex: 1; min-width: 160px; margin-bottom: 0; }
 
   /* ── LEGEND ── */
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 24px;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: rgba(253,248,239,0.6);
-  }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(253,248,239,0.6); }
   .legend-dot {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 700;
-    flex-shrink: 0;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
   }
 
   /* ── PARK SECTIONS ── */
@@ -345,103 +288,64 @@
   .park-dl { background: rgba(26,74,122,0.4); border: 1px solid rgba(56,138,221,0.3); color: #85b7eb; }
   .park-dca { background: rgba(122,26,26,0.4); border: 1px solid rgba(212,90,48,0.3); color: #f09575; }
   .land-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    margin: 16px 0 8px 4px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--gold-dim); margin: 16px 0 8px 4px;
   }
 
   /* ── RIDE ROW ── */
   .ride-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    border-radius: 8px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: 8px;
     border: 1px solid rgba(201,168,76,0.1);
     background: rgba(255,255,255,0.02);
-    margin-bottom: 5px;
-    transition: background 0.1s;
+    margin-bottom: 5px; transition: background 0.1s;
   }
   .ride-row:hover { background: rgba(255,255,255,0.04); }
   .ride-name { flex: 1; font-size: 14px; color: var(--cream); min-width: 0; }
-  .ride-tag {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 12px;
-    white-space: nowrap;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-  }
+  .ride-tag { font-size: 11px; padding: 2px 8px; border-radius: 12px; white-space: nowrap; font-weight: 700; letter-spacing: 0.04em; }
   .tag-thrill { background: rgba(212,80,80,0.15); color: #f09595; }
   .tag-family { background: rgba(76,175,130,0.12); color: #7dd4b0; }
   .tag-kiddie { background: rgba(174,149,236,0.15); color: #c4aff0; }
 
   .rating-btns { display: flex; gap: 3px; }
   .r-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
+    width: 30px; height: 30px; border-radius: 50%;
     border: 1.5px solid rgba(201,168,76,0.2);
     background: rgba(255,255,255,0.04);
     color: rgba(253,248,239,0.5);
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.1s;
-    font-family: 'Lato', sans-serif;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.1s; font-family: 'Lato', sans-serif;
   }
   .r-btn:hover { border-color: var(--gold); color: var(--gold); }
   .r-btn.sel-0 { background: #501313; border-color: #a32d2d; color: #f09595; }
   .r-btn.sel-1 { background: #412402; border-color: #854f0b; color: #fac775; }
   .r-btn.sel-2 { background: #3a2800; border-color: #ba7517; color: #efcf6a; }
-  .r-btn.sel-3 { background: #2c2c2a; border-color: #5f5e5a; color: #b4b2a9; }
+  /* FIX 1: rating 3 was near-invisible dark gray — now a clear steel blue */
+  .r-btn.sel-3 { background: #1a3a5c; border-color: #4a8ab4; color: #a8d4f0; }
   .r-btn.sel-4 { background: #173404; border-color: #3b6d11; color: #c0dd97; }
   .r-btn.sel-5 { background: #04342c; border-color: #0f6e56; color: #5dcaa5; }
 
   /* ── SUBMIT BAR ── */
   .submit-bar {
-    position: sticky;
-    bottom: 0;
+    position: sticky; bottom: 0;
     background: var(--teal-dark);
     border-top: 1px solid var(--border);
     padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    z-index: 50;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; z-index: 50;
   }
   .submit-bar-info { font-size: 13px; color: var(--cream-dark); opacity: 0.7; }
   .submit-bar-info strong { color: var(--gold); opacity: 1; }
 
   /* ── RESULTS ── */
   .section-title {
-    font-family: 'Cinzel', serif;
-    font-size: 14px;
-    color: var(--gold);
-    letter-spacing: 0.08em;
-    margin: 28px 0 14px;
+    font-family: 'Cinzel', serif; font-size: 14px; color: var(--gold);
+    letter-spacing: 0.08em; margin: 28px 0 14px;
   }
 
-  .area-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-  .area-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-  }
+  .area-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 8px; }
+  .area-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
   .area-card-name { font-size: 13px; font-weight: 700; color: var(--cream); margin-bottom: 2px; }
   .area-card-park { font-size: 11px; color: var(--gold-dim); margin-bottom: 8px; }
   .area-bar-wrap { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
@@ -450,25 +354,15 @@
   .area-score-sub { font-size: 11px; color: rgba(253,248,239,0.45); margin-top: 1px; }
 
   .result-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 12px;
-    border-radius: 8px;
-    border: 1px solid rgba(201,168,76,0.1);
-    background: rgba(255,255,255,0.02);
-    margin-bottom: 5px;
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+    border-radius: 8px; border: 1px solid rgba(201,168,76,0.1);
+    background: rgba(255,255,255,0.02); margin-bottom: 5px;
   }
   .result-rank { font-size: 12px; color: var(--gold-dim); width: 24px; text-align: right; flex-shrink: 0; font-weight: 700; }
   .result-name { font-size: 14px; color: var(--cream); }
   .result-meta { font-size: 12px; color: rgba(253,248,239,0.45); margin-top: 1px; }
   .result-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
-  .badge {
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 10px;
-  }
+  .badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
   .badge-must { background: var(--star-green-bg); color: var(--star-green); }
   .badge-skip { background: var(--veto-red-bg); color: var(--veto-red); }
   .result-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
@@ -476,25 +370,27 @@
   .result-bar { height: 6px; border-radius: 3px; }
   .result-score { font-size: 14px; font-weight: 700; color: var(--gold); width: 32px; text-align: right; }
 
+  /* FIX 4: respondent management rows in results tab */
+  .resp-result-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-radius: 8px;
+    border: 1px solid rgba(201,168,76,0.1);
+    background: rgba(255,255,255,0.02); margin-bottom: 6px; gap: 12px;
+  }
+  .resp-result-name { font-size: 14px; color: var(--cream); }
+  .resp-result-meta { font-size: 12px; color: rgba(253,248,239,0.45); margin-top: 2px; }
+  .resp-result-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
   .no-data { text-align: center; padding: 48px 20px; color: rgba(253,248,239,0.45); font-size: 14px; }
 
   /* ── TOAST ── */
   .toast {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
+    position: fixed; bottom: 80px; left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: var(--teal);
-    color: var(--cream);
-    border: 1px solid var(--gold);
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-size: 14px;
-    opacity: 0;
-    transition: all 0.3s;
-    pointer-events: none;
-    z-index: 999;
-    white-space: nowrap;
+    background: var(--teal); color: var(--cream);
+    border: 1px solid var(--gold); border-radius: 8px;
+    padding: 10px 20px; font-size: 14px; opacity: 0;
+    transition: all 0.3s; pointer-events: none; z-index: 999; white-space: nowrap;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -509,11 +405,8 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .error-msg { color: var(--veto-red); font-size: 14px; text-align: center; padding: 24px; }
-
   /* ── SETUP PAGE ── */
   .setup-wrap { max-width: 480px; margin: 0 auto; }
-  .setup-steps { counter-reset: step; }
   .setup-step { display: flex; gap: 16px; margin-bottom: 24px; }
   .setup-step-num {
     width: 28px; height: 28px; border-radius: 50%;
@@ -522,10 +415,7 @@
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .setup-step-content { flex: 1; font-size: 14px; color: var(--cream-dark); line-height: 1.6; }
-  .setup-step-content code {
-    background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px;
-    font-family: monospace; font-size: 13px; color: var(--gold-light);
-  }
+  .setup-step-content code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 13px; color: var(--gold-light); }
   .setup-step-content a { color: var(--gold-light); }
 
   @media (max-width: 560px) {
@@ -547,7 +437,7 @@
 
 <div class="page">
 
-  <!-- SETUP VIEW (shown when Firebase not configured) -->
+  <!-- SETUP VIEW -->
   <div class="view" id="view-setup">
     <div class="setup-wrap">
       <div style="text-align:center;padding:40px 0 32px;">
@@ -564,7 +454,7 @@
     </div>
   </div>
 
-  <!-- HOME VIEW (create trip or enter existing trip code) -->
+  <!-- HOME VIEW -->
   <div class="view" id="view-home">
     <div class="home-hero">
       <h1>Ride Planner</h1>
@@ -606,13 +496,14 @@
 
     <!-- SURVEY TAB -->
     <div class="tab-panel active" id="panel-survey">
-      <div class="name-form">
+      <!-- FIX 3: name-form is hidden while rating is active, restored on cancel/save -->
+      <div class="name-form" id="name-form">
         <input type="text" id="survey-name" placeholder="Your name" maxlength="30" />
         <button class="btn btn-gold" onclick="startSurvey()">Start rating</button>
       </div>
       <div id="survey-already-done" style="display:none;">
         <div style="background:var(--star-green-bg);border:1px solid rgba(76,175,130,0.3);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--star-green);">
-          You've already submitted ratings for this trip. You can update them below.
+          You've already submitted ratings for this trip. Your previous ratings are loaded — update anything and save again.
         </div>
       </div>
       <div id="survey-body" style="display:none;">
@@ -621,7 +512,8 @@
           <div class="legend-item"><div class="legend-dot" style="background:#501313;border:1.5px solid #a32d2d;color:#f09595;">0</div> Won't / can't</div>
           <div class="legend-item"><div class="legend-dot" style="background:#412402;border:1.5px solid #854f0b;color:#fac775;">1</div> Don't want to</div>
           <div class="legend-item"><div class="legend-dot" style="background:#3a2800;border:1.5px solid #ba7517;color:#efcf6a;">2</div> Rather not, but would</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#2c2c2a;border:1.5px solid #5f5e5a;color:#b4b2a9;">3</div> No opinion</div>
+          <!-- FIX 1: legend dot for 3 updated to match new steel blue -->
+          <div class="legend-item"><div class="legend-dot" style="background:#1a3a5c;border:1.5px solid #4a8ab4;color:#a8d4f0;">3</div> No opinion</div>
           <div class="legend-item"><div class="legend-dot" style="background:#173404;border:1.5px solid #3b6d11;color:#c0dd97;">4</div> Would like to</div>
           <div class="legend-item"><div class="legend-dot" style="background:#04342c;border:1.5px solid #0f6e56;color:#5dcaa5;">5</div> Must do!</div>
         </div>
@@ -636,7 +528,7 @@
   </div>
 
   <!-- SHARE MODAL -->
-  <div id="share-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div id="share-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:20px;">
     <div class="card" style="max-width:480px;width:100%;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <div class="card-title" style="margin:0;">Share this trip</div>
@@ -659,23 +551,23 @@
 
 </div><!-- /.page -->
 
-<!-- STICKY SUBMIT BAR (only visible during active survey) -->
+<!-- STICKY SUBMIT BAR -->
 <div class="submit-bar" id="submit-bar" style="display:none;">
   <div class="submit-bar-info">Rating as <strong id="submit-bar-name"></strong></div>
-  <button class="btn btn-gold" onclick="submitRatings()">Save my ratings</button>
+  <div style="display:flex;gap:10px;">
+    <!-- FIX 3: Cancel button to stop halfway and return to name entry without saving -->
+    <button class="btn btn-outline btn-sm" onclick="cancelRating()">Cancel</button>
+    <button class="btn btn-gold" onclick="submitRatings()">Save my ratings</button>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, serverTimestamp }
+import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, onSnapshot, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-/* ─────────────────────────────────────────────
-   FIREBASE CONFIG — replace with your own values
-   ───────────────────────────────────────────── */
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAprWH3naFPXPRgSr9qTbq2rbEntYpJ5Pw",
   authDomain: "disneyland-rides.firebaseapp.com",
@@ -684,7 +576,6 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "940661410999",
   appId: "1:940661410999:web:b557cf468a338669821132"
 };
-/* ───────────────────────────────────────────── */
 
 const RIDES = [
   { id:'dl_pirates', name:"Pirates of the Caribbean", park:"DL", land:"New Orleans Square", type:"family" },
@@ -819,6 +710,8 @@ window.startSurvey = function() {
   const name = document.getElementById('survey-name').value.trim();
   if (!name) { toast('Enter your name first'); return; }
   activeName = name;
+
+  // FIX 2: only restore ratings the person actually set — no defaulting unrated to 3
   if (currentRespondents[name]) {
     currentRatings = { ...currentRespondents[name] };
     document.getElementById('survey-already-done').style.display = 'block';
@@ -826,10 +719,25 @@ window.startSurvey = function() {
     currentRatings = {};
     document.getElementById('survey-already-done').style.display = 'none';
   }
+
+  // FIX 3: hide name form while rating is in progress
+  document.getElementById('name-form').style.display = 'none';
   document.getElementById('survey-body').style.display = 'block';
   document.getElementById('submit-bar').style.display = 'flex';
   document.getElementById('submit-bar-name').textContent = name;
   buildRideList();
+};
+
+// FIX 3: cancel mid-survey — discard in-progress ratings and return to name entry
+window.cancelRating = function() {
+  activeName = '';
+  currentRatings = {};
+  document.getElementById('name-form').style.display = 'flex';
+  document.getElementById('survey-body').style.display = 'none';
+  document.getElementById('survey-already-done').style.display = 'none';
+  document.getElementById('submit-bar').style.display = 'none';
+  document.getElementById('survey-name').value = '';
+  document.getElementById('ride-list').innerHTML = '';
 };
 
 function buildRideList() {
@@ -852,6 +760,7 @@ function buildRideList() {
     }
   }
   container.innerHTML = html;
+  // Restore any ratings that were previously saved
   RIDES.forEach(r => { if (currentRatings[r.id] !== undefined) applyRatingUI(r.id, currentRatings[r.id]); });
 }
 
@@ -869,12 +778,10 @@ function applyRatingUI(rid, val) {
 
 window.submitRatings = async function() {
   if (!activeName) return;
+  // FIX 2: save only explicitly rated rides — unrated rides stay absent from Firestore
   await setDoc(doc(db, 'trips', currentTripId, 'responses', activeName), { ratings: currentRatings, updatedAt: serverTimestamp() });
   toast(`${activeName}'s ratings saved!`);
-  document.getElementById('submit-bar').style.display = 'none';
-  document.getElementById('survey-body').style.display = 'none';
-  document.getElementById('survey-name').value = '';
-  activeName = '';
+  cancelRating(); // FIX 3: return to name entry form after saving
 };
 
 function renderRespondentBar() {
@@ -903,11 +810,18 @@ function buildResults() {
     return;
   }
 
+  // FIX 2: exclude unrated rides from averages rather than treating them as 3
   const scored = RIDES.map(r => {
-    const vals = names.map(n => currentRespondents[n][r.id] !== undefined ? currentRespondents[n][r.id] : 3);
+    const vals = names.map(n => currentRespondents[n][r.id]).filter(v => v !== undefined);
+    if (!vals.length) return { ...r, avg: null, has5: 0, has0: 0, ratedBy: 0 };
     const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-    return { ...r, avg, has5: vals.filter(v => v === 5).length, has0: vals.filter(v => v === 0).length };
-  }).sort((a, b) => b.avg - a.avg || b.has5 - a.has5);
+    return { ...r, avg, has5: vals.filter(v => v === 5).length, has0: vals.filter(v => v === 0).length, ratedBy: vals.length };
+  }).sort((a, b) => {
+    if (a.avg === null && b.avg === null) return 0;
+    if (a.avg === null) return 1;
+    if (b.avg === null) return -1;
+    return b.avg - a.avg || b.has5 - a.has5;
+  });
 
   const byArea = {};
   scored.forEach(r => {
@@ -916,11 +830,26 @@ function buildResults() {
     byArea[k].rides.push(r);
   });
   const areas = Object.values(byArea).map(a => {
-    const avg = a.rides.reduce((s, r) => s + r.avg, 0) / a.rides.length;
-    return { ...a, avg, highCount: a.rides.filter(r => r.avg >= 4).length };
-  }).sort((a, b) => b.avg - a.avg);
+    const rated = a.rides.filter(r => r.avg !== null);
+    const avg = rated.length ? rated.reduce((s, r) => s + r.avg, 0) / rated.length : null;
+    return { ...a, avg, highCount: rated.filter(r => r.avg >= 4).length };
+  }).filter(a => a.avg !== null).sort((a, b) => b.avg - a.avg);
 
-  let html = `<p style="font-size:13px;color:rgba(253,248,239,0.5);margin-bottom:4px;">${names.length} response${names.length > 1 ? 's' : ''}: ${names.join(', ')}</p>`;
+  // FIX 4: respondent management at the top of results
+  let html = `<div class="section-title">Respondents</div>`;
+  names.forEach(n => {
+    const ratedCount = Object.keys(currentRespondents[n]).length;
+    html += `<div class="resp-result-row">
+      <div>
+        <div class="resp-result-name">${n}</div>
+        <div class="resp-result-meta">${ratedCount} ride${ratedCount !== 1 ? 's' : ''} rated</div>
+      </div>
+      <div class="resp-result-actions">
+        <button class="btn btn-outline btn-sm" onclick="reloadForEdit('${n}')">Edit ratings</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRespondent('${n}')">Delete</button>
+      </div>
+    </div>`;
+  });
 
   html += `<div class="section-title">Hottest areas of the park</div><div class="area-grid">`;
   areas.forEach(a => {
@@ -939,25 +868,42 @@ function buildResults() {
   html += `<div class="section-title">All rides — ranked by group interest</div>`;
   scored.forEach((r, i) => {
     const barColor = r.park === 'DL' ? '#378add' : '#d85a30';
-    const pct = Math.round((r.avg / 5) * 100);
+    const pct = r.avg !== null ? Math.round((r.avg / 5) * 100) : 0;
+    const scoreText = r.avg !== null ? r.avg.toFixed(1) : '—';
     const mustBadge = r.has5 ? `<span class="badge badge-must">★ ${r.has5} must-do</span>` : '';
     const skipBadge = r.has0 ? `<span class="badge badge-skip">✕ ${r.has0} skip</span>` : '';
+    const partialNote = r.ratedBy > 0 && r.ratedBy < names.length ? ` · rated by ${r.ratedBy}/${names.length}` : '';
+    const unratedNote = r.avg === null ? `<span style="font-size:11px;color:rgba(253,248,239,0.3);">not yet rated</span>` : '';
     html += `<div class="result-row">
       <span class="result-rank">${i + 1}</span>
       <div style="flex:1;min-width:0;">
         <div class="result-name">${r.name}</div>
-        <div class="result-meta">${r.land} · ${r.park === 'DL' ? 'Disneyland' : 'DCA'}</div>
-        ${mustBadge || skipBadge ? `<div class="result-badges">${mustBadge}${skipBadge}</div>` : ''}
+        <div class="result-meta">${r.land} · ${r.park === 'DL' ? 'Disneyland' : 'DCA'}${partialNote}</div>
+        ${mustBadge || skipBadge || unratedNote ? `<div class="result-badges">${mustBadge}${skipBadge}${unratedNote}</div>` : ''}
       </div>
       <div class="result-right">
         <div class="result-bar-wrap"><div class="result-bar" style="width:${pct}%;background:${barColor};"></div></div>
-        <span class="result-score">${r.avg.toFixed(1)}</span>
+        <span class="result-score">${scoreText}</span>
       </div>
     </div>`;
   });
 
   panel.innerHTML = html;
 }
+
+// FIX 4: delete a respondent's ratings from Firestore
+window.deleteRespondent = async function(name) {
+  if (!confirm(`Delete ${name}'s ratings? This cannot be undone.`)) return;
+  await deleteDoc(doc(db, 'trips', currentTripId, 'responses', name));
+  toast(`${name}'s ratings deleted`);
+};
+
+// FIX 3+4: jump to survey tab with that person's name pre-filled so they can edit
+window.reloadForEdit = function(name) {
+  switchTab('survey');
+  document.getElementById('survey-name').value = name;
+  startSurvey();
+};
 
 // ── SHARE ──
 window.showShareModal = function() {
