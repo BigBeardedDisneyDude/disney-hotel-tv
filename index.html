@@ -577,7 +577,7 @@
     <div id="modal-body">
       <div class="field-group">
         <label class="field-label" for="input-name">Family Name</label>
-        <div class="field-hint">Shown in the greeting — e.g. "Cooke Family" or "The Johnsons"</div>
+        <div class="field-hint">Displays as "[Name] Family" — e.g. enter "Cooke" → "Cooke Family"</div>
         <input class="modal-input" type="text" id="input-name" placeholder="Your Family Name" maxlength="40" autocomplete="off" spellcheck="false">
       </div>
       <div class="modal-divider"></div>
@@ -625,7 +625,7 @@ const isFirstRun = !params.name && !params.trip;
 
 // Apply family name
 if (params.name) {
-  document.getElementById('welcome-name').textContent = params.name;
+  document.getElementById('welcome-name').textContent = params.name + ' Family';
 } else {
   document.getElementById('welcome-name').textContent = 'Welcome';
 }
@@ -771,7 +771,7 @@ function saveSettings() {
   window.history.replaceState({}, '', newUrl);
 
   // Update displayed name live
-  document.getElementById('welcome-name').textContent = name || 'Welcome';
+  document.getElementById('welcome-name').textContent = name ? name + ' Family' : 'Welcome';
 
   // Update params object and refresh countdown
   params.name = name;
