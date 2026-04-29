@@ -19,6 +19,22 @@
     --warm-white: #fff8ee;
     --bar-gold: #c8a03a;
     --bar-gold-light: #e6c056;
+
+    /* Night mode tokens */
+    --night-header-bg-from: rgba(4,10,22,0.98);
+    --night-header-bg-to: rgba(6,14,28,0.96);
+    --night-header-border: #7a5a20;
+    --night-name-color: #c8d8f0;
+    --night-greeting-color: #7080a8;
+    --night-time-color: #b0c0e0;
+    --night-date-color: #5060888;
+    --night-temp-color: #9aaccc;
+    --night-bar-from: rgba(6,14,30,0.97);
+    --night-bar-to: rgba(4,10,22,0.98);
+    --night-bar-border: rgba(80,110,170,0.15);
+    --night-menu-label: rgba(120,155,210,0.7);
+    --night-menu-icon: rgba(70,105,175,0.65);
+    --night-divider: rgba(70,100,160,0.15);
   }
 
   html, body {
@@ -65,6 +81,75 @@
       rgba(0,0,0,0.35) 75%,
       rgba(0,0,0,1.00) 100%
     );
+    z-index: 1;
+  }
+
+  /* ── NIGHT OVERLAY ── */
+  #night-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 90s ease; /* very slow fade — cinematic */
+    background: linear-gradient(180deg,
+      rgba(2,6,18,0.72) 0%,
+      rgba(4,10,24,0.65) 30%,
+      rgba(6,12,28,0.55) 60%,
+      rgba(2,6,14,0.30) 100%
+    );
+  }
+  #night-overlay.active {
+    opacity: 1;
+  }
+  /* Quicker for dev/testing — removed in production */
+  #night-overlay.instant {
+    transition: opacity 2s ease;
+  }
+
+  /* ── STARS ── */
+  #stars-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 120s ease;
+  }
+  #stars-layer.active {
+    opacity: 1;
+  }
+  #stars-layer.instant {
+    transition: opacity 3s ease;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+    animation: twinkle var(--td, 3s) ease-in-out infinite var(--tdelay, 0s);
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: var(--tmin, 0.15); }
+    50% { opacity: var(--tmax, 0.85); }
+  }
+
+  /* ── MOON ── */
+  #moon {
+    position: fixed;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 120s ease;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 38%, #f8efc0, #e8d890 60%, #c8b860);
+    box-shadow: 0 0 30px rgba(240,220,140,0.25), 0 0 60px rgba(240,220,140,0.10);
+  }
+  #moon.active { opacity: 1; }
+  #moon.instant { transition: opacity 3s ease; }
+  .moon-crater {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(160,140,60,0.25);
   }
 
   /* ── HEADER ── */
@@ -80,14 +165,34 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    transition:
+      background 90s ease,
+      border-bottom-color 90s ease,
+      box-shadow 90s ease;
   }
+  #header.night-mode {
+    background: linear-gradient(180deg, var(--night-header-bg-from) 0%, var(--night-header-bg-to) 100%);
+    border-bottom-color: var(--night-header-border);
+    box-shadow: 0 4px 28px rgba(0,0,0,0.85), 0 0 50px rgba(60,100,180,0.04);
+  }
+  #header.instant {
+    transition:
+      background 2s ease,
+      border-bottom-color 2s ease,
+      box-shadow 2s ease;
+  }
+
   #header-divider {
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 2px;
     background: linear-gradient(90deg, transparent 0%, var(--gold) 15%, var(--gold-light) 50%, var(--gold) 85%, transparent 100%);
     z-index: 102;
+    transition: opacity 90s ease;
   }
+  #header.night-mode ~ #header-divider,
+  #header.night-mode + #header-divider { opacity: 0.4; }
+
   #header-left { display: flex; flex-direction: column; gap: 6px; }
   #wordmark { display: flex; flex-direction: column; gap: 1px; }
   #wordmark .dh-logo {
@@ -95,27 +200,45 @@
     font-size: clamp(14px, 3.5vw, 20px);
     letter-spacing: 0.10em; color: var(--warm-white);
     text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+    transition: color 90s ease;
   }
+  #header.night-mode .dh-logo { color: #c4b89a; }
+  #header.night-mode.instant .dh-logo,
+  #header.instant .dh-logo { transition: color 2s ease; }
+
   #wordmark .dh-logo .d-letter { font-style: italic; color: var(--gold-light); }
+  #header.night-mode .dh-logo .d-letter { color: #9a7830; }
+
   #wordmark .dh-sub {
     font-family: 'Raleway', sans-serif; font-weight: 200;
     font-size: clamp(7px, 1.8vw, 9px);
     letter-spacing: 0.38em; color: var(--gold);
     text-transform: uppercase; opacity: 0.85;
+    transition: color 90s ease, opacity 90s ease;
   }
+  #header.night-mode .dh-sub { color: #6a4e18; opacity: 0.6; }
+
   #welcome-block { display: flex; flex-direction: column; gap: 1px; }
   #greeting-line {
     font-family: 'Raleway', sans-serif; font-weight: 200;
     font-size: clamp(9px, 2vw, 11px);
     letter-spacing: 0.28em; color: var(--gold-light);
     text-transform: uppercase;
+    transition: color 90s ease;
   }
+  #header.night-mode #greeting-line { color: #607090; }
+
   #welcome-name {
     font-family: 'Cinzel', serif; font-weight: 700;
     font-size: clamp(18px, 5vw, 30px);
     letter-spacing: 0.04em; color: var(--warm-white);
     text-shadow: 0 2px 12px rgba(0,0,0,0.7);
     line-height: 1.0;
+    transition: color 90s ease, text-shadow 90s ease;
+  }
+  #header.night-mode #welcome-name {
+    color: #c0d0ec;
+    text-shadow: 0 2px 18px rgba(60,100,200,0.25);
   }
 
   /* Right info column */
@@ -132,24 +255,37 @@
   }
   #weather-block { display: flex; align-items: center; gap: 5px; font-family: 'Raleway', sans-serif; }
   #weather-icon { font-size: clamp(16px, 4vw, 20px); line-height: 1; }
-  #weather-temp { font-size: clamp(18px, 4.5vw, 24px); font-weight: 300; color: var(--warm-white); letter-spacing: 0.02em; }
-  #weather-desc { font-size: clamp(9px, 2vw, 11px); font-weight: 200; color: rgba(255,248,238,0.7); letter-spacing: 0.1em; text-transform: uppercase; align-self: flex-end; margin-bottom: 2px; }
+  #weather-temp {
+    font-size: clamp(18px, 4.5vw, 24px); font-weight: 300; color: var(--warm-white); letter-spacing: 0.02em;
+    transition: color 90s ease;
+  }
+  #header.night-mode #weather-temp { color: #9aaac8; }
+  #weather-desc {
+    font-size: clamp(9px, 2vw, 11px); font-weight: 200; color: rgba(255,248,238,0.7); letter-spacing: 0.1em; text-transform: uppercase; align-self: flex-end; margin-bottom: 2px;
+    transition: color 90s ease;
+  }
+  #header.night-mode #weather-desc { color: rgba(140,160,200,0.5); }
   @media (max-width: 480px) { #weather-desc { display: none; } }
+
   #time-block { display: flex; flex-direction: column; align-items: flex-end; }
   #time-display {
     font-family: 'Cinzel', serif; font-weight: 600;
     font-size: clamp(20px, 5vw, 30px);
     color: var(--warm-white); letter-spacing: 0.06em; line-height: 1.0;
+    transition: color 90s ease;
   }
+  #header.night-mode #time-display { color: #aabcd8; }
   #date-display {
     font-family: 'Raleway', sans-serif; font-weight: 200;
     font-size: clamp(8px, 1.8vw, 10px);
     letter-spacing: 0.25em; color: var(--gold-light);
     text-transform: uppercase; opacity: 0.85;
     margin-top: 1px; white-space: nowrap;
+    transition: color 90s ease;
   }
+  #header.night-mode #date-display { color: #506080; }
 
-  /* ── COUNTDOWN (inline, under welcome name) ── */
+  /* ── COUNTDOWN ── */
   #countdown-strip {
     display: none;
     align-items: center;
@@ -157,11 +293,7 @@
     margin-top: 3px;
   }
   #countdown-strip.visible { display: flex; }
-  #countdown-icon {
-    font-size: 8px;
-    color: var(--gold);
-    opacity: 0.7;
-  }
+  #countdown-icon { font-size: 8px; color: var(--gold); opacity: 0.7; }
   #countdown-text {
     font-family: 'Raleway', sans-serif; font-weight: 200;
     font-size: clamp(8px, 1.8vw, 10px);
@@ -171,8 +303,7 @@
   #countdown-number {
     font-family: 'Cinzel', serif; font-weight: 600;
     font-size: clamp(10px, 2.2vw, 13px);
-    color: var(--gold-light);
-    letter-spacing: 0.06em;
+    color: var(--gold-light); letter-spacing: 0.06em;
   }
   #countdown-unit {
     font-family: 'Raleway', sans-serif; font-weight: 200;
@@ -183,8 +314,7 @@
   #countdown-label {
     font-family: 'Cormorant Garamond', serif; font-style: italic;
     font-size: clamp(9px, 2vw, 11px);
-    color: rgba(255,248,238,0.35);
-    letter-spacing: 0.06em;
+    color: rgba(255,248,238,0.35); letter-spacing: 0.06em;
   }
 
   /* ── BOTTOM MENU BAR ── */
@@ -199,7 +329,18 @@
     display: flex;
     align-items: center;
     justify-content: space-around;
+    transition:
+      background 90s ease,
+      border-top-color 90s ease;
   }
+  #menu-bar.night-mode {
+    background: linear-gradient(180deg, var(--night-bar-from) 0%, var(--night-bar-to) 100%);
+    border-top-color: var(--night-bar-border);
+  }
+  #menu-bar.instant {
+    transition: background 2s ease, border-top-color 2s ease;
+  }
+
   .menu-item {
     display: flex; flex-direction: column; align-items: center;
     gap: 4px; cursor: pointer;
@@ -215,11 +356,35 @@
   .menu-item:hover { transform: translateY(-3px); filter: brightness(1.15); }
   .menu-item:hover::after { background: rgba(255,255,255,0.08); }
   .menu-icon { width: clamp(28px, 7vw, 40px); height: clamp(28px, 7vw, 40px); display: flex; align-items: center; justify-content: center; }
-  .menu-icon svg { width: 100%; height: 100%; fill: rgba(20,50,65,0.9); }
-  .menu-label { font-family: 'Cinzel', serif; font-weight: 600; font-size: clamp(8px, 2vw, 11px); letter-spacing: 0.12em; color: rgba(20,50,65,0.92); text-transform: uppercase; text-align: center; line-height: 1.2; }
-  .menu-sublabel { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: clamp(7px, 1.5vw, 9px); letter-spacing: 0.1em; color: rgba(20,50,65,0.6); text-transform: uppercase; text-align: center; }
+  .menu-icon svg { width: 100%; height: 100%; fill: rgba(20,50,65,0.9); transition: fill 90s ease; }
+  #menu-bar.night-mode .menu-icon svg { fill: rgba(70,105,175,0.65); }
+  #menu-bar.instant .menu-icon svg { transition: fill 2s ease; }
+
+  .menu-label {
+    font-family: 'Cinzel', serif; font-weight: 600; font-size: clamp(8px, 2vw, 11px); letter-spacing: 0.12em;
+    color: rgba(20,50,65,0.92); text-transform: uppercase; text-align: center; line-height: 1.2;
+    transition: color 90s ease;
+  }
+  #menu-bar.night-mode .menu-label { color: rgba(110,145,205,0.7); }
+  #menu-bar.instant .menu-label { transition: color 2s ease; }
+
+  .menu-sublabel {
+    font-family: 'Raleway', sans-serif; font-weight: 300; font-size: clamp(7px, 1.5vw, 9px); letter-spacing: 0.1em;
+    color: rgba(20,50,65,0.6); text-transform: uppercase; text-align: center;
+    transition: color 90s ease;
+  }
+  #menu-bar.night-mode .menu-sublabel { color: rgba(80,110,170,0.45); }
   @media (max-width: 520px) { .menu-sublabel { display: none; } }
-  .menu-divider { width: 1px; height: 48px; background: linear-gradient(180deg, transparent, rgba(20,50,65,0.2), transparent); flex-shrink: 0; }
+
+  .menu-divider {
+    width: 1px; height: 48px;
+    background: linear-gradient(180deg, transparent, rgba(20,50,65,0.2), transparent);
+    flex-shrink: 0;
+    transition: background 90s ease;
+  }
+  #menu-bar.night-mode .menu-divider {
+    background: linear-gradient(180deg, transparent, rgba(70,100,160,0.15), transparent);
+  }
 
   /* ── GEAR BUTTON ── */
   #gear-btn {
@@ -296,8 +461,7 @@
   #modal-title-block { display: flex; flex-direction: column; gap: 3px; }
   #modal-title {
     font-family: 'Cinzel', serif; font-weight: 600;
-    font-size: 15px; letter-spacing: 0.1em;
-    color: var(--warm-white);
+    font-size: 15px; letter-spacing: 0.1em; color: var(--warm-white);
   }
   #modal-subtitle {
     font-family: 'Raleway', sans-serif; font-weight: 200;
@@ -321,14 +485,12 @@
   .field-group { display: flex; flex-direction: column; gap: 8px; }
   .field-label {
     font-family: 'Cinzel', serif; font-size: 9px;
-    letter-spacing: 0.22em; color: var(--gold);
-    text-transform: uppercase;
+    letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase;
   }
   .field-hint {
     font-family: 'Raleway', sans-serif; font-weight: 200;
     font-size: 9px; letter-spacing: 0.12em;
-    color: rgba(255,248,238,0.3);
-    margin-top: -4px;
+    color: rgba(255,248,238,0.3); margin-top: -4px;
   }
   .modal-input {
     width: 100%;
@@ -338,17 +500,12 @@
     padding: 10px 12px;
     color: var(--warm-white);
     font-family: 'Raleway', sans-serif;
-    font-weight: 300; font-size: 14px;
-    letter-spacing: 0.04em;
+    font-weight: 300; font-size: 14px; letter-spacing: 0.04em;
     outline: none;
     transition: border-color 0.2s, background 0.2s;
   }
-  .modal-input:focus {
-    border-color: rgba(201,168,76,0.6);
-    background: rgba(255,248,238,0.08);
-  }
+  .modal-input:focus { border-color: rgba(201,168,76,0.6); background: rgba(255,248,238,0.08); }
   .modal-input::placeholder { color: rgba(255,248,238,0.2); }
-  /* Date input calendar icon tint */
   .modal-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7) sepia(1) saturate(2) hue-rotate(5deg); cursor: pointer; }
 
   .field-clear {
@@ -368,13 +525,11 @@
   #save-btn {
     width: 100%;
     background: linear-gradient(135deg, rgba(201,168,76,0.9) 0%, rgba(180,138,42,0.9) 100%);
-    border: none; border-radius: 3px;
-    padding: 12px;
+    border: none; border-radius: 3px; padding: 12px;
     color: rgba(20,50,65,0.95);
     font-family: 'Cinzel', serif; font-weight: 600;
-    font-size: 11px; letter-spacing: 0.2em;
-    text-transform: uppercase; cursor: pointer;
-    transition: all 0.2s;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s;
   }
   #save-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
   #save-btn:active { transform: translateY(0); }
@@ -387,7 +542,7 @@
   }
   #bookmark-hint strong { color: rgba(201,168,76,0.5); font-weight: 400; }
 
-  /* First-run welcome nudge */
+  /* First-run nudge */
   #first-run-nudge {
     position: fixed;
     bottom: calc(112px + env(safe-area-inset-bottom, 0px));
@@ -426,6 +581,42 @@
     border-top: 6px solid rgba(22,52,68,0.95);
   }
 
+  /* ── MODE PICKER ── */
+  #mode-picker {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+  }
+  .mode-btn {
+    flex: 1;
+    background: rgba(255,248,238,0.04);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 3px;
+    padding: 9px 6px;
+    color: rgba(255,248,238,0.4);
+    font-family: 'Cinzel', serif;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mode-btn:hover {
+    border-color: rgba(201,168,76,0.45);
+    color: rgba(255,248,238,0.7);
+    background: rgba(255,248,238,0.07);
+  }
+  .mode-btn.active {
+    background: rgba(201,168,76,0.18);
+    border-color: rgba(201,168,76,0.7);
+    color: var(--gold-light);
+  }
+  .mode-btn#mode-btn-night.active {
+    background: rgba(40,70,140,0.25);
+    border-color: rgba(80,120,200,0.5);
+    color: #a0b8e0;
+  }
+
   #weather-loading { font-size: 11px; color: rgba(255,248,238,0.5); font-family: 'Raleway', sans-serif; font-weight: 200; letter-spacing: 0.15em; }
 
   @keyframes fadeIn { from{opacity:0} to{opacity:1} }
@@ -440,11 +631,21 @@
     oncanplay="document.getElementById('bg-fallback').style.opacity='0'"></video>
 </div>
 
+<!-- NIGHT MODE LAYERS (sit above video, below UI) -->
+<div id="night-overlay"></div>
+<div id="stars-layer"></div>
+<div id="moon">
+  <div class="moon-crater" style="width:9px;height:9px;top:7px;left:9px;"></div>
+  <div class="moon-crater" style="width:6px;height:6px;top:18px;left:22px;"></div>
+  <div class="moon-crater" style="width:5px;height:5px;top:9px;left:23px;"></div>
+</div>
+
 <div id="header-divider"></div>
 <div id="header">
   <div id="header-left">
     <div id="wordmark">
       <div class="dh-logo"><span class="d-letter">D</span>isneyland Hotel</div>
+      <div class="dh-sub">A Disney Resort Hotel</div>
     </div>
     <div id="welcome-block">
       <div id="greeting-line">Good Evening</div>
@@ -587,6 +788,16 @@
         <input class="modal-input" type="date" id="input-trip">
         <button class="field-clear" onclick="clearTrip()">Clear trip date</button>
       </div>
+      <div class="modal-divider"></div>
+      <div class="field-group">
+        <label class="field-label">Appearance</label>
+        <div class="field-hint">Override the automatic day/night mode, or let it follow the time of day</div>
+        <div id="mode-picker">
+          <button class="mode-btn" id="mode-btn-auto"   onclick="setModeOverride('auto')"  >Auto</button>
+          <button class="mode-btn" id="mode-btn-day"    onclick="setModeOverride('day')"   >☀ Day</button>
+          <button class="mode-btn" id="mode-btn-night"  onclick="setModeOverride('night')" >☾ Night</button>
+        </div>
+      </div>
     </div>
     <div id="modal-footer">
       <button id="save-btn" onclick="saveSettings()">Save &amp; Update Link</button>
@@ -605,10 +816,7 @@
 // ── URL PARAMS ──────────────────────────────────────────────
 function getParams() {
   const p = new URLSearchParams(window.location.search);
-  return {
-    name: p.get('family') || '',
-    trip: p.get('trip') || ''
-  };
+  return { name: p.get('family') || '', trip: p.get('trip') || '' };
 }
 
 function buildUrl(name, trip) {
@@ -623,54 +831,161 @@ function buildUrl(name, trip) {
 const params = getParams();
 const isFirstRun = !params.name && !params.trip;
 
-// Apply family name
 if (params.name) {
   document.getElementById('welcome-name').textContent = params.name + ' Family';
 } else {
   document.getElementById('welcome-name').textContent = 'Welcome';
 }
 
-// Show first-run nudge
 if (isFirstRun) {
   const nudge = document.getElementById('first-run-nudge');
   nudge.classList.add('show');
-  // Auto-dismiss after 6s
   setTimeout(() => { nudge.style.opacity = '0'; nudge.style.transition = 'opacity 0.8s'; setTimeout(() => nudge.classList.remove('show'), 800); }, 6000);
 }
+
+// ── NIGHT MODE ───────────────────────────────────────────────
+// Night mode: 9pm (21) → 6am (6)
+const NIGHT_START = 21;
+const NIGHT_END   = 6;
+
+// Size & position the moon relative to viewport
+function positionMoon() {
+  const moon = document.getElementById('moon');
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const size = Math.round(Math.min(vw, vh) * 0.065); // ~6.5% of smaller dimension
+  moon.style.width  = size + 'px';
+  moon.style.height = size + 'px';
+  moon.style.top    = Math.round(vh * 0.10) + 'px';
+  moon.style.right  = Math.round(vw * 0.18) + 'px';
+}
+positionMoon();
+window.addEventListener('resize', positionMoon);
+
+// Generate stars
+function buildStars() {
+  const layer = document.getElementById('stars-layer');
+  let html = '';
+  for (let i = 0; i < 90; i++) {
+    const x    = (Math.random() * 100).toFixed(2);
+    const y    = (Math.random() * 68).toFixed(2); // top 68% of screen
+    const s    = (Math.random() * 1.8 + 0.4).toFixed(1);
+    const td   = (Math.random() * 3 + 2).toFixed(1);
+    const tdel = (Math.random() * 5).toFixed(1);
+    const tmin = (Math.random() * 0.2 + 0.05).toFixed(2);
+    const tmax = (Math.random() * 0.5 + 0.45).toFixed(2);
+    html += `<div class="star" style="left:${x}%;top:${y}%;width:${s}px;height:${s}px;--td:${td}s;--tdelay:${tdel}s;--tmin:${tmin};--tmax:${tmax};"></div>`;
+  }
+  layer.innerHTML = html;
+}
+buildStars();
+
+let isNightMode = false;
+let modeOverride = localStorage.getItem('dhModeOverride') || 'auto'; // 'auto' | 'day' | 'night'
+
+function setModeOverride(mode) {
+  modeOverride = mode;
+  localStorage.setItem('dhModeOverride', mode);
+  syncModeBtns();
+  if (mode === 'night') applyNightMode(true);
+  else if (mode === 'day') applyDayMode(true);
+  else checkNightMode(true);
+}
+
+function syncModeBtns() {
+  ['auto','day','night'].forEach(m => {
+    const btn = document.getElementById('mode-btn-' + m);
+    if (btn) btn.classList.toggle('active', modeOverride === m);
+  });
+}
+syncModeBtns();
+
+function applyNightMode(instant) {
+  const header  = document.getElementById('header');
+  const menubar = document.getElementById('menu-bar');
+  const overlay = document.getElementById('night-overlay');
+  const stars   = document.getElementById('stars-layer');
+  const moon    = document.getElementById('moon');
+
+  if (instant) {
+    header.classList.add('instant');
+    menubar.classList.add('instant');
+    overlay.classList.add('instant');
+    stars.classList.add('instant');
+    moon.classList.add('instant');
+  }
+
+  header.classList.add('night-mode');
+  menubar.classList.add('night-mode');
+  overlay.classList.add('active');
+  stars.classList.add('active');
+  moon.classList.add('active');
+  isNightMode = true;
+}
+
+function applyDayMode(instant) {
+  const header  = document.getElementById('header');
+  const menubar = document.getElementById('menu-bar');
+  const overlay = document.getElementById('night-overlay');
+  const stars   = document.getElementById('stars-layer');
+  const moon    = document.getElementById('moon');
+
+  if (instant) {
+    header.classList.add('instant');
+    menubar.classList.add('instant');
+    overlay.classList.add('instant');
+    stars.classList.add('instant');
+    moon.classList.add('instant');
+  }
+
+  header.classList.remove('night-mode');
+  menubar.classList.remove('night-mode');
+  overlay.classList.remove('active');
+  stars.classList.remove('active');
+  moon.classList.remove('active');
+  isNightMode = false;
+}
+
+function checkNightMode(instant) {
+  if (modeOverride === 'night') { if (!isNightMode) applyNightMode(instant); return; }
+  if (modeOverride === 'day')   { if (isNightMode)  applyDayMode(instant);  return; }
+  const h = new Date().getHours();
+  const shouldBeNight = (h >= NIGHT_START || h < NIGHT_END);
+  if (shouldBeNight && !isNightMode) applyNightMode(instant);
+  if (!shouldBeNight && isNightMode) applyDayMode(instant);
+}
+
+// Apply instantly on load (no 90s transition on first render)
+checkNightMode(true);
+
+// Check every 60 seconds; after first check let it transition naturally
+setInterval(() => checkNightMode(false), 60000);
 
 // ── COUNTDOWN ────────────────────────────────────────────────
 function updateCountdown() {
   const trip = params.trip;
   const strip = document.getElementById('countdown-strip');
   if (!trip) { strip.classList.remove('visible'); return; }
-
-  // Parse YYYY-MM-DD safely into local midnight
   const parts = trip.split('-');
   if (parts.length !== 3) { strip.classList.remove('visible'); return; }
   const tripDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
   const todayMidnight = new Date();
   todayMidnight.setHours(0, 0, 0, 0);
   const diff = Math.round((tripDate - todayMidnight) / 86400000);
-
-  if (diff < 0) { strip.classList.remove('visible'); return; } // past trip
-
+  if (diff < 0) { strip.classList.remove('visible'); return; }
   strip.classList.add('visible');
-
-  const numEl   = document.getElementById('countdown-number');
-  const unitEl  = document.getElementById('countdown-unit');
-  const textEl  = document.getElementById('countdown-text');
+  const numEl = document.getElementById('countdown-number');
+  const unitEl = document.getElementById('countdown-unit');
+  const textEl = document.getElementById('countdown-text');
   const labelEl = document.getElementById('countdown-label');
-
   if (diff === 0) {
     textEl.textContent = '';
     numEl.textContent = 'Today is the day!';
-    unitEl.textContent = '';
-    labelEl.textContent = '🏰';
+    unitEl.textContent = ''; labelEl.textContent = '🏰';
   } else if (diff === 1) {
     textEl.textContent = 'Trip is';
     numEl.textContent = 'Tomorrow';
-    unitEl.textContent = '';
-    labelEl.textContent = '';
+    unitEl.textContent = ''; labelEl.textContent = '';
   } else {
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     textEl.textContent = 'Trip in';
@@ -738,14 +1053,11 @@ if (navigator.geolocation) {
 
 // ── MODAL ────────────────────────────────────────────────────
 function openModal() {
-  // Dismiss nudge
   const nudge = document.getElementById('first-run-nudge');
   nudge.classList.remove('show');
-
-  // Pre-fill current values
   document.getElementById('input-name').value = params.name || '';
   document.getElementById('input-trip').value = params.trip || '';
-
+  syncModeBtns();
   document.getElementById('modal-overlay').classList.add('open');
   setTimeout(() => document.getElementById('input-name').focus(), 200);
 }
@@ -766,19 +1078,11 @@ function saveSettings() {
   const name = document.getElementById('input-name').value.trim();
   const trip = document.getElementById('input-trip').value;
   const newUrl = buildUrl(name, trip);
-
-  // Update the URL without reloading
   window.history.replaceState({}, '', newUrl);
-
-  // Update displayed name live
   document.getElementById('welcome-name').textContent = name ? name + ' Family' : 'Welcome';
-
-  // Update params object and refresh countdown
   params.name = name;
   params.trip = trip;
   updateCountdown();
-
-  // Visual feedback on button
   const btn = document.getElementById('save-btn');
   btn.textContent = '✓ Saved — Bookmark this page!';
   btn.style.background = 'linear-gradient(135deg, rgba(100,180,120,0.9) 0%, rgba(70,150,90,0.9) 100%)';
@@ -789,7 +1093,6 @@ function saveSettings() {
   }, 2200);
 }
 
-// Enter key saves
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
   if (e.key === 'Enter' && document.getElementById('modal-overlay').classList.contains('open')) saveSettings();
