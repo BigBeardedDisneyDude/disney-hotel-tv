@@ -149,47 +149,41 @@
     margin-top: 1px; white-space: nowrap;
   }
 
-  /* ── COUNTDOWN STRIP ── */
+  /* ── COUNTDOWN (inline, under welcome name) ── */
   #countdown-strip {
-    position: fixed;
-    top: var(--header-h, 90px);
-    left: 0; right: 0;
-    z-index: 100;
     display: none;
-    background: linear-gradient(90deg, rgba(12,30,40,0.92) 0%, rgba(22,52,68,0.88) 50%, rgba(12,30,40,0.92) 100%);
-    border-bottom: 1px solid rgba(201,168,76,0.25);
-    backdrop-filter: blur(6px);
-    padding: 7px 24px;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
-    animation: fadeIn 0.6s ease;
+    gap: 5px;
+    margin-top: 3px;
   }
   #countdown-strip.visible { display: flex; }
-  #countdown-icon { font-size: 14px; opacity: 0.8; }
+  #countdown-icon {
+    font-size: 8px;
+    color: var(--gold);
+    opacity: 0.7;
+  }
   #countdown-text {
     font-family: 'Raleway', sans-serif; font-weight: 200;
-    font-size: clamp(9px, 2vw, 11px);
-    letter-spacing: 0.22em; color: rgba(255,248,238,0.55);
+    font-size: clamp(8px, 1.8vw, 10px);
+    letter-spacing: 0.22em; color: rgba(255,248,238,0.45);
     text-transform: uppercase;
   }
   #countdown-number {
     font-family: 'Cinzel', serif; font-weight: 600;
-    font-size: clamp(13px, 3vw, 17px);
+    font-size: clamp(10px, 2.2vw, 13px);
     color: var(--gold-light);
     letter-spacing: 0.06em;
   }
   #countdown-unit {
     font-family: 'Raleway', sans-serif; font-weight: 200;
-    font-size: clamp(8px, 1.8vw, 10px);
-    letter-spacing: 0.25em; color: var(--gold);
+    font-size: clamp(8px, 1.6vw, 10px);
+    letter-spacing: 0.2em; color: var(--gold);
     text-transform: uppercase; opacity: 0.8;
-    align-self: flex-end; margin-bottom: 1px;
   }
   #countdown-label {
     font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-size: clamp(11px, 2.5vw, 14px);
-    color: rgba(255,248,238,0.4);
+    font-size: clamp(9px, 2vw, 11px);
+    color: rgba(255,248,238,0.35);
     letter-spacing: 0.06em;
   }
 
@@ -322,7 +316,7 @@
   }
   #modal-close:hover { background: rgba(255,248,238,0.1); color: var(--warm-white); }
 
-  #modal-body { padding: 22px 24px 24px; display: flex; flex-direction: column; gap: 22px; }
+  #modal-body { padding: 22px 24px 24px; display: flex; flex-direction: column; gap: 22px; overflow-y: auto; max-height: 60vh; }
 
   .field-group { display: flex; flex-direction: column; gap: 8px; }
   .field-label {
@@ -455,6 +449,13 @@
     <div id="welcome-block">
       <div id="greeting-line">Good Evening</div>
       <div id="welcome-name">Welcome</div>
+      <div id="countdown-strip">
+        <span id="countdown-icon">✦</span>
+        <span id="countdown-text">Trip in</span>
+        <span id="countdown-number"></span>
+        <span id="countdown-unit"></span>
+        <span id="countdown-label"></span>
+      </div>
     </div>
   </div>
   <div id="info-right">
@@ -470,15 +471,6 @@
       </div>
     </div>
   </div>
-</div>
-
-<!-- COUNTDOWN STRIP -->
-<div id="countdown-strip">
-  <span id="countdown-icon">✦</span>
-  <span id="countdown-text">Your trip to Disneyland in</span>
-  <span id="countdown-number">–</span>
-  <span id="countdown-unit">Days</span>
-  <span id="countdown-label" id="countdown-label"></span>
 </div>
 
 <!-- BOTTOM MENU BAR -->
@@ -649,37 +641,41 @@ if (isFirstRun) {
 // ── COUNTDOWN ────────────────────────────────────────────────
 function updateCountdown() {
   const trip = params.trip;
-  if (!trip) return;
   const strip = document.getElementById('countdown-strip');
-  const tripDate = new Date(trip + 'T00:00:00'); // midnight local
-  const now = new Date();
-  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (!trip) { strip.classList.remove('visible'); return; }
+
+  // Parse YYYY-MM-DD safely into local midnight
+  const parts = trip.split('-');
+  if (parts.length !== 3) { strip.classList.remove('visible'); return; }
+  const tripDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  const todayMidnight = new Date();
+  todayMidnight.setHours(0, 0, 0, 0);
   const diff = Math.round((tripDate - todayMidnight) / 86400000);
 
-  if (diff < 0) return; // past trip — hide
+  if (diff < 0) { strip.classList.remove('visible'); return; } // past trip
+
   strip.classList.add('visible');
 
-  const numEl  = document.getElementById('countdown-number');
-  const unitEl = document.getElementById('countdown-unit');
-  const textEl = document.getElementById('countdown-text');
+  const numEl   = document.getElementById('countdown-number');
+  const unitEl  = document.getElementById('countdown-unit');
+  const textEl  = document.getElementById('countdown-text');
   const labelEl = document.getElementById('countdown-label');
 
   if (diff === 0) {
-    textEl.textContent = 'Today is the day —';
-    numEl.textContent = '';
+    textEl.textContent = '';
+    numEl.textContent = 'Today is the day!';
     unitEl.textContent = '';
-    labelEl.textContent = 'Welcome to Disneyland! 🏰';
+    labelEl.textContent = '🏰';
   } else if (diff === 1) {
-    textEl.textContent = 'Your trip is';
+    textEl.textContent = 'Trip is';
     numEl.textContent = 'Tomorrow';
     unitEl.textContent = '';
     labelEl.textContent = '';
   } else {
-    textEl.textContent = 'Your trip to Disneyland in';
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    textEl.textContent = 'Trip in';
     numEl.textContent = diff;
-    unitEl.textContent = diff === 1 ? 'Day' : 'Days';
-    // Format the date nicely
-    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    unitEl.textContent = 'days';
     labelEl.textContent = '· ' + months[tripDate.getMonth()] + ' ' + tripDate.getDate();
   }
 }
