@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disneyland Hotel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8cc7a;
+    --gold-pale: #f5e6b8;
+    --teal-dark: #1a3a4a;
+    --teal-mid: #1e4a5e;
+    --teal-header: #1b3c50;
+    --cream: #f8f2e4;
+    --warm-white: #fff8ee;
+    --bar-gold: #c8a03a;
+    --bar-gold-light: #e6c056;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: 'Raleway', sans-serif;
+    cursor: default;
+  }
+
+  /* ── BACKGROUND ── */
+  #bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    background: #0a2030;
+  }
+  #bg-video {
+    position: absolute;
+    top: 50%; left: 50%;
+    min-width: 100%; min-height: 100%;
+    width: auto; height: auto;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+  }
+  #bg-fallback {
+    position: absolute;
+    inset: 0;
+    background-image: url('bg.jpg');
+    background-size: cover;
+    background-position: center 45%;
+    z-index: 0;
+  }
+  #bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg,
+      rgba(0,0,0,0.0) 0%,
+      rgba(0,0,0,0.0) 18%,
+      rgba(0,0,0,0.00) 40%,
+      rgba(0,0,0,0.00) 55%,
+      rgba(0,0,0,0.35) 75%,
+      rgba(0,0,0,1.00) 100%
+    );
+  }
+
+  /* ── HEADER ── */
+  #header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 101;
+    background: linear-gradient(180deg, rgba(22,52,68,1.00) 0%, rgba(22,52,68,0.96) 100%);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border-bottom: 2px solid var(--gold);
+    padding: 16px 24px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  #header-divider {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--gold) 15%, var(--gold-light) 50%, var(--gold) 85%, transparent 100%);
+    z-index: 102;
+  }
+  #header-left { display: flex; flex-direction: column; gap: 6px; }
+  #wordmark { display: flex; flex-direction: column; gap: 1px; }
+  #wordmark .dh-logo {
+    font-family: 'Cinzel', serif; font-weight: 400;
+    font-size: clamp(14px, 3.5vw, 20px);
+    letter-spacing: 0.10em; color: var(--warm-white);
+    text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+  }
+  #wordmark .dh-logo .d-letter { font-style: italic; color: var(--gold-light); }
+  #wordmark .dh-sub {
+    font-family: 'Raleway', sans-serif; font-weight: 200;
+    font-size: clamp(7px, 1.8vw, 9px);
+    letter-spacing: 0.38em; color: var(--gold);
+    text-transform: uppercase; opacity: 0.85;
+  }
+  #welcome-block { display: flex; flex-direction: column; gap: 1px; }
+  #greeting-line {
+    font-family: 'Raleway', sans-serif; font-weight: 200;
+    font-size: clamp(9px, 2vw, 11px);
+    letter-spacing: 0.28em; color: var(--gold-light);
+    text-transform: uppercase;
+  }
+  #welcome-name {
+    font-family: 'Cinzel', serif; font-weight: 700;
+    font-size: clamp(18px, 5vw, 30px);
+    letter-spacing: 0.04em; color: var(--warm-white);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.7);
+    line-height: 1.0;
+  }
+
+  /* Right info column */
+  #info-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  #weather-time-row {
+    display: flex; align-items: center;
+    gap: 12px; flex-wrap: wrap; justify-content: flex-end;
+  }
+  #weather-block { display: flex; align-items: center; gap: 5px; font-family: 'Raleway', sans-serif; }
+  #weather-icon { font-size: clamp(16px, 4vw, 20px); line-height: 1; }
+  #weather-temp { font-size: clamp(18px, 4.5vw, 24px); font-weight: 300; color: var(--warm-white); letter-spacing: 0.02em; }
+  #weather-desc { font-size: clamp(9px, 2vw, 11px); font-weight: 200; color: rgba(255,248,238,0.7); letter-spacing: 0.1em; text-transform: uppercase; align-self: flex-end; margin-bottom: 2px; }
+  @media (max-width: 480px) { #weather-desc { display: none; } }
+  #time-block { display: flex; flex-direction: column; align-items: flex-end; }
+  #time-display {
+    font-family: 'Cinzel', serif; font-weight: 600;
+    font-size: clamp(20px, 5vw, 30px);
+    color: var(--warm-white); letter-spacing: 0.06em; line-height: 1.0;
+  }
+  #date-display {
+    font-family: 'Raleway', sans-serif; font-weight: 200;
+    font-size: clamp(8px, 1.8vw, 10px);
+    letter-spacing: 0.25em; color: var(--gold-light);
+    text-transform: uppercase; opacity: 0.85;
+    margin-top: 1px; white-space: nowrap;
+  }
+
+  /* ── COUNTDOWN STRIP ── */
+  #countdown-strip {
+    position: fixed;
+    top: var(--header-h, 90px);
+    left: 0; right: 0;
+    z-index: 100;
+    display: none;
+    background: linear-gradient(90deg, rgba(12,30,40,0.92) 0%, rgba(22,52,68,0.88) 50%, rgba(12,30,40,0.92) 100%);
+    border-bottom: 1px solid rgba(201,168,76,0.25);
+    backdrop-filter: blur(6px);
+    padding: 7px 24px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    animation: fadeIn 0.6s ease;
+  }
+  #countdown-strip.visible { display: flex; }
+  #countdown-icon { font-size: 14px; opacity: 0.8; }
+  #countdown-text {
+    font-family: 'Raleway', sans-serif; font-weight: 200;
+    font-size: clamp(9px, 2vw, 11px);
+    letter-spacing: 0.22em; color: rgba(255,248,238,0.55);
+    text-transform: uppercase;
+  }
+  #countdown-number {
+    font-family: 'Cinzel', serif; font-weight: 600;
+    font-size: clamp(13px, 3vw, 17px);
+    color: var(--gold-light);
+    letter-spacing: 0.06em;
+  }
+  #countdown-unit {
+    font-family: 'Raleway', sans-serif; font-weight: 200;
+    font-size: clamp(8px, 1.8vw, 10px);
+    letter-spacing: 0.25em; color: var(--gold);
+    text-transform: uppercase; opacity: 0.8;
+    align-self: flex-end; margin-bottom: 1px;
+  }
+  #countdown-label {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,248,238,0.4);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── BOTTOM MENU BAR ── */
+  #menu-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 101;
+    background: linear-gradient(180deg, rgba(180,138,42,1.00) 0%, rgba(160,118,30,1.00) 100%);
+    border-top: 1.5px solid rgba(255,220,100,0.4);
+    padding: 8px 8px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+  }
+  .menu-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; cursor: pointer;
+    transition: transform 0.3s ease, filter 0.3s;
+    flex: 1; min-width: 0;
+    padding: 6px 4px; border-radius: 4px;
+    position: relative;
+  }
+  .menu-item::after {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(255,255,255,0.0); border-radius: 4px; transition: background 0.25s;
+  }
+  .menu-item:hover { transform: translateY(-3px); filter: brightness(1.15); }
+  .menu-item:hover::after { background: rgba(255,255,255,0.08); }
+  .menu-icon { width: clamp(28px, 7vw, 40px); height: clamp(28px, 7vw, 40px); display: flex; align-items: center; justify-content: center; }
+  .menu-icon svg { width: 100%; height: 100%; fill: rgba(20,50,65,0.9); }
+  .menu-label { font-family: 'Cinzel', serif; font-weight: 600; font-size: clamp(8px, 2vw, 11px); letter-spacing: 0.12em; color: rgba(20,50,65,0.92); text-transform: uppercase; text-align: center; line-height: 1.2; }
+  .menu-sublabel { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: clamp(7px, 1.5vw, 9px); letter-spacing: 0.1em; color: rgba(20,50,65,0.6); text-transform: uppercase; text-align: center; }
+  @media (max-width: 520px) { .menu-sublabel { display: none; } }
+  .menu-divider { width: 1px; height: 48px; background: linear-gradient(180deg, transparent, rgba(20,50,65,0.2), transparent); flex-shrink: 0; }
+
+  /* ── GEAR BUTTON ── */
+  #gear-btn {
+    position: fixed;
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+    z-index: 102;
+    width: 34px; height: 34px;
+    background: rgba(22,52,68,0.75);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    backdrop-filter: blur(8px);
+  }
+  #gear-btn:hover {
+    background: rgba(201,168,76,0.15);
+    border-color: rgba(201,168,76,0.7);
+    transform: rotate(30deg);
+  }
+  #gear-btn svg { width: 16px; height: 16px; fill: rgba(201,168,76,0.7); transition: fill 0.2s; }
+  #gear-btn:hover svg { fill: var(--gold-light); }
+
+  /* ── MUSIC BUTTON ── */
+  #music-btn {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translate(-50%, -100%);
+    background: rgba(22,52,68,0.85);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-bottom: none;
+    border-radius: 14px 14px 0 0;
+    padding: 4px 14px 5px;
+    color: var(--gold-light);
+    font-family: 'Raleway', sans-serif;
+    font-size: 9px; font-weight: 300;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    cursor: pointer; z-index: 102;
+    transition: all 0.3s;
+    backdrop-filter: blur(8px);
+    white-space: nowrap;
+  }
+  #music-btn:hover { background: rgba(201,168,76,0.2); border-color: rgba(201,168,76,0.7); }
+
+  /* ── MODAL OVERLAY ── */
+  #modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+  }
+  #modal-overlay.open { display: flex; }
+
+  #settings-modal {
+    background: linear-gradient(160deg, rgba(22,52,68,0.98) 0%, rgba(14,36,48,0.99) 100%);
+    border: 1px solid rgba(201,168,76,0.35);
+    border-radius: 6px;
+    width: 100%; max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(201,168,76,0.08);
+    overflow: hidden;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+  #modal-header {
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  #modal-title-block { display: flex; flex-direction: column; gap: 3px; }
+  #modal-title {
+    font-family: 'Cinzel', serif; font-weight: 600;
+    font-size: 15px; letter-spacing: 0.1em;
+    color: var(--warm-white);
+  }
+  #modal-subtitle {
+    font-family: 'Raleway', sans-serif; font-weight: 200;
+    font-size: 9px; letter-spacing: 0.3em;
+    color: rgba(201,168,76,0.6); text-transform: uppercase;
+  }
+  #modal-close {
+    width: 28px; height: 28px;
+    background: rgba(255,248,238,0.05);
+    border: 1px solid rgba(255,248,238,0.1);
+    border-radius: 50%;
+    color: rgba(255,248,238,0.4);
+    font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  #modal-close:hover { background: rgba(255,248,238,0.1); color: var(--warm-white); }
+
+  #modal-body { padding: 22px 24px 24px; display: flex; flex-direction: column; gap: 22px; }
+
+  .field-group { display: flex; flex-direction: column; gap: 8px; }
+  .field-label {
+    font-family: 'Cinzel', serif; font-size: 9px;
+    letter-spacing: 0.22em; color: var(--gold);
+    text-transform: uppercase;
+  }
+  .field-hint {
+    font-family: 'Raleway', sans-serif; font-weight: 200;
+    font-size: 9px; letter-spacing: 0.12em;
+    color: rgba(255,248,238,0.3);
+    margin-top: -4px;
+  }
+  .modal-input {
+    width: 100%;
+    background: rgba(255,248,238,0.05);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 3px;
+    padding: 10px 12px;
+    color: var(--warm-white);
+    font-family: 'Raleway', sans-serif;
+    font-weight: 300; font-size: 14px;
+    letter-spacing: 0.04em;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .modal-input:focus {
+    border-color: rgba(201,168,76,0.6);
+    background: rgba(255,248,238,0.08);
+  }
+  .modal-input::placeholder { color: rgba(255,248,238,0.2); }
+  /* Date input calendar icon tint */
+  .modal-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7) sepia(1) saturate(2) hue-rotate(5deg); cursor: pointer; }
+
+  .field-clear {
+    font-family: 'Raleway', sans-serif; font-weight: 300;
+    font-size: 9px; letter-spacing: 0.2em;
+    color: rgba(255,248,238,0.25); text-transform: uppercase;
+    background: none; border: none; cursor: pointer;
+    padding: 0; text-decoration: underline; text-underline-offset: 3px;
+    transition: color 0.2s; align-self: flex-start;
+  }
+  .field-clear:hover { color: rgba(255,248,238,0.5); }
+
+  .modal-divider { height: 1px; background: rgba(201,168,76,0.1); }
+
+  #modal-footer { padding: 0 24px 22px; display: flex; flex-direction: column; gap: 10px; }
+
+  #save-btn {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(201,168,76,0.9) 0%, rgba(180,138,42,0.9) 100%);
+    border: none; border-radius: 3px;
+    padding: 12px;
+    color: rgba(20,50,65,0.95);
+    font-family: 'Cinzel', serif; font-weight: 600;
+    font-size: 11px; letter-spacing: 0.2em;
+    text-transform: uppercase; cursor: pointer;
+    transition: all 0.2s;
+  }
+  #save-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  #save-btn:active { transform: translateY(0); }
+
+  #bookmark-hint {
+    font-family: 'Raleway', sans-serif; font-weight: 200;
+    font-size: 9px; letter-spacing: 0.18em;
+    color: rgba(255,248,238,0.22); text-align: center;
+    text-transform: uppercase; line-height: 1.7;
+  }
+  #bookmark-hint strong { color: rgba(201,168,76,0.5); font-weight: 400; }
+
+  /* First-run welcome nudge */
+  #first-run-nudge {
+    position: fixed;
+    bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+    z-index: 103;
+    background: rgba(22,52,68,0.95);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 4px;
+    padding: 8px 12px;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    animation: fadeIn 0.4s 0.8s ease both;
+    max-width: 180px;
+    backdrop-filter: blur(8px);
+  }
+  #first-run-nudge.show { display: flex; }
+  #nudge-text {
+    font-family: 'Raleway', sans-serif; font-weight: 300;
+    font-size: 10px; letter-spacing: 0.1em;
+    color: rgba(255,248,238,0.7); line-height: 1.5;
+  }
+  #nudge-arrow {
+    position: absolute; bottom: -7px; right: 12px;
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 7px solid rgba(201,168,76,0.4);
+  }
+  #nudge-arrow::after {
+    content: '';
+    position: absolute; top: -8px; left: -5px;
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid rgba(22,52,68,0.95);
+  }
+
+  #weather-loading { font-size: 11px; color: rgba(255,248,238,0.5); font-family: 'Raleway', sans-serif; font-weight: 200; letter-spacing: 0.15em; }
+
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  body { animation: fadeIn 1.5s ease-out; }
+</style>
+</head>
+<body>
+
+<div id="bg">
+  <div id="bg-fallback"></div>
+  <video id="bg-video" src="bg.mp4" autoplay loop muted playsinline preload="auto"
+    oncanplay="document.getElementById('bg-fallback').style.opacity='0'"></video>
+</div>
+
+<div id="header-divider"></div>
+<div id="header">
+  <div id="header-left">
+    <div id="wordmark">
+      <div class="dh-logo"><span class="d-letter">D</span>isneyland Hotel</div>
+    </div>
+    <div id="welcome-block">
+      <div id="greeting-line">Good Evening</div>
+      <div id="welcome-name">Welcome</div>
+    </div>
+  </div>
+  <div id="info-right">
+    <div id="weather-time-row">
+      <div id="weather-block">
+        <span id="weather-icon">☀️</span>
+        <span id="weather-temp"><span id="weather-loading" style="font-size:11px;opacity:0.5">–</span></span>
+        <span id="weather-desc"></span>
+      </div>
+      <div id="time-block">
+        <div id="time-display">–:– –M</div>
+        <div id="date-display">Loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COUNTDOWN STRIP -->
+<div id="countdown-strip">
+  <span id="countdown-icon">✦</span>
+  <span id="countdown-text">Your trip to Disneyland in</span>
+  <span id="countdown-number">–</span>
+  <span id="countdown-unit">Days</span>
+  <span id="countdown-label" id="countdown-label"></span>
+</div>
+
+<!-- BOTTOM MENU BAR -->
+<div id="menu-bar">
+  <button id="music-btn" onclick="handleMusicBtn()">♪ Play Music</button>
+
+  <div class="menu-item" onclick="window.location.href='updates.html'">
+    <div class="menu-icon">
+      <svg viewBox="0 0 36 36"><circle cx="11" cy="9" r="6"/><circle cx="25" cy="9" r="6"/><circle cx="18" cy="22" r="11"/></svg>
+    </div>
+    <div class="menu-label">Disney<br>Updates</div>
+  </div>
+
+  <div class="menu-divider"></div>
+
+  <div class="menu-item" onclick="window.open('https://disneyland.disney.go.com/calendars/day/#/disneyland,downtown-disney-district,disney-california-adventure/', '_blank')">
+    <div class="menu-icon">
+      <svg viewBox="0 0 36 36">
+        <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5"/>
+        <circle cx="18" cy="18" r="15"/>
+        <line x1="18" y1="18" x2="18" y2="8" stroke="rgba(180,138,42,1)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="18" y1="18" x2="24" y2="21" stroke="rgba(180,138,42,1)" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="18" cy="18" r="1.5" fill="rgba(180,138,42,1)"/>
+      </svg>
+    </div>
+    <div class="menu-label">Park<br>Hours</div>
+    <div class="menu-sublabel">Today's Schedule</div>
+  </div>
+
+  <div class="menu-divider"></div>
+
+  <div class="menu-item" onclick="window.open('https://disneyland.disney.go.com/maps/', '_blank')">
+    <div class="menu-icon">
+      <svg viewBox="0 0 36 36">
+        <polygon points="2,6 12,2 24,6 34,2 34,30 24,34 12,30 2,34" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5"/>
+        <polygon points="2,6 12,2 24,6 34,2 34,30 24,34 12,30 2,34"/>
+        <polyline points="12,2 12,30" stroke="rgba(180,138,42,0.7)" stroke-width="1.5" fill="none"/>
+        <polyline points="24,6 24,34" stroke="rgba(180,138,42,0.7)" stroke-width="1.5" fill="none"/>
+      </svg>
+    </div>
+    <div class="menu-label">Resort<br>Map</div>
+    <div class="menu-sublabel">Navigate</div>
+  </div>
+
+  <div class="menu-divider"></div>
+
+  <div class="menu-item" onclick="window.open('https://disneyland.disney.go.com/dining/', '_blank')">
+    <div class="menu-icon">
+      <svg viewBox="0 0 36 36">
+        <rect x="6.5" y="2" width="2.5" height="32" rx="1.2"/>
+        <path d="M5,2 Q5,11 9,15 Q13,11 13,2Z"/>
+        <rect x="25" y="2" width="2.5" height="32" rx="1.2"/>
+        <path d="M22,2 Q22,10 27.5,14 Q27.5,2 27.5,2Z"/>
+      </svg>
+    </div>
+    <div class="menu-label">Dining</div>
+    <div class="menu-sublabel">Reservations</div>
+  </div>
+
+  <div class="menu-divider"></div>
+
+  <div class="menu-item" onclick="window.location.href='waittimes.html'">
+    <div class="menu-icon">
+      <svg viewBox="0 0 36 36">
+        <rect x="13" y="18" width="10" height="14"/>
+        <rect x="9" y="22" width="6" height="10"/>
+        <rect x="21" y="22" width="6" height="10"/>
+        <rect x="10" y="18" width="4" height="6"/>
+        <rect x="22" y="18" width="4" height="6"/>
+        <polygon points="18,4 22,12 14,12"/>
+        <rect x="10" y="14" width="4" height="5"/>
+        <rect x="22" y="14" width="4" height="5"/>
+        <rect x="15" y="24" width="6" height="8"/>
+      </svg>
+    </div>
+    <div class="menu-label">Wait<br>Times</div>
+  </div>
+</div>
+
+<!-- GEAR BUTTON -->
+<button id="gear-btn" onclick="openModal()" title="Personalize">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
+    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+  </svg>
+</button>
+
+<!-- FIRST-RUN NUDGE -->
+<div id="first-run-nudge">
+  <span id="nudge-text">Tap to personalize your name &amp; trip countdown</span>
+  <div id="nudge-arrow"></div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div id="settings-modal">
+    <div id="modal-header">
+      <div id="modal-title-block">
+        <div id="modal-title">Personalize</div>
+        <div id="modal-subtitle">Your settings · Saved in the URL</div>
+      </div>
+      <button id="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body">
+      <div class="field-group">
+        <label class="field-label" for="input-name">Family Name</label>
+        <div class="field-hint">Shown in the greeting — e.g. "Cooke Family" or "The Johnsons"</div>
+        <input class="modal-input" type="text" id="input-name" placeholder="Your Family Name" maxlength="40" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="modal-divider"></div>
+      <div class="field-group">
+        <label class="field-label" for="input-trip">Next Trip Date</label>
+        <div class="field-hint">Shows a countdown banner below the header</div>
+        <input class="modal-input" type="date" id="input-trip">
+        <button class="field-clear" onclick="clearTrip()">Clear trip date</button>
+      </div>
+    </div>
+    <div id="modal-footer">
+      <button id="save-btn" onclick="saveSettings()">Save &amp; Update Link</button>
+      <div id="bookmark-hint">After saving, <strong>bookmark this page</strong> to keep your settings on any device.</div>
+    </div>
+  </div>
+</div>
+
+<iframe id="sc-player"
+  src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/sergio-meza-26/disneyland-resort-esplanade&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false"
+  style="position:absolute;top:-9999px;left:-9999px;width:1px;height:1px;"
+  allow="autoplay">
+</iframe>
+
+<script>
+// ── URL PARAMS ──────────────────────────────────────────────
+function getParams() {
+  const p = new URLSearchParams(window.location.search);
+  return {
+    name: p.get('family') || '',
+    trip: p.get('trip') || ''
+  };
+}
+
+function buildUrl(name, trip) {
+  const p = new URLSearchParams();
+  if (name) p.set('family', name);
+  if (trip) p.set('trip', trip);
+  const qs = p.toString();
+  return window.location.pathname + (qs ? '?' + qs : '');
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+const params = getParams();
+const isFirstRun = !params.name && !params.trip;
+
+// Apply family name
+if (params.name) {
+  document.getElementById('welcome-name').textContent = params.name;
+} else {
+  document.getElementById('welcome-name').textContent = 'Welcome';
+}
+
+// Show first-run nudge
+if (isFirstRun) {
+  const nudge = document.getElementById('first-run-nudge');
+  nudge.classList.add('show');
+  // Auto-dismiss after 6s
+  setTimeout(() => { nudge.style.opacity = '0'; nudge.style.transition = 'opacity 0.8s'; setTimeout(() => nudge.classList.remove('show'), 800); }, 6000);
+}
+
+// ── COUNTDOWN ────────────────────────────────────────────────
+function updateCountdown() {
+  const trip = params.trip;
+  if (!trip) return;
+  const strip = document.getElementById('countdown-strip');
+  const tripDate = new Date(trip + 'T00:00:00'); // midnight local
+  const now = new Date();
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diff = Math.round((tripDate - todayMidnight) / 86400000);
+
+  if (diff < 0) return; // past trip — hide
+  strip.classList.add('visible');
+
+  const numEl  = document.getElementById('countdown-number');
+  const unitEl = document.getElementById('countdown-unit');
+  const textEl = document.getElementById('countdown-text');
+  const labelEl = document.getElementById('countdown-label');
+
+  if (diff === 0) {
+    textEl.textContent = 'Today is the day —';
+    numEl.textContent = '';
+    unitEl.textContent = '';
+    labelEl.textContent = 'Welcome to Disneyland! 🏰';
+  } else if (diff === 1) {
+    textEl.textContent = 'Your trip is';
+    numEl.textContent = 'Tomorrow';
+    unitEl.textContent = '';
+    labelEl.textContent = '';
+  } else {
+    textEl.textContent = 'Your trip to Disneyland in';
+    numEl.textContent = diff;
+    unitEl.textContent = diff === 1 ? 'Day' : 'Days';
+    // Format the date nicely
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    labelEl.textContent = '· ' + months[tripDate.getMonth()] + ' ' + tripDate.getDate();
+  }
+}
+updateCountdown();
+
+// ── CLOCK ────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours(), m = now.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  document.getElementById('time-display').textContent = h12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const w = window.innerWidth;
+  if (w < 420) {
+    document.getElementById('date-display').textContent = days[now.getDay()].slice(0,3).toUpperCase() + ' ' + months[now.getMonth()] + ' ' + now.getDate();
+  } else {
+    document.getElementById('date-display').textContent = days[now.getDay()].toUpperCase() + ', ' + months[now.getMonth()].toUpperCase() + ' ' + now.getDate();
+  }
+  const greet = h >= 5 && h < 12 ? 'Good Morning' :
+                h >= 12 && h < 17 ? 'Good Afternoon' :
+                h >= 17 && h < 21 ? 'Good Evening' : 'Good Night';
+  document.getElementById('greeting-line').textContent = greet;
+}
+updateClock();
+setInterval(updateClock, 30000);
+window.addEventListener('resize', updateClock);
+
+// ── WEATHER ──────────────────────────────────────────────────
+function fetchWeather(lat, lon) {
+  const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat +
+    '&longitude=' + lon +
+    '&current_weather=true&temperature_unit=fahrenheit&wind_speed_unit=mph';
+  fetch(url).then(r => r.json()).then(data => {
+    const cw = data.current_weather;
+    const temp = Math.round(cw.temperature) + '°F';
+    const code = cw.weathercode;
+    let icon = '☀️', desc = 'Clear';
+    if (code >= 1 && code <= 3) { icon = '⛅'; desc = 'Partly Cloudy'; }
+    if (code >= 45 && code <= 48) { icon = '🌫️'; desc = 'Foggy'; }
+    if (code >= 51 && code <= 67) { icon = '🌧️'; desc = 'Rain'; }
+    if (code >= 71 && code <= 77) { icon = '❄️'; desc = 'Snow'; }
+    if (code >= 80 && code <= 82) { icon = '🌦️'; desc = 'Showers'; }
+    if (code >= 95) { icon = '⛈️'; desc = 'Thunderstorm'; }
+    document.getElementById('weather-loading').style.display = 'none';
+    document.getElementById('weather-temp').textContent = temp;
+    document.getElementById('weather-icon').textContent = icon;
+    document.getElementById('weather-desc').textContent = desc;
+  }).catch(() => { document.getElementById('weather-loading').textContent = ''; });
+}
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(
+    pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+    () => fetchWeather(33.8366, -117.9143)
+  );
+} else {
+  fetchWeather(33.8366, -117.9143);
+}
+
+// ── MODAL ────────────────────────────────────────────────────
+function openModal() {
+  // Dismiss nudge
+  const nudge = document.getElementById('first-run-nudge');
+  nudge.classList.remove('show');
+
+  // Pre-fill current values
+  document.getElementById('input-name').value = params.name || '';
+  document.getElementById('input-trip').value = params.trip || '';
+
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('input-name').focus(), 200);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function clearTrip() {
+  document.getElementById('input-trip').value = '';
+}
+
+function saveSettings() {
+  const name = document.getElementById('input-name').value.trim();
+  const trip = document.getElementById('input-trip').value;
+  const newUrl = buildUrl(name, trip);
+
+  // Update the URL without reloading
+  window.history.replaceState({}, '', newUrl);
+
+  // Update displayed name live
+  document.getElementById('welcome-name').textContent = name || 'Welcome';
+
+  // Update params object and refresh countdown
+  params.name = name;
+  params.trip = trip;
+  updateCountdown();
+
+  // Visual feedback on button
+  const btn = document.getElementById('save-btn');
+  btn.textContent = '✓ Saved — Bookmark this page!';
+  btn.style.background = 'linear-gradient(135deg, rgba(100,180,120,0.9) 0%, rgba(70,150,90,0.9) 100%)';
+  setTimeout(() => {
+    btn.textContent = 'Save & Update Link';
+    btn.style.background = '';
+    closeModal();
+  }, 2200);
+}
+
+// Enter key saves
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter' && document.getElementById('modal-overlay').classList.contains('open')) saveSettings();
+});
+
+// ── MUSIC ────────────────────────────────────────────────────
+const scScript = document.createElement('script');
+scScript.src = 'https://w.soundcloud.com/player/api.js';
+document.head.appendChild(scScript);
+
+let scWidget = null, scReady = false, scPlaying = false;
+scScript.onload = function() {
+  scWidget = SC.Widget(document.getElementById('sc-player'));
+  scWidget.bind(SC.Widget.Events.READY, function() { scReady = true; scWidget.setVolume(40); });
+  scWidget.bind(SC.Widget.Events.PLAY,  function() { scPlaying = true; });
+  scWidget.bind(SC.Widget.Events.PAUSE, function() { scPlaying = false; });
+};
+function handleMusicBtn() {
+  const btn = document.getElementById('music-btn');
+  if (!scReady) return;
+  if (scPlaying) { scWidget.pause(); btn.textContent = '♪ Play Music'; }
+  else { scWidget.play(); btn.textContent = '♪ Pause Music'; }
+}
+</script>
+
+</body>
+</html>
