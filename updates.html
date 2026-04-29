@@ -160,7 +160,7 @@
 
 <div id="header">
   <div id="header-left">
-    <button id="back-btn" onclick="window.location.href='index.html'">Home</button>
+    <button id="back-btn" onclick="goHome()">Home</button>
     <div id="wordmark">
       <div class="dh-logo"><span class="d-letter">D</span>isneyland Hotel</div>
       <div class="dh-sub">Anaheim · California</div>
@@ -204,7 +204,6 @@
 <script>
 const RSS2JSON_KEY = 'evvzclxihwktagsralfqealxgysb8tbxjpzbs4if';
 
-// Direct RSS feeds from each source — no Google News intermediary
 const SOURCES = {
   micechat:    { label: 'MiceChat',          feeds: ['https://micechat.com/feed/'] },
   disneyparks: { label: 'Disney Parks Blog', feeds: ['https://disneyparks.disney.go.com/blog/feed/'] },
@@ -230,12 +229,9 @@ const CATEGORIES = [
 function isPhotoPost(title, desc) {
   const t = (title || '').trim();
   const d = (desc || '').trim();
-  // Skip MiceChat photo upload threads — they have very short titles like
-  // "Username uploaded a new photo" or titles that are just a filename
   if (/uploaded\s+a\s+(new\s+)?photo/i.test(t)) return true;
   if (/\.(jpg|jpeg|png|gif|webp)$/i.test(t)) return true;
   if (/^(IMG|DSC|DSCN|Photo|P\d{4})[_\-\s]?\d*/i.test(t)) return true;
-  // Skip if title is very short AND description is empty/very short — likely a media post
   if (t.length < 15 && d.length < 30) return true;
   return false;
 }
@@ -280,7 +276,6 @@ function renderDigest(items) {
   const buckets = {};
   CATEGORIES.forEach(c => buckets[c.id] = []);
 
-  // Filter to last 30 days (direct feeds have real articles, no need for 7-day limit)
   items = items.filter(it => !it.pubDate || (Date.now() - new Date(it.pubDate).getTime()) < 30*24*60*60*1000);
   items.forEach(it => buckets[categorize(it.title, it.desc)].push(it));
 
@@ -342,7 +337,6 @@ async function fetchFeed(feedUrl) {
       source:  label,
       desc:    stripHtml(item.description || item.content || '').replace(/\s+/g,' ').trim().slice(0, 300)
     }))
-    // Filter out photo posts / non-article content
     .filter(item => !isPhotoPost(item.title, item.desc));
 }
 
@@ -371,5 +365,26 @@ async function loadFeed() {
 
 loadFeed();
 </script>
+
+<script>
+// ── HOME NAVIGATION — preserves family name & trip date ──────
+const LS_KEY = 'dh_tv_settings';
+function goHome() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      const p = new URLSearchParams();
+      if (s.name) p.set('family', s.name);
+      if (s.trip)  p.set('trip',   s.trip);
+      const qs = p.toString();
+      window.location.href = 'index.html' + (qs ? '?' + qs : '');
+      return;
+    }
+  } catch(e) {}
+  window.location.href = 'index.html';
+}
+</script>
+
 </body>
 </html>
