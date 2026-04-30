@@ -1,0 +1,168 @@
+/*
+ * =====================================================
+ *  DISNEYLAND HOTEL TV — tv-mode.css
+ *  Apply by adding ?tv=1 to any page URL, or by
+ *  linking this stylesheet with a <link> tag on TV
+ *  dedicated pages.
+ *
+ *  This stylesheet is additive — it overrides only
+ *  what needs to change for 10-foot TV viewing.
+ *  All your existing variables, fonts, and colors
+ *  are preserved.
+ * =====================================================
+ */
+
+/* ── SAFE ZONE / OVERSCAN ───────────────────────────────────
+   Most TVs clip 3–5% of each edge. We push content
+   inward so nothing gets swallowed by the bezel.        */
+body.tv-mode {
+  cursor: none !important;
+}
+
+/* ── HEADER ─────────────────────────────────────────────────
+   Taller, larger text, more breathing room.             */
+body.tv-mode #header {
+  padding: 28px 56px 24px;
+}
+
+/* Wordmark — bigger, bolder presence */
+body.tv-mode #wordmark .dh-logo {
+  font-size: 28px;
+  letter-spacing: 0.12em;
+}
+
+body.tv-mode #wordmark .dh-sub {
+  font-size: 11px;
+  letter-spacing: 0.45em;
+}
+
+/* Greeting + name — the main welcome text */
+body.tv-mode #greeting-line {
+  font-size: 14px;
+  letter-spacing: 0.32em;
+}
+
+body.tv-mode #welcome-name {
+  font-size: 42px;
+  letter-spacing: 0.06em;
+}
+
+/* Countdown strip */
+body.tv-mode #countdown-text,
+body.tv-mode #countdown-unit {
+  font-size: 13px;
+  letter-spacing: 0.26em;
+}
+body.tv-mode #countdown-number {
+  font-size: 18px;
+}
+body.tv-mode #countdown-label {
+  font-size: 14px;
+}
+
+/* ── WEATHER + TIME ─────────────────────────────────────────
+   These are what people glance at from the couch.      */
+body.tv-mode #weather-icon {
+  font-size: 36px;
+}
+
+body.tv-mode #weather-temp {
+  font-size: 42px;
+  font-weight: 200;
+}
+
+body.tv-mode #weather-desc {
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  align-self: center;
+  margin-bottom: 4px;
+}
+
+body.tv-mode #time-display {
+  font-size: 52px;
+  letter-spacing: 0.08em;
+}
+
+body.tv-mode #date-display {
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  margin-top: 3px;
+}
+
+body.tv-mode #weather-time-row {
+  gap: 28px;
+}
+
+/* ── BOTTOM MENU BAR ─────────────────────────────────────────
+   Taller bar, bigger icons and labels.
+   Hover states stripped — no pointer on TV.             */
+body.tv-mode #menu-bar {
+  padding: 14px 56px;
+  padding-bottom: 20px;
+}
+
+body.tv-mode .menu-icon {
+  width: 52px;
+  height: 52px;
+}
+
+body.tv-mode .menu-label {
+  font-size: 13px;
+  letter-spacing: 0.15em;
+}
+
+body.tv-mode .menu-sublabel {
+  display: block !important; /* always show on TV */
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+/* Remove hover transforms — no mouse on TV */
+body.tv-mode .menu-item:hover {
+  transform: none !important;
+  filter: none !important;
+}
+body.tv-mode .menu-item:hover::after {
+  background: none !important;
+}
+
+body.tv-mode .menu-divider {
+  height: 60px;
+}
+
+/* ── HIDE INTERACTIVE CHROME ─────────────────────────────────
+   Gear button and music button aren't usable
+   without a mouse/touch. Hide them on TV.               */
+body.tv-mode #gear-btn,
+body.tv-mode #first-run-nudge {
+  display: none !important;
+}
+
+/* Music button — move it up slightly, make it bigger    */
+body.tv-mode #music-btn {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  padding: 6px 20px 7px;
+  border-radius: 16px 16px 0 0;
+}
+
+/* ── MODAL ──────────────────────────────────────────────────
+   If someone does open settings via keyboard,
+   upscale it too.                                       */
+body.tv-mode #settings-modal {
+  max-width: 560px;
+}
+body.tv-mode #modal-title {
+  font-size: 20px;
+}
+body.tv-mode .field-label {
+  font-size: 12px;
+}
+body.tv-mode .modal-input {
+  font-size: 18px;
+  padding: 14px 16px;
+}
+body.tv-mode #save-btn {
+  font-size: 14px;
+  padding: 16px;
+}
