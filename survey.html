@@ -29,7 +29,11 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html { overflow-x: hidden; }
+  /* FIX 1: prevent horizontal scroll jitter during vertical touch scrolling */
+  html {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+  }
 
   body {
     background: var(--bg);
@@ -38,6 +42,8 @@
     font-weight: 300;
     min-height: 100vh;
     overflow-x: hidden;
+    overscroll-behavior-x: none;
+    touch-action: pan-y;
     width: 100%;
   }
 
@@ -122,7 +128,9 @@
     margin-bottom: 6px;
     font-weight: 700;
   }
+  /* FIX 2: display:block forces date input to full width on mobile Safari */
   input[type=text], input[type=date] {
+    display: block;
     width: 100%;
     max-width: 100%;
     min-width: 0;
@@ -162,7 +170,6 @@
   .btn-gold:hover { background: var(--gold-light); }
   .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--cream); opacity: 0.8; }
   .btn-outline:hover { border-color: var(--gold); opacity: 1; }
-  /* FIX 4: danger button style for delete */
   .btn-danger { background: transparent; border: 1px solid rgba(212,80,80,0.4); color: var(--veto-red); opacity: 0.85; }
   .btn-danger:hover { border-color: var(--veto-red); opacity: 1; background: var(--veto-red-bg); }
   .btn-sm { padding: 7px 16px; font-size: 13px; }
@@ -329,7 +336,6 @@
   .r-btn.sel-0 { background: #501313; border-color: #a32d2d; color: #f09595; }
   .r-btn.sel-1 { background: #412402; border-color: #854f0b; color: #fac775; }
   .r-btn.sel-2 { background: #3a2800; border-color: #ba7517; color: #efcf6a; }
-  /* FIX 1: rating 3 was near-invisible dark gray — now a clear steel blue */
   .r-btn.sel-3 { background: #1a3a5c; border-color: #4a8ab4; color: #a8d4f0; }
   .r-btn.sel-4 { background: #173404; border-color: #3b6d11; color: #c0dd97; }
   .r-btn.sel-5 { background: #04342c; border-color: #0f6e56; color: #5dcaa5; }
@@ -378,7 +384,6 @@
   .result-bar { height: 6px; border-radius: 3px; }
   .result-score { font-size: 14px; font-weight: 700; color: var(--gold); width: 32px; text-align: right; }
 
-  /* FIX 4: respondent management rows in results tab */
   .resp-result-row {
     display: flex; align-items: center; justify-content: space-between;
     padding: 10px 14px; border-radius: 8px;
@@ -505,7 +510,6 @@
 
     <!-- SURVEY TAB -->
     <div class="tab-panel active" id="panel-survey">
-      <!-- FIX 3: name-form is hidden while rating is active, restored on cancel/save -->
       <div class="name-form" id="name-form">
         <input type="text" id="survey-name" placeholder="Your name" maxlength="30" />
         <button class="btn btn-gold" onclick="startSurvey()">Start rating</button>
@@ -521,7 +525,6 @@
           <div class="legend-item"><div class="legend-dot" style="background:#501313;border:1.5px solid #a32d2d;color:#f09595;">0</div> Won't / can't</div>
           <div class="legend-item"><div class="legend-dot" style="background:#412402;border:1.5px solid #854f0b;color:#fac775;">1</div> Don't want to</div>
           <div class="legend-item"><div class="legend-dot" style="background:#3a2800;border:1.5px solid #ba7517;color:#efcf6a;">2</div> Rather not, but would</div>
-          <!-- FIX 1: legend dot for 3 updated to match new steel blue -->
           <div class="legend-item"><div class="legend-dot" style="background:#1a3a5c;border:1.5px solid #4a8ab4;color:#a8d4f0;">3</div> No opinion</div>
           <div class="legend-item"><div class="legend-dot" style="background:#173404;border:1.5px solid #3b6d11;color:#c0dd97;">4</div> Would like to</div>
           <div class="legend-item"><div class="legend-dot" style="background:#04342c;border:1.5px solid #0f6e56;color:#5dcaa5;">5</div> Must do!</div>
@@ -564,7 +567,6 @@
 <div class="submit-bar" id="submit-bar" style="display:none;">
   <div class="submit-bar-info">Rating as <strong id="submit-bar-name"></strong></div>
   <div style="display:flex;gap:10px;">
-    <!-- FIX 3: Cancel button to stop halfway and return to name entry without saving -->
     <button class="btn btn-outline btn-sm" onclick="cancelRating()">Cancel</button>
     <button class="btn btn-gold" onclick="submitRatings()">Save my ratings</button>
   </div>
@@ -721,7 +723,6 @@ window.startSurvey = function() {
   if (!name) { toast('Enter your name first'); return; }
   activeName = name;
 
-  // FIX 2: only restore ratings the person actually set — no defaulting unrated to 3
   if (currentRespondents[name]) {
     currentRatings = { ...currentRespondents[name] };
     document.getElementById('survey-already-done').style.display = 'block';
@@ -730,7 +731,6 @@ window.startSurvey = function() {
     document.getElementById('survey-already-done').style.display = 'none';
   }
 
-  // FIX 3: hide name form while rating is in progress
   document.getElementById('name-form').style.display = 'none';
   document.getElementById('survey-body').style.display = 'block';
   document.getElementById('submit-bar').style.display = 'flex';
@@ -738,7 +738,6 @@ window.startSurvey = function() {
   buildRideList();
 };
 
-// FIX 3: cancel mid-survey — discard in-progress ratings and return to name entry
 window.cancelRating = function() {
   activeName = '';
   currentRatings = {};
@@ -770,7 +769,6 @@ function buildRideList() {
     }
   }
   container.innerHTML = html;
-  // Restore any ratings that were previously saved
   RIDES.forEach(r => { if (currentRatings[r.id] !== undefined) applyRatingUI(r.id, currentRatings[r.id]); });
 }
 
@@ -788,10 +786,9 @@ function applyRatingUI(rid, val) {
 
 window.submitRatings = async function() {
   if (!activeName) return;
-  // FIX 2: save only explicitly rated rides — unrated rides stay absent from Firestore
   await setDoc(doc(db, 'trips', currentTripId, 'responses', activeName), { ratings: currentRatings, updatedAt: serverTimestamp() });
   toast(`${activeName}'s ratings saved!`);
-  cancelRating(); // FIX 3: return to name entry form after saving
+  cancelRating();
 };
 
 function renderRespondentBar() {
@@ -820,7 +817,6 @@ function buildResults() {
     return;
   }
 
-  // FIX 2: exclude unrated rides from averages rather than treating them as 3
   const scored = RIDES.map(r => {
     const vals = names.map(n => currentRespondents[n][r.id]).filter(v => v !== undefined);
     if (!vals.length) return { ...r, avg: null, has5: 0, has0: 0, ratedBy: 0 };
@@ -845,7 +841,6 @@ function buildResults() {
     return { ...a, avg, highCount: rated.filter(r => r.avg >= 4).length };
   }).filter(a => a.avg !== null).sort((a, b) => b.avg - a.avg);
 
-  // FIX 4: respondent management at the top of results
   let html = `<div class="section-title">Respondents</div>`;
   names.forEach(n => {
     const ratedCount = Object.keys(currentRespondents[n]).length;
@@ -901,14 +896,12 @@ function buildResults() {
   panel.innerHTML = html;
 }
 
-// FIX 4: delete a respondent's ratings from Firestore
 window.deleteRespondent = async function(name) {
   if (!confirm(`Delete ${name}'s ratings? This cannot be undone.`)) return;
   await deleteDoc(doc(db, 'trips', currentTripId, 'responses', name));
   toast(`${name}'s ratings deleted`);
 };
 
-// FIX 3+4: jump to survey tab with that person's name pre-filled so they can edit
 window.reloadForEdit = function(name) {
   switchTab('survey');
   document.getElementById('survey-name').value = name;
