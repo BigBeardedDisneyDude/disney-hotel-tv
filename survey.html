@@ -29,7 +29,6 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* FIX 1: prevent horizontal scroll jitter during vertical touch scrolling */
   html {
     overflow-x: hidden;
     overscroll-behavior-x: none;
@@ -128,7 +127,6 @@
     margin-bottom: 6px;
     font-weight: 700;
   }
-  /* FIX 2: display:block forces date input to full width on mobile Safari */
   input[type=text], input[type=date] {
     display: block;
     width: 100%;
