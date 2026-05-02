@@ -1,320 +1,957 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live Streams — Magic Key TV</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --teal-dark: #0a2a2a; --teal-mid: #0d3535; --teal-light: #1a4a4a;
-      --teal-accent: #7ab5a0; --gold: #c9a84c; --gold-light: #e0bf6a;
-      --gold-dim: #a07830; --cream: #f0e6c8; --cream-dim: #c8b890; --red-live: #cc4444;
-    }
-    html, body { height: 100%; overflow: hidden; background: var(--teal-dark); color: var(--cream); font-family: 'Lato', sans-serif; }
-
-```
-/* ── Header ── */
-#header { height: 64px; background: var(--teal-mid); border-bottom: 2px solid var(--gold); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; position: relative; z-index: 20; }
-#header-left { display: flex; align-items: center; gap: 16px; }
-#home-btn { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 1.5px; color: var(--gold); text-decoration: none; border: 1px solid var(--gold); padding: 6px 14px; border-radius: 4px; transition: background 0.2s, color 0.2s; white-space: nowrap; }
-#home-btn:hover { background: var(--gold); color: var(--teal-dark); }
-#wordmark { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 600; letter-spacing: 3px; color: var(--gold); text-shadow: 0 0 20px rgba(201,168,76,0.3); }
-#header-right { display: flex; align-items: center; gap: 12px; }
-#live-indicator { display: flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: 1px; color: var(--teal-accent); text-transform: uppercase; }
-.live-dot { width: 8px; height: 8px; background: var(--red-live); border-radius: 50%; animation: pulse 1.4s ease-in-out infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
-
-/* ── Mobile toggle button (hidden on desktop) ── */
-#list-toggle-btn {
-  display: none;
-  align-items: center; gap: 6px;
-  font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px;
-  color: var(--gold); background: transparent;
-  border: 1px solid rgba(201,168,76,0.5); border-radius: 4px;
-  padding: 5px 10px; cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-#list-toggle-btn:hover { background: rgba(201,168,76,0.15); }
-#list-toggle-btn .toggle-icon { font-size: 14px; line-height: 1; }
-
-/* ── App layout ── */
-#app { display: flex; height: calc(100vh - 64px); position: relative; }
-
-/* ── Sidebar ── */
-#sidebar {
-  width: 300px; min-width: 300px;
-  background: var(--teal-mid); border-right: 1px solid rgba(201,168,76,0.25);
-  display: flex; flex-direction: column; overflow: hidden;
-  transition: transform 0.3s ease, width 0.3s ease, min-width 0.3s ease;
-  z-index: 15;
-}
-#sidebar-top { padding: 12px 12px 8px; border-bottom: 1px solid rgba(201,168,76,0.2); flex-shrink: 0; }
-#keyword-select { width: 100%; background: var(--teal-dark); border: 1px solid rgba(201,168,76,0.4); border-radius: 6px; color: var(--cream); font-family: 'Lato', sans-serif; font-size: 12px; padding: 7px 10px; outline: none; cursor: pointer; margin-bottom: 8px; }
-#keyword-select:focus { border-color: var(--gold); }
-#sidebar-bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid rgba(201,168,76,0.15); flex-shrink: 0; }
-#sidebar-label { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; }
-#results-count { font-size: 11px; color: var(--teal-accent); }
-#refresh-btn { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px; color: var(--gold); background: transparent; border: 1px solid rgba(201,168,76,0.4); border-radius: 4px; padding: 4px 10px; cursor: pointer; transition: background 0.2s; }
-#refresh-btn:hover { background: rgba(201,168,76,0.15); }
-#streams-list { flex: 1; overflow-y: auto; padding: 8px; }
-#streams-list::-webkit-scrollbar { width: 4px; }
-#streams-list::-webkit-scrollbar-track { background: var(--teal-dark); }
-#streams-list::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }
-.stream-card { display: flex; gap: 10px; padding: 10px; border-radius: 8px; border: 1px solid rgba(201,168,76,0.15); background: var(--teal-dark); cursor: pointer; transition: border-color 0.2s, background 0.2s; margin-bottom: 7px; }
-.stream-card:hover { border-color: rgba(201,168,76,0.5); background: rgba(13,53,53,0.8); }
-.stream-card.active { border-color: var(--gold); background: var(--teal-mid); }
-.thumb-wrap { position: relative; width: 88px; min-width: 88px; height: 52px; border-radius: 5px; overflow: hidden; background: #040f0f; }
-.thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
-.badge-live { position: absolute; top: 3px; left: 3px; background: var(--red-live); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 0.5px; padding: 1px 5px; border-radius: 3px; }
-.stream-info { flex: 1; min-width: 0; }
-.stream-title { font-size: 12px; font-weight: 700; color: var(--cream); line-height: 1.35; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.stream-channel { font-size: 11px; color: var(--teal-accent); }
-#sidebar-footer { padding: 8px 12px; border-top: 1px solid rgba(201,168,76,0.15); display: flex; justify-content: space-between; font-size: 10px; color: rgba(122,181,160,0.5); flex-shrink: 0; }
-
-/* ── Player ── */
-#player-area { flex: 1; display: flex; flex-direction: column; background: #040f0f; overflow: hidden; min-width: 0; }
-#player-wrap { flex: 1; position: relative; background: #000; }
-#player-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
-#player-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: rgba(122,181,160,0.4); }
-#player-placeholder .ph-icon { width: 64px; height: 64px; border: 2px solid rgba(122,181,160,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-#player-placeholder p { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 2px; color: rgba(122,181,160,0.5); }
-#player-meta { padding: 10px 18px; border-top: 1px solid rgba(201,168,76,0.25); background: var(--teal-mid); display: none; align-items: center; gap: 16px; flex-shrink: 0; }
-#meta-title { flex: 1; font-size: 13px; font-weight: 700; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#meta-channel { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px; color: var(--gold); white-space: nowrap; }
-
-/* ── States ── */
-.state-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 16px; gap: 14px; color: var(--teal-accent); font-size: 12px; letter-spacing: 1px; }
-.spinner { width: 28px; height: 28px; border: 2px solid rgba(201,168,76,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.75s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.state-error { margin: 12px; padding: 14px 16px; background: rgba(204,68,68,0.15); border: 1px solid rgba(204,68,68,0.4); border-radius: 8px; font-size: 12px; color: #e08080; line-height: 1.6; }
-.state-empty { padding: 40px 16px; text-align: center; font-size: 12px; color: rgba(122,181,160,0.6); line-height: 1.7; }
-
-/* ── Mobile overlay backdrop ── */
-#sidebar-backdrop {
-  display: none;
-  position: fixed; inset: 64px 0 0 0;
-  background: rgba(0,0,0,0.55);
-  z-index: 14;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-/* ── Mobile styles ── */
-@media (max-width: 640px) {
-  #wordmark { font-size: 16px; letter-spacing: 2px; }
-  #home-btn { font-size: 11px; padding: 5px 10px; }
-
-  /* Show toggle button */
-  #list-toggle-btn { display: flex; }
-
-  /* Hide live indicator text on very small screens, keep dot */
-  #live-indicator span { display: none; }
-
-  /* Sidebar becomes a slide-in overlay */
-  #sidebar {
-    position: fixed;
-    top: 64px; left: 0; bottom: 0;
-    width: 85vw; min-width: unset; max-width: 320px;
-    transform: translateX(-100%);
-    box-shadow: 4px 0 24px rgba(0,0,0,0.6);
-    z-index: 15;
-  }
-  #sidebar.open {
-    transform: translateX(0);
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ride Planner — Magic Key TV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #e8c97a;
+    --gold-dim: #7a5f2a;
+    --teal: #1a6b6b;
+    --teal-dark: #0d3d3d;
+    --teal-light: #2a9090;
+    --cream: #fdf8ef;
+    --cream-dark: #f0e9d8;
+    --text: #1a1208;
+    --text-muted: #5a4a2a;
+    --bg: #0d1a1a;
+    --card: #122222;
+    --border: rgba(201,168,76,0.25);
+    --star-green: #4caf82;
+    --star-green-bg: rgba(76,175,130,0.15);
+    --veto-red: #d45050;
+    --veto-red-bg: rgba(212,80,80,0.12);
   }
 
-  /* Player fills full width always */
-  #player-area { width: 100%; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* Backdrop active */
-  #sidebar-backdrop.active {
+  html {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+    touch-action: pan-y;
+    width: 100%;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--teal-dark);
+    border-bottom: 2px solid var(--gold);
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    max-width: 100vw;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  header a { text-decoration: none; flex-shrink: 0; }
+  .header-home {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    opacity: 0.8;
+    white-space: nowrap;
+  }
+  .header-home:hover { opacity: 1; }
+  .header-title {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 16px;
+    letter-spacing: 0.1em;
+    flex: 1;
+    text-align: center;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .header-right { width: 80px; display: flex; justify-content: flex-end; }
+
+  /* ── MAIN LAYOUT ── */
+  .page { max-width: 760px; margin: 0 auto; padding: 32px 20px 80px; overflow-x: hidden; }
+
+  /* ── VIEWS ── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── HOME / CREATE TRIP ── */
+  .home-hero { text-align: center; padding: 48px 0 40px; }
+  .home-hero h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 28px;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  .home-hero p {
+    color: var(--cream-dark);
+    opacity: 0.7;
+    font-size: 15px;
+    max-width: 420px;
+    margin: 0 auto 36px;
+    line-height: 1.6;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+  }
+
+  label {
     display: block;
-    opacity: 1;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  input[type=text], input[type=date] {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--cream);
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    outline: none;
+    margin-bottom: 18px;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type=text]:focus, input[type=date]:focus { border-color: var(--gold); }
+  input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 26px;
+    border-radius: 8px;
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    text-decoration: none;
+  }
+  .btn-gold { background: var(--gold); color: var(--teal-dark); }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--cream); opacity: 0.8; }
+  .btn-outline:hover { border-color: var(--gold); opacity: 1; }
+  .btn-danger { background: transparent; border: 1px solid rgba(212,80,80,0.4); color: var(--veto-red); opacity: 0.85; }
+  .btn-danger:hover { border-color: var(--veto-red); opacity: 1; background: var(--veto-red-bg); }
+  .btn-sm { padding: 7px 16px; font-size: 13px; }
+  .btn-full { width: 100%; }
+
+  /* ── SHARE BOX ── */
+  .share-box {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 20px 0;
+  }
+  .share-box-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gold-dim);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .share-url-row { display: flex; gap: 8px; align-items: center; }
+  .share-url {
+    flex: 1;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--gold-light);
+    font-family: monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .copy-btn {
+    background: var(--gold-dim);
+    color: var(--cream);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .copy-btn:hover { background: var(--gold); color: var(--teal-dark); }
+  .copy-btn.copied { background: var(--star-green); color: #fff; }
+
+  /* ── TRIP BANNER ── */
+  .trip-banner {
+    background: var(--teal-dark);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .trip-banner-name { font-family: 'Cinzel', serif; font-size: 18px; color: var(--gold); }
+  .trip-banner-date { font-size: 13px; color: var(--cream-dark); opacity: 0.7; margin-top: 3px; }
+  .trip-banner-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ── TABS ── */
+  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+  .tab {
+    padding: 12px 22px;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--cream);
+    opacity: 0.45;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+  .tab.active { color: var(--gold); opacity: 1; border-bottom-color: var(--gold); }
+  .tab:hover:not(.active) { opacity: 0.7; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── RESPONDENTS ── */
+  .respondent-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; align-items: center; }
+  .resp-pill {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid var(--border);
+    color: var(--cream-dark);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .resp-pill.active-resp { background: rgba(201,168,76,0.2); border-color: var(--gold); color: var(--gold); }
+  .resp-count { font-size: 12px; color: var(--gold-dim); }
+
+  /* ── NAME FORM ── */
+  .name-form { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+  .name-form input { flex: 1; min-width: 160px; margin-bottom: 0; }
+
+  /* ── LEGEND ── */
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(253,248,239,0.6); }
+  .legend-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
   }
 
-  /* Meta bar wraps on mobile */
-  #player-meta { flex-wrap: wrap; gap: 4px; padding: 8px 12px; }
-  #meta-title { font-size: 12px; white-space: normal; }
-  #meta-channel { font-size: 10px; }
-}
-```
+  /* ── PARK SECTIONS ── */
+  .park-header {
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    margin-top: 28px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .park-dl { background: rgba(26,74,122,0.4); border: 1px solid rgba(56,138,221,0.3); color: #85b7eb; }
+  .park-dca { background: rgba(122,26,26,0.4); border: 1px solid rgba(212,90,48,0.3); color: #f09575; }
+  .land-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--gold-dim); margin: 16px 0 8px 4px;
+  }
 
-  </style>
+  /* ── RIDE ROW ── */
+  .ride-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 8px;
+    border: 1px solid rgba(201,168,76,0.1);
+    background: rgba(255,255,255,0.02);
+    margin-bottom: 5px; transition: background 0.1s;
+    width: 100%; box-sizing: border-box; overflow: hidden;
+  }
+  .ride-row:hover { background: rgba(255,255,255,0.04); }
+  .ride-name { flex: 1; font-size: 14px; color: var(--cream); min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .ride-tag { font-size: 11px; padding: 2px 8px; border-radius: 12px; white-space: nowrap; font-weight: 700; letter-spacing: 0.04em; flex-shrink: 0; }
+  .tag-thrill { background: rgba(212,80,80,0.15); color: #f09595; }
+  .tag-family { background: rgba(76,175,130,0.12); color: #7dd4b0; }
+  .tag-kiddie { background: rgba(174,149,236,0.15); color: #c4aff0; }
+
+  .rating-btns { display: flex; gap: 3px; flex-shrink: 0; }
+  .r-btn {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 1.5px solid rgba(201,168,76,0.2);
+    background: rgba(255,255,255,0.04);
+    color: rgba(253,248,239,0.5);
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.1s; font-family: 'Lato', sans-serif;
+    flex-shrink: 0;
+  }
+  .r-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .r-btn.sel-0 { background: #501313; border-color: #a32d2d; color: #f09595; }
+  .r-btn.sel-1 { background: #412402; border-color: #854f0b; color: #fac775; }
+  .r-btn.sel-2 { background: #3a2800; border-color: #ba7517; color: #efcf6a; }
+  .r-btn.sel-3 { background: #1a3a5c; border-color: #4a8ab4; color: #a8d4f0; }
+  .r-btn.sel-4 { background: #173404; border-color: #3b6d11; color: #c0dd97; }
+  .r-btn.sel-5 { background: #04342c; border-color: #0f6e56; color: #5dcaa5; }
+
+  /* ── SUBMIT BAR ── */
+  .submit-bar {
+    position: sticky; bottom: 0;
+    background: var(--teal-dark);
+    border-top: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; z-index: 50;
+    width: 100%;
+    max-width: 100vw;
+  }
+  .submit-bar-info { font-size: 13px; color: var(--cream-dark); opacity: 0.7; }
+  .submit-bar-info strong { color: var(--gold); opacity: 1; }
+
+  /* ── RESULTS ── */
+  .section-title {
+    font-family: 'Cinzel', serif; font-size: 14px; color: var(--gold);
+    letter-spacing: 0.08em; margin: 28px 0 14px;
+  }
+
+  .area-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 8px; }
+  .area-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .area-card-name { font-size: 13px; font-weight: 700; color: var(--cream); margin-bottom: 2px; }
+  .area-card-park { font-size: 11px; color: var(--gold-dim); margin-bottom: 8px; }
+  .area-bar-wrap { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+  .area-bar { height: 6px; border-radius: 3px; }
+  .area-score { font-size: 20px; font-weight: 700; color: var(--gold); }
+  .area-score-sub { font-size: 11px; color: rgba(253,248,239,0.45); margin-top: 1px; }
+
+  .result-row {
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+    border-radius: 8px; border: 1px solid rgba(201,168,76,0.1);
+    background: rgba(255,255,255,0.02); margin-bottom: 5px;
+  }
+  .result-rank { font-size: 12px; color: var(--gold-dim); width: 24px; text-align: right; flex-shrink: 0; font-weight: 700; }
+  .result-name { font-size: 14px; color: var(--cream); }
+  .result-meta { font-size: 12px; color: rgba(253,248,239,0.45); margin-top: 1px; }
+  .result-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+  .badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .badge-must { background: var(--star-green-bg); color: var(--star-green); }
+  .badge-skip { background: var(--veto-red-bg); color: var(--veto-red); }
+  .result-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .result-bar-wrap { width: 80px; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+  .result-bar { height: 6px; border-radius: 3px; }
+  .result-score { font-size: 14px; font-weight: 700; color: var(--gold); width: 32px; text-align: right; }
+
+  .resp-result-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-radius: 8px;
+    border: 1px solid rgba(201,168,76,0.1);
+    background: rgba(255,255,255,0.02); margin-bottom: 6px; gap: 12px;
+  }
+  .resp-result-name { font-size: 14px; color: var(--cream); }
+  .resp-result-meta { font-size: 12px; color: rgba(253,248,239,0.45); margin-top: 2px; }
+  .resp-result-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  .no-data { text-align: center; padding: 48px 20px; color: rgba(253,248,239,0.45); font-size: 14px; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 80px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--teal); color: var(--cream);
+    border: 1px solid var(--gold); border-radius: 8px;
+    padding: 10px 20px; font-size: 14px; opacity: 0;
+    transition: all 0.3s; pointer-events: none; z-index: 999; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── LOADING ── */
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid rgba(201,168,76,0.2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 60px auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── SETUP PAGE ── */
+  .setup-wrap { max-width: 480px; margin: 0 auto; }
+  .setup-step { display: flex; gap: 16px; margin-bottom: 24px; }
+  .setup-step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(201,168,76,0.15); border: 1px solid var(--border);
+    color: var(--gold); font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .setup-step-content { flex: 1; font-size: 14px; color: var(--cream-dark); line-height: 1.6; }
+  .setup-step-content code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 13px; color: var(--gold-light); }
+  .setup-step-content a { color: var(--gold-light); }
+
+  @media (max-width: 560px) {
+    .rating-btns { gap: 2px; }
+    .r-btn { width: 26px; height: 26px; font-size: 11px; }
+    .ride-tag { display: none; }
+    .header-title { font-size: 13px; letter-spacing: 0.06em; }
+    .header-home { font-size: 11px; }
+    .result-bar-wrap { display: none; }
+  }
+  @media (max-width: 400px) {
+    .rating-btns { gap: 1px; }
+    .r-btn { width: 24px; height: 24px; font-size: 10px; }
+    .ride-name { font-size: 13px; }
+    .page { padding: 24px 12px 80px; }
+  }
+</style>
+<link rel="stylesheet" href="tv-mode.css">
 </head>
 <body>
-  <div id="header">
-    <div id="header-left">
-      <a id="home-btn" href="index.html">&#8592; Home</a>
-      <div id="wordmark">Magic Key TV</div>
+<script src="tv-mode.js"></script>
+<header>
+  <a class="header-home" href="index.html">← Home</a>
+  <div class="header-title">Ride Planner</div>
+  <a class="header-home" href="trips.html" style="font-size:12px;opacity:0.7;white-space:nowrap;">All Trips</a>
+</header>
+
+<div class="page">
+
+  <!-- SETUP VIEW -->
+  <div class="view" id="view-setup">
+    <div class="setup-wrap">
+      <div style="text-align:center;padding:40px 0 32px;">
+        <div style="font-family:'Cinzel',serif;font-size:22px;color:var(--gold);margin-bottom:10px;">One-time Setup</div>
+        <p style="color:rgba(253,248,239,0.6);font-size:14px;line-height:1.6;">This app needs a free Firebase project to store responses across devices. Takes about 5 minutes.</p>
+      </div>
+      <div class="setup-steps">
+        <div class="setup-step"><div class="setup-step-num">1</div><div class="setup-step-content">Go to <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> and create a new project (you can skip Google Analytics).</div></div>
+        <div class="setup-step"><div class="setup-step-num">2</div><div class="setup-step-content">In your project, click <strong>Build → Firestore Database</strong> → Create database → Start in <strong>test mode</strong> → choose any region.</div></div>
+        <div class="setup-step"><div class="setup-step-num">3</div><div class="setup-step-content">Click the gear icon → <strong>Project settings</strong> → scroll to "Your apps" → click the <code>&lt;/&gt;</code> (web) icon → register app → copy the <code>firebaseConfig</code> object.</div></div>
+        <div class="setup-step"><div class="setup-step-num">4</div><div class="setup-step-content">Open <code>survey.html</code> in a text editor, find the <code>FIREBASE_CONFIG</code> section near the top of the script, and paste your config values in.</div></div>
+        <div class="setup-step"><div class="setup-step-num">5</div><div class="setup-step-content">Save and push to GitHub. Done! Come back here and refresh.</div></div>
+      </div>
     </div>
-    <div id="header-right">
-      <!-- Mobile list toggle -->
-      <button id="list-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle stream list">
-        <span class="toggle-icon">☰</span>
-        <span>List</span>
-      </button>
-      <div id="live-indicator">
-        <div class="live-dot"></div>
-        <span>Live Streams</span>
+  </div>
+
+  <!-- HOME VIEW -->
+  <div class="view" id="view-home">
+    <div class="home-hero">
+      <h1>Ride Planner</h1>
+      <p>Create a trip, share the link, and let your group rate every ride. Results update live.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Create a new trip</div>
+      <label>Trip name</label>
+      <input type="text" id="trip-name-input" placeholder="e.g. Cooke Family · July 2025" maxlength="60" />
+      <label>Date</label>
+      <input type="date" id="trip-date-input" />
+      <button class="btn btn-gold btn-full" onclick="createTrip()">Create trip &amp; get link</button>
+    </div>
+    <div class="card" style="margin-top:8px;">
+      <div class="card-title">Join an existing trip</div>
+      <label>Trip code</label>
+      <input type="text" id="join-code-input" placeholder="Paste the trip code here" maxlength="20" />
+      <button class="btn btn-outline btn-full" onclick="joinByCode()">Go to trip</button>
+    </div>
+  </div>
+
+  <!-- TRIP VIEW -->
+  <div class="view" id="view-trip">
+    <div class="trip-banner" id="trip-banner">
+      <div>
+        <div class="trip-banner-name" id="trip-banner-name">Loading…</div>
+        <div class="trip-banner-date" id="trip-banner-date"></div>
+      </div>
+      <div class="trip-banner-actions">
+        <button class="btn btn-outline btn-sm" onclick="showShareModal()">Share link</button>
+        <button class="btn btn-outline btn-sm" onclick="goHome()">← All trips</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-survey" onclick="switchTab('survey')">Survey</button>
+      <button class="tab" id="tab-results" onclick="switchTab('results')">Results</button>
+    </div>
+
+    <!-- SURVEY TAB -->
+    <div class="tab-panel active" id="panel-survey">
+      <div class="name-form" id="name-form">
+        <input type="text" id="survey-name" placeholder="Your name" maxlength="30" />
+        <button class="btn btn-gold" onclick="startSurvey()">Start rating</button>
+      </div>
+      <div id="survey-already-done" style="display:none;">
+        <div style="background:var(--star-green-bg);border:1px solid rgba(76,175,130,0.3);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--star-green);">
+          You've already submitted ratings for this trip. Your previous ratings are loaded — update anything and save again.
+        </div>
+      </div>
+      <div id="survey-body" style="display:none;">
+        <div class="respondent-bar" id="respondent-bar"></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#501313;border:1.5px solid #a32d2d;color:#f09595;">0</div> Won't / can't</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#412402;border:1.5px solid #854f0b;color:#fac775;">1</div> Don't want to</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3a2800;border:1.5px solid #ba7517;color:#efcf6a;">2</div> Rather not, but would</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#1a3a5c;border:1.5px solid #4a8ab4;color:#a8d4f0;">3</div> No opinion</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#173404;border:1.5px solid #3b6d11;color:#c0dd97;">4</div> Would like to</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#04342c;border:1.5px solid #0f6e56;color:#5dcaa5;">5</div> Must do!</div>
+        </div>
+        <div id="ride-list"></div>
+      </div>
+    </div>
+
+    <!-- RESULTS TAB -->
+    <div class="tab-panel" id="panel-results">
+      <div id="results-body"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- SHARE MODAL -->
+  <div id="share-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:20px;">
+    <div class="card" style="max-width:480px;width:100%;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="card-title" style="margin:0;">Share this trip</div>
+        <button onclick="closeShareModal()" style="background:none;border:none;color:var(--cream);font-size:20px;cursor:pointer;opacity:0.6;">✕</button>
+      </div>
+      <p style="font-size:13px;color:rgba(253,248,239,0.6);margin-bottom:14px;line-height:1.5;">Send this link to everyone going on the trip. They open it, rate the rides, and results update for the whole group instantly.</p>
+      <div class="share-box">
+        <div class="share-box-label">Trip link</div>
+        <div class="share-url-row">
+          <div class="share-url" id="modal-share-url"></div>
+          <button class="copy-btn" id="modal-copy-btn" onclick="copyShareUrl('modal')">Copy</button>
+        </div>
+      </div>
+      <div style="margin-top:8px;">
+        <div class="share-box-label" style="margin-bottom:8px;">Trip code (for manual entry)</div>
+        <div style="font-family:monospace;font-size:22px;letter-spacing:0.15em;color:var(--gold);text-align:center;padding:10px 0;" id="modal-trip-code"></div>
       </div>
     </div>
   </div>
 
-  <!-- Backdrop for mobile sidebar -->
+</div><!-- /.page -->
 
-  <div id="sidebar-backdrop" onclick="closeSidebar()"></div>
-
-  <div id="app">
-    <div id="sidebar">
-      <div id="sidebar-top">
-        <select id="keyword-select">
-          <option value="__all__">All keywords</option>
-          <option value="Disneyland live">Disneyland live</option>
-          <option value="Disney parks live">Disney parks live</option>
-          <option value="Walt Disney World live">Walt Disney World live</option>
-          <option value="Magic Kingdom live">Magic Kingdom live</option>
-          <option value="EPCOT live">EPCOT live</option>
-        </select>
-      </div>
-      <div id="sidebar-bar">
-        <span id="sidebar-label">Live Now</span>
-        <span id="results-count"></span>
-        <button id="refresh-btn" onclick="fetchStreams()">Refresh</button>
-      </div>
-      <div id="streams-list"></div>
-      <div id="sidebar-footer">
-        <span>YouTube Data API</span>
-        <span id="timer-display"></span>
-      </div>
-    </div>
-
-```
-<div id="player-area">
-  <div id="player-wrap">
-    <div id="player-placeholder">
-      <div class="ph-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <polygon points="9,7 19,12 9,17" fill="rgba(122,181,160,0.5)"/>
-        </svg>
-      </div>
-      <p>Select a stream to watch</p>
-    </div>
-  </div>
-  <div id="player-meta">
-    <div id="meta-title"></div>
-    <div id="meta-channel"></div>
+<!-- STICKY SUBMIT BAR -->
+<div class="submit-bar" id="submit-bar" style="display:none;">
+  <div class="submit-bar-info">Rating as <strong id="submit-bar-name"></strong></div>
+  <div style="display:flex;gap:10px;">
+    <button class="btn btn-outline btn-sm" onclick="cancelRating()">Cancel</button>
+    <button class="btn btn-gold" onclick="submitRatings()">Save my ratings</button>
   </div>
 </div>
-```
 
-  </div>
+<div class="toast" id="toast"></div>
 
-  <script>
-    const API_KEY = 'AIzaSyAfi34mpVlJtYwyxBinKSySur_BRRa54LA';
-    const KEYWORDS = ['Disneyland live','Disney parks live','Walt Disney World live','Magic Kingdom live','EPCOT live'];
-    const REFRESH_SECS = 300;
-    let activeVideoId = null, timerInterval = null, countdown = REFRESH_SECS;
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, onSnapshot, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-    // ── Mobile sidebar toggle ──
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const backdrop = document.getElementById('sidebar-backdrop');
-      const isOpen = sidebar.classList.contains('open');
-      if (isOpen) {
-        closeSidebar();
-      } else {
-        sidebar.classList.add('open');
-        backdrop.classList.add('active');
-        document.getElementById('list-toggle-btn').querySelector('span:last-child').textContent = 'Close';
-      }
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAprWH3naFPXPRgSr9qTbq2rbEntYpJ5Pw",
+  authDomain: "disneyland-rides.firebaseapp.com",
+  projectId: "disneyland-rides",
+  storageBucket: "disneyland-rides.firebasestorage.app",
+  messagingSenderId: "940661410999",
+  appId: "1:940661410999:web:b557cf468a338669821132"
+};
+
+const RIDES = [
+  { id:'dl_smallworld', name:"it's a small world", park:"DL", land:"Fantasyland", type:"family" },
+  { id:'dl_pirates', name:"Pirates of the Caribbean", park:"DL", land:"New Orleans Square", type:"family" },
+  { id:'dl_haunted', name:"Haunted Mansion", park:"DL", land:"New Orleans Square", type:"family" },
+  { id:'dl_tiana', name:"Tiana's Bayou Adventure", park:"DL", land:"Bayou Country", type:"thrill" },
+  { id:'dl_pooh', name:"The Many Adventures of Winnie the Pooh", park:"DL", land:"Bayou Country", type:"family" },
+  { id:'dl_indiana', name:"Indiana Jones Adventure", park:"DL", land:"Adventureland", type:"thrill" },
+  { id:'dl_jungle', name:"Jungle Cruise", park:"DL", land:"Adventureland", type:"family" },
+  { id:'dl_treehouse', name:"Adventureland Treehouse", park:"DL", land:"Adventureland", type:"family" },
+  { id:'dl_matterhorn', name:"Matterhorn Bobsleds", park:"DL", land:"Fantasyland", type:"thrill" },
+  { id:'dl_dumbo', name:"Dumbo the Flying Elephant", park:"DL", land:"Fantasyland", type:"kiddie" },
+  { id:'dl_casey', name:"Casey Jr. Circus Train", park:"DL", land:"Fantasyland", type:"kiddie" },
+  { id:'dl_storybook', name:"Storybook Land Canal Boats", park:"DL", land:"Fantasyland", type:"family" },
+  { id:'dl_teacups', name:"Mad Tea Party", park:"DL", land:"Fantasyland", type:"family" },
+  { id:'dl_peter_pan', name:"Peter Pan's Flight", park:"DL", land:"Fantasyland", type:"family" },
+  { id:'dl_pinocchio', name:"Pinocchio's Daring Journey", park:"DL", land:"Fantasyland", type:"family" },
+  { id:'dl_snowwhite', name:"Snow White's Enchanted Wish", park:"DL", land:"Fantasyland", type:"family" },
+  { id:'dl_mr_toad', name:"Mr. Toad's Wild Ride", park:"DL", land:"Fantasyland", type:"family" },
+  { id:'dl_alice', name:"Alice in Wonderland", park:"DL", land:"Fantasyland", type:"family" },
+  { id:'dl_carousel', name:"King Arthur Carrousel", park:"DL", land:"Fantasyland", type:"family" },
+  { id:'dl_autopia', name:"Autopia", park:"DL", land:"Tomorrowland", type:"kiddie" },
+  { id:'dl_buzz', name:"Buzz Lightyear Astro Blasters", park:"DL", land:"Tomorrowland", type:"family" },
+  { id:'dl_space', name:"Space Mountain", park:"DL", land:"Tomorrowland", type:"thrill" },
+  { id:'dl_nemo', name:"Finding Nemo Submarine Voyage", park:"DL", land:"Tomorrowland", type:"family" },
+  { id:'dl_astro', name:"Astro Orbitor", park:"DL", land:"Tomorrowland", type:"kiddie" },
+  { id:'dl_monorail', name:"Disneyland Monorail", park:"DL", land:"Tomorrowland", type:"family" },
+  { id:'dl_rise', name:"Star Wars: Rise of the Resistance", park:"DL", land:"Star Wars: Galaxy's Edge", type:"thrill" },
+  { id:'dl_smugglers', name:"Millennium Falcon: Smugglers Run", park:"DL", land:"Star Wars: Galaxy's Edge", type:"family" },
+  { id:'dl_btr', name:"Big Thunder Mountain Railroad", park:"DL", land:"Frontierland", type:"thrill" },
+  { id:'dl_mark_twain', name:"Mark Twain Riverboat", park:"DL", land:"Frontierland", type:"family" },
+  { id:'dl_columbia', name:"Sailing Ship Columbia", park:"DL", land:"Frontierland", type:"family" },
+  { id:'dl_roger', name:"Roger Rabbit's Car Toon Spin", park:"DL", land:"Mickey's Toontown", type:"family" },
+  { id:'dl_runaway', name:"Mickey & Minnie's Runaway Railway", park:"DL", land:"Mickey's Toontown", type:"family" },
+  { id:'dl_gadget', name:"Gadget's Go Coaster", park:"DL", land:"Mickey's Toontown", type:"kiddie" },
+  { id:'dca_radiator', name:"Radiator Springs Racers", park:"DCA", land:"Cars Land", type:"thrill" },
+  { id:'dca_mater', name:"Mater's Junkyard Jamboree", park:"DCA", land:"Cars Land", type:"family" },
+  { id:'dca_luigi', name:"Luigi's Rollickin' Roadsters", park:"DCA", land:"Cars Land", type:"family" },
+  { id:'dca_guardians', name:"Guardians of the Galaxy – Mission: BREAKOUT!", park:"DCA", land:"Avengers Campus", type:"thrill" },
+  { id:'dca_webslingers', name:"WEB SLINGERS: A Spider-Man Adventure", park:"DCA", land:"Avengers Campus", type:"family" },
+  { id:'dca_incredicoaster', name:"Incredicoaster", park:"DCA", land:"Pixar Pier", type:"thrill" },
+  { id:'dca_jessie', name:"Jessie's Critter Carousel", park:"DCA", land:"Pixar Pier", type:"kiddie" },
+  { id:'dca_inside_out', name:"Inside Out Emotional Whirlwind", park:"DCA", land:"Pixar Pier", type:"family" },
+  { id:'dca_toy_story', name:"Toy Story Midway Mania!", park:"DCA", land:"Pixar Pier", type:"family" },
+  { id:'dca_pal_swing', name:"Pixar Pal-A-Round (Swinging)", park:"DCA", land:"Pixar Pier", type:"thrill" },
+  { id:'dca_pal_ns', name:"Pixar Pal-A-Round (Non-Swinging)", park:"DCA", land:"Pixar Pier", type:"family" },
+  { id:'dca_soarin', name:"Soarin'", park:"DCA", land:"Grizzly Peak", type:"family" },
+  { id:'dca_grizzly', name:"Grizzly River Run", park:"DCA", land:"Grizzly Peak", type:"thrill" },
+  { id:'dca_monsters', name:"Monsters, Inc. Mike & Sulley to the Rescue!", park:"DCA", land:"Hollywood Land", type:"family" },
+  { id:'dca_ariel', name:"The Little Mermaid – Ariel's Undersea Adventure", park:"DCA", land:"Paradise Gardens Park", type:"family" },
+  { id:'dca_goofy', name:"Goofy's Sky School", park:"DCA", land:"Paradise Gardens Park", type:"thrill" },
+  { id:'dca_silly', name:"Silly Symphony Swings", park:"DCA", land:"Paradise Gardens Park", type:"family" },
+  { id:'dca_jellyfish', name:"Jumpin' Jellyfish", park:"DCA", land:"Paradise Gardens Park", type:"family" },
+  { id:'dca_zephyr', name:"Golden Zephyr", park:"DCA", land:"Paradise Gardens Park", type:"family" },
+];
+
+// ── STATE ──
+let db, currentTripId, currentTripData, currentRespondents = {}, currentRatings = {}, activeName = '', unsubscribe = null;
+const isConfigured = FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY';
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', () => {
+  if (!isConfigured) { showView('setup'); return; }
+  const app = initializeApp(FIREBASE_CONFIG);
+  db = getFirestore(app);
+  const params = new URLSearchParams(location.search);
+  const tripId = params.get('trip');
+  if (tripId) loadTrip(tripId);
+  else showView('home');
+});
+
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+}
+
+// ── TRIP CREATION ──
+window.createTrip = async function() {
+  const name = document.getElementById('trip-name-input').value.trim();
+  if (!name) { toast('Please enter a trip name'); return; }
+  const date = document.getElementById('trip-date-input').value;
+  const id = Math.random().toString(36).slice(2, 9).toUpperCase();
+  await setDoc(doc(db, 'trips', id), { name, date, createdAt: serverTimestamp() });
+  window.history.pushState({}, '', `?trip=${id}`);
+  loadTrip(id);
+};
+
+window.joinByCode = function() {
+  const code = document.getElementById('join-code-input').value.trim().toUpperCase();
+  if (!code) { toast('Enter a trip code'); return; }
+  window.location.href = `?trip=${code}`;
+};
+
+window.goHome = function() {
+  if (unsubscribe) unsubscribe();
+  window.location.href = location.pathname;
+};
+
+// ── LOAD TRIP ──
+async function loadTrip(id) {
+  currentTripId = id;
+  showView('trip');
+  const snap = await getDoc(doc(db, 'trips', id));
+  if (!snap.exists()) {
+    document.getElementById('trip-banner-name').textContent = 'Trip not found';
+    toast('No trip found with that code');
+    return;
+  }
+  currentTripData = snap.data();
+  document.getElementById('trip-banner-name').textContent = currentTripData.name;
+  if (currentTripData.date) {
+    const d = new Date(currentTripData.date + 'T12:00:00');
+    document.getElementById('trip-banner-date').textContent = d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  }
+  document.getElementById('modal-share-url').textContent = location.href.split('?')[0] + '?trip=' + id;
+  document.getElementById('modal-trip-code').textContent = id;
+  subscribeToResponses();
+}
+
+// ── REALTIME LISTENER ──
+function subscribeToResponses() {
+  if (unsubscribe) unsubscribe();
+  unsubscribe = onSnapshot(collection(db, 'trips', currentTripId, 'responses'), snap => {
+    currentRespondents = {};
+    snap.forEach(d => { currentRespondents[d.id] = d.data().ratings || {}; });
+    renderRespondentBar();
+    if (document.getElementById('panel-results').classList.contains('active')) buildResults();
+  });
+}
+
+// ── SURVEY ──
+window.startSurvey = function() {
+  const name = document.getElementById('survey-name').value.trim();
+  if (!name) { toast('Enter your name first'); return; }
+  activeName = name;
+
+  if (currentRespondents[name]) {
+    currentRatings = { ...currentRespondents[name] };
+    document.getElementById('survey-already-done').style.display = 'block';
+  } else {
+    currentRatings = {};
+    document.getElementById('survey-already-done').style.display = 'none';
+  }
+
+  document.getElementById('name-form').style.display = 'none';
+  document.getElementById('survey-body').style.display = 'block';
+  document.getElementById('submit-bar').style.display = 'flex';
+  document.getElementById('submit-bar-name').textContent = name;
+  buildRideList();
+};
+
+window.cancelRating = function() {
+  activeName = '';
+  currentRatings = {};
+  document.getElementById('name-form').style.display = 'flex';
+  document.getElementById('survey-body').style.display = 'none';
+  document.getElementById('survey-already-done').style.display = 'none';
+  document.getElementById('submit-bar').style.display = 'none';
+  document.getElementById('survey-name').value = '';
+  document.getElementById('ride-list').innerHTML = '';
+};
+
+function buildRideList() {
+  const container = document.getElementById('ride-list');
+  const parks = { DL: {}, DCA: {} };
+  RIDES.forEach(r => { if (!parks[r.park][r.land]) parks[r.park][r.land] = []; parks[r.park][r.land].push(r); });
+  const parkMeta = { DL: { label:'Disneyland Park', cls:'park-dl' }, DCA: { label:'Disney California Adventure', cls:'park-dca' } };
+  let html = '';
+  for (const [pk, lands] of Object.entries(parks)) {
+    html += `<div class="park-header ${parkMeta[pk].cls}">${parkMeta[pk].label}</div>`;
+    for (const [land, rides] of Object.entries(lands)) {
+      html += `<div class="land-label">${land}</div>`;
+      rides.forEach(r => {
+        const tc = r.type === 'thrill' ? 'tag-thrill' : r.type === 'kiddie' ? 'tag-kiddie' : 'tag-family';
+        const tl = r.type === 'thrill' ? 'Thrill' : r.type === 'kiddie' ? 'Kiddie' : 'Family';
+        html += `<div class="ride-row"><div class="ride-name">${r.name}</div><span class="ride-tag ${tc}">${tl}</span><div class="rating-btns">`;
+        for (let i = 0; i <= 5; i++) html += `<button class="r-btn" id="rb-${r.id}-${i}" onclick="setRating('${r.id}',${i})">${i}</button>`;
+        html += `</div></div>`;
+      });
     }
+  }
+  container.innerHTML = html;
+  RIDES.forEach(r => { if (currentRatings[r.id] !== undefined) applyRatingUI(r.id, currentRatings[r.id]); });
+}
 
-    function closeSidebar() {
-      document.getElementById('sidebar').classList.remove('open');
-      document.getElementById('sidebar-backdrop').classList.remove('active');
-      document.getElementById('list-toggle-btn').querySelector('span:last-child').textContent = 'List';
-    }
+window.setRating = function(rid, val) {
+  currentRatings[rid] = val;
+  applyRatingUI(rid, val);
+};
 
-    async function fetchStreams() {
-      const sel = document.getElementById('keyword-select');
-      const chosen = sel.value;
-      const toSearch = chosen === '__all__' ? KEYWORDS : [chosen];
-      document.getElementById('streams-list').innerHTML = `<div class="state-loading"><div class="spinner"></div><span>Searching YouTube...</span></div>`;
-      document.getElementById('results-count').textContent = '';
-      const seen = new Set(), streams = [];
-      try {
-        for (const kw of toSearch) {
-          const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&q=${encodeURIComponent(kw)}&maxResults=15&key=${API_KEY}`;
-          const res = await fetch(url);
-          const data = await res.json();
-          if (data.error) throw new Error(data.error.message);
-          for (const item of (data.items || [])) {
-            const vid = item.id.videoId;
-            if (seen.has(vid)) continue;
-            seen.add(vid);
-            streams.push({ videoId: vid, title: item.snippet.title, channel: item.snippet.channelTitle, thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '' });
-          }
-        }
-        renderStreams(streams);
-        document.getElementById('results-count').textContent = streams.length + ' live';
-        countdown = REFRESH_SECS;
-      } catch (err) {
-        document.getElementById('streams-list').innerHTML = `<div class="state-error"><strong>API Error:</strong> ${escHtml(err.message)}</div>`;
-      }
-    }
+function applyRatingUI(rid, val) {
+  for (let i = 0; i <= 5; i++) {
+    const b = document.getElementById(`rb-${rid}-${i}`);
+    if (b) b.className = 'r-btn' + (i === val ? ` sel-${val}` : '');
+  }
+}
 
-    function renderStreams(streams) {
-      const list = document.getElementById('streams-list');
-      if (!streams.length) { list.innerHTML = `<div class="state-empty">No live Disney streams found right now.<br>Try a different keyword or check back soon.</div>`; return; }
-      list.innerHTML = streams.map(s => `<div class="stream-card${s.videoId === activeVideoId ? ' active' : ''}" data-id="${escAttr(s.videoId)}" data-title="${escAttr(s.title)}" data-channel="${escAttr(s.channel)}" onclick="selectStream(this)"><div class="thumb-wrap">${s.thumb ? `<img src="${escAttr(s.thumb)}" loading="lazy" alt="">` : ''}<div class="badge-live">LIVE</div></div><div class="stream-info"><div class="stream-title">${escHtml(s.title)}</div><div class="stream-channel">${escHtml(s.channel)}</div></div></div>`).join('');
-    }
+window.submitRatings = async function() {
+  if (!activeName) return;
+  await setDoc(doc(db, 'trips', currentTripId, 'responses', activeName), { ratings: currentRatings, updatedAt: serverTimestamp() });
+  toast(`${activeName}'s ratings saved!`);
+  cancelRating();
+};
 
-    function selectStream(el) {
-      const videoId = el.dataset.id, title = el.dataset.title, channel = el.dataset.channel;
-      activeVideoId = videoId;
-      document.querySelectorAll('.stream-card').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
-      const pw = document.getElementById('player-wrap');
-      document.getElementById('player-placeholder').style.display = 'none';
-      const old = pw.querySelector('iframe'); if (old) old.remove();
-      const iframe = document.createElement('iframe');
-      iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-      iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-      iframe.allowFullscreen = true;
-      pw.appendChild(iframe);
-      document.getElementById('meta-title').textContent = title;
-      document.getElementById('meta-channel').textContent = channel;
-      document.getElementById('player-meta').style.display = 'flex';
-      // Auto-close sidebar on mobile after selecting a stream
-      if (window.innerWidth <= 640) {
-        closeSidebar();
-      }
-    }
+function renderRespondentBar() {
+  const bar = document.getElementById('respondent-bar');
+  const names = Object.keys(currentRespondents);
+  bar.innerHTML = names.length
+    ? `<span class="resp-count">${names.length} response${names.length > 1 ? 's' : ''}:</span>` + names.map(n => `<div class="resp-pill ${n === activeName ? 'active-resp' : ''}">${n}</div>`).join('')
+    : '';
+}
 
-    function startTimer() {
-      clearInterval(timerInterval);
-      const el = document.getElementById('timer-display');
-      timerInterval = setInterval(() => {
-        countdown--;
-        const m = Math.floor(countdown / 60), s = countdown % 60;
-        el.textContent = `Refresh in ${m}:${s.toString().padStart(2, '0')}`;
-        if (countdown <= 0) fetchStreams();
-      }, 1000);
-    }
+// ── TABS ──
+window.switchTab = function(t) {
+  ['survey','results'].forEach(x => {
+    document.getElementById('tab-' + x).className = 'tab' + (x === t ? ' active' : '');
+    document.getElementById('panel-' + x).className = 'tab-panel' + (x === t ? ' active' : '');
+  });
+  if (t === 'results') buildResults();
+};
 
-    function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-    function escAttr(s) { return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+// ── RESULTS ──
+function buildResults() {
+  const panel = document.getElementById('results-body');
+  const names = Object.keys(currentRespondents);
+  if (!names.length) {
+    panel.innerHTML = `<div class="no-data">No responses yet — share the link so your group can rate the rides!</div>`;
+    return;
+  }
 
-    document.getElementById('keyword-select').addEventListener('change', fetchStreams);
-    fetchStreams();
-    startTimer();
-  </script>
+  const scored = RIDES.map(r => {
+    const vals = names.map(n => currentRespondents[n][r.id]).filter(v => v !== undefined);
+    if (!vals.length) return { ...r, avg: null, has5: 0, has0: 0, ratedBy: 0 };
+    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    return { ...r, avg, has5: vals.filter(v => v === 5).length, has0: vals.filter(v => v === 0).length, ratedBy: vals.length };
+  }).sort((a, b) => {
+    if (a.avg === null && b.avg === null) return 0;
+    if (a.avg === null) return 1;
+    if (b.avg === null) return -1;
+    return b.avg - a.avg || b.has5 - a.has5;
+  });
 
+  const byArea = {};
+  scored.forEach(r => {
+    const k = r.park + '|' + r.land;
+    if (!byArea[k]) byArea[k] = { park: r.park, land: r.land, rides: [] };
+    byArea[k].rides.push(r);
+  });
+  const areas = Object.values(byArea).map(a => {
+    const rated = a.rides.filter(r => r.avg !== null);
+    const avg = rated.length ? rated.reduce((s, r) => s + r.avg, 0) / rated.length : null;
+    return { ...a, avg, highCount: rated.filter(r => r.avg >= 4).length };
+  }).filter(a => a.avg !== null).sort((a, b) => b.avg - a.avg);
+
+  let html = `<div class="section-title">Respondents</div>`;
+  names.forEach(n => {
+    const ratedCount = Object.keys(currentRespondents[n]).length;
+    html += `<div class="resp-result-row">
+      <div>
+        <div class="resp-result-name">${n}</div>
+        <div class="resp-result-meta">${ratedCount} ride${ratedCount !== 1 ? 's' : ''} rated</div>
+      </div>
+      <div class="resp-result-actions">
+        <button class="btn btn-outline btn-sm" onclick="reloadForEdit('${n}')">Edit ratings</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRespondent('${n}')">Delete</button>
+      </div>
+    </div>`;
+  });
+
+  html += `<div class="section-title">Hottest areas of the park</div><div class="area-grid">`;
+  areas.forEach(a => {
+    const barColor = a.park === 'DL' ? '#378add' : '#d85a30';
+    const pct = Math.round((a.avg / 5) * 100);
+    html += `<div class="area-card">
+      <div class="area-card-name">${a.land}</div>
+      <div class="area-card-park">${a.park === 'DL' ? 'Disneyland' : 'DCA'} · ${a.rides.length} rides</div>
+      <div class="area-bar-wrap"><div class="area-bar" style="width:${pct}%;background:${barColor};"></div></div>
+      <div class="area-score">${a.avg.toFixed(1)}</div>
+      <div class="area-score-sub">${a.highCount} ride${a.highCount !== 1 ? 's' : ''} rated ≥ 4 avg</div>
+    </div>`;
+  });
+  html += '</div>';
+
+  html += `<div class="section-title">All rides — ranked by group interest</div>`;
+  scored.forEach((r, i) => {
+    const barColor = r.park === 'DL' ? '#378add' : '#d85a30';
+    const pct = r.avg !== null ? Math.round((r.avg / 5) * 100) : 0;
+    const scoreText = r.avg !== null ? r.avg.toFixed(1) : '—';
+    const mustBadge = r.has5 ? `<span class="badge badge-must">★ ${r.has5} must-do</span>` : '';
+    const skipBadge = r.has0 ? `<span class="badge badge-skip">✕ ${r.has0} skip</span>` : '';
+    const partialNote = r.ratedBy > 0 && r.ratedBy < names.length ? ` · rated by ${r.ratedBy}/${names.length}` : '';
+    const unratedNote = r.avg === null ? `<span style="font-size:11px;color:rgba(253,248,239,0.3);">not yet rated</span>` : '';
+    html += `<div class="result-row">
+      <span class="result-rank">${i + 1}</span>
+      <div style="flex:1;min-width:0;">
+        <div class="result-name">${r.name}</div>
+        <div class="result-meta">${r.land} · ${r.park === 'DL' ? 'Disneyland' : 'DCA'}${partialNote}</div>
+        ${mustBadge || skipBadge || unratedNote ? `<div class="result-badges">${mustBadge}${skipBadge}${unratedNote}</div>` : ''}
+      </div>
+      <div class="result-right">
+        <div class="result-bar-wrap"><div class="result-bar" style="width:${pct}%;background:${barColor};"></div></div>
+        <span class="result-score">${scoreText}</span>
+      </div>
+    </div>`;
+  });
+
+  panel.innerHTML = html;
+}
+
+window.deleteRespondent = async function(name) {
+  if (!confirm(`Delete ${name}'s ratings? This cannot be undone.`)) return;
+  await deleteDoc(doc(db, 'trips', currentTripId, 'responses', name));
+  toast(`${name}'s ratings deleted`);
+};
+
+window.reloadForEdit = function(name) {
+  switchTab('survey');
+  document.getElementById('survey-name').value = name;
+  startSurvey();
+};
+
+// ── SHARE ──
+window.showShareModal = function() {
+  document.getElementById('share-overlay').style.display = 'flex';
+};
+window.closeShareModal = function() {
+  document.getElementById('share-overlay').style.display = 'none';
+};
+window.copyShareUrl = function(ctx) {
+  const url = location.href.split('?')[0] + '?trip=' + currentTripId;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById((ctx === 'modal' ? 'modal-' : '') + 'copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+};
+
+// ── TOAST ──
+window.toast = function(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+};
+</script>
 </body>
 </html>
