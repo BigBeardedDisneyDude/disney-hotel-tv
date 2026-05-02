@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Disneyland Hotel</title>
+<title>Magic Key TV</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -399,7 +399,8 @@
 <div id="header">
   <div id="header-left">
     <div id="wordmark">
-      <div class="dh-logo"><span class="d-letter">D</span>isneyland Hotel</div>
+      <div class="dh-logo"><span class="d-letter">M</span>agic Key TV</div>
+      <div class="dh-sub">Disneyland Resort</div>
     </div>
     <div id="welcome-block">
       <div id="greeting-line">Good Evening</div>
@@ -466,7 +467,7 @@
   <div class="menu-item" onclick="window.location.href='survey.html'">
     <div class="menu-icon">
       <svg viewBox="0 0 36 36">
-        <rect x="14" y="4" width="8" height="22" rx="1.5" transform="rotate(0 18 18)"/>
+        <rect x="14" y="4" width="8" height="22" rx="1.5"/>
         <polygon points="14,26 22,26 18,34"/>
         <rect x="14" y="2" width="8" height="4" rx="1"/>
         <line x1="14" y1="10" x2="22" y2="10" stroke="rgba(180,138,42,0.7)" stroke-width="1.2" fill="none"/>
@@ -484,12 +485,10 @@
   <div class="menu-item" onclick="window.location.href='streams.html'">
     <div class="menu-icon">
       <svg viewBox="0 0 36 36">
-        <!-- signal arcs -->
         <path d="M6,18 Q6,9 18,5" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5" stroke-linecap="round"/>
         <path d="M30,18 Q30,9 18,5" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5" stroke-linecap="round"/>
         <path d="M10,22 Q10,13 18,10" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2" stroke-linecap="round"/>
         <path d="M26,22 Q26,13 18,10" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2" stroke-linecap="round"/>
-        <!-- play button -->
         <circle cx="18" cy="22" r="8" fill="rgba(20,50,65,0.9)"/>
         <polygon points="15,18.5 15,25.5 23,22" fill="rgba(180,138,42,1)"/>
       </svg>
@@ -529,8 +528,6 @@
     <div class="menu-label">Dining</div>
     <div class="menu-sublabel">Reservations</div>
   </div>
-
-  <!-- Park Hours removed from nav per reorder; accessible via direct link -->
 
 </div>
 
@@ -586,127 +583,54 @@
 </iframe>
 
 <script>
-// ── LOCALSTORAGE HELPERS ─────────────────────────────────────
 const LS_KEY = 'dh_tv_settings';
+function loadSettings() { try { const raw = localStorage.getItem(LS_KEY); if (raw) return JSON.parse(raw); } catch(e) {} return { name: '', trip: '' }; }
+function persistSettings(name, trip) { try { localStorage.setItem(LS_KEY, JSON.stringify({ name, trip })); } catch(e) {} }
 
-function loadSettings() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  return { name: '', trip: '' };
-}
-
-function persistSettings(name, trip) {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify({ name, trip }));
-  } catch(e) {}
-}
-
-// ── INIT ─────────────────────────────────────────────────────
 const urlParams = new URLSearchParams(window.location.search);
 const urlName = urlParams.get('family') || '';
 const urlTrip = urlParams.get('trip') || '';
-
 const stored = loadSettings();
-const params = {
-  name: urlName || stored.name || '',
-  trip: urlTrip || stored.trip || ''
-};
-
+const params = { name: urlName || stored.name || '', trip: urlTrip || stored.trip || '' };
 if (urlName || urlTrip) persistSettings(params.name, params.trip);
-
 const isFirstRun = !params.name && !params.trip;
+if (params.name) { document.getElementById('welcome-name').textContent = params.name + ' Family'; } else { document.getElementById('welcome-name').textContent = 'Welcome'; }
+if (isFirstRun) { const nudge = document.getElementById('first-run-nudge'); nudge.classList.add('show'); setTimeout(() => { nudge.style.opacity = '0'; nudge.style.transition = 'opacity 0.8s'; setTimeout(() => nudge.classList.remove('show'), 800); }, 6000); }
 
-if (params.name) {
-  document.getElementById('welcome-name').textContent = params.name + ' Family';
-} else {
-  document.getElementById('welcome-name').textContent = 'Welcome';
-}
-
-if (isFirstRun) {
-  const nudge = document.getElementById('first-run-nudge');
-  nudge.classList.add('show');
-  setTimeout(() => { nudge.style.opacity = '0'; nudge.style.transition = 'opacity 0.8s'; setTimeout(() => nudge.classList.remove('show'), 800); }, 6000);
-}
-
-// ── COUNTDOWN ────────────────────────────────────────────────
 function updateCountdown() {
-  const trip = params.trip;
-  const strip = document.getElementById('countdown-strip');
+  const trip = params.trip; const strip = document.getElementById('countdown-strip');
   if (!trip) { strip.classList.remove('visible'); return; }
-
-  const parts = trip.split('-');
-  if (parts.length !== 3) { strip.classList.remove('visible'); return; }
+  const parts = trip.split('-'); if (parts.length !== 3) { strip.classList.remove('visible'); return; }
   const tripDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-  const todayMidnight = new Date();
-  todayMidnight.setHours(0, 0, 0, 0);
+  const todayMidnight = new Date(); todayMidnight.setHours(0, 0, 0, 0);
   const diff = Math.round((tripDate - todayMidnight) / 86400000);
-
   if (diff < 0) { strip.classList.remove('visible'); return; }
-
   strip.classList.add('visible');
-
-  const numEl   = document.getElementById('countdown-number');
-  const unitEl  = document.getElementById('countdown-unit');
-  const textEl  = document.getElementById('countdown-text');
-  const labelEl = document.getElementById('countdown-label');
-
-  if (diff === 0) {
-    textEl.textContent = '';
-    numEl.textContent = 'Today is the day!';
-    unitEl.textContent = '';
-    labelEl.textContent = '🏰';
-  } else if (diff === 1) {
-    textEl.textContent = 'Trip is';
-    numEl.textContent = 'Tomorrow';
-    unitEl.textContent = '';
-    labelEl.textContent = '';
-  } else {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    textEl.textContent = 'Trip in';
-    numEl.textContent = diff;
-    unitEl.textContent = 'days';
-    labelEl.textContent = '· ' + months[tripDate.getMonth()] + ' ' + tripDate.getDate();
-  }
+  const numEl = document.getElementById('countdown-number'), unitEl = document.getElementById('countdown-unit'), textEl = document.getElementById('countdown-text'), labelEl = document.getElementById('countdown-label');
+  if (diff === 0) { textEl.textContent = ''; numEl.textContent = 'Today is the day!'; unitEl.textContent = ''; labelEl.textContent = '🏰'; }
+  else if (diff === 1) { textEl.textContent = 'Trip is'; numEl.textContent = 'Tomorrow'; unitEl.textContent = ''; labelEl.textContent = ''; }
+  else { const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; textEl.textContent = 'Trip in'; numEl.textContent = diff; unitEl.textContent = 'days'; labelEl.textContent = '· ' + months[tripDate.getMonth()] + ' ' + tripDate.getDate(); }
 }
 updateCountdown();
 
-// ── CLOCK ────────────────────────────────────────────────────
 function updateClock() {
-  const now = new Date();
-  const h = now.getHours(), m = now.getMinutes();
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  const h12 = h % 12 || 12;
+  const now = new Date(); const h = now.getHours(), m = now.getMinutes(); const ampm = h >= 12 ? 'PM' : 'AM'; const h12 = h % 12 || 12;
   document.getElementById('time-display').textContent = h12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const w = window.innerWidth;
-  if (w < 420) {
-    document.getElementById('date-display').textContent = days[now.getDay()].slice(0,3).toUpperCase() + ' ' + months[now.getMonth()] + ' ' + now.getDate();
-  } else {
-    document.getElementById('date-display').textContent = days[now.getDay()].toUpperCase() + ', ' + months[now.getMonth()].toUpperCase() + ' ' + now.getDate();
-  }
-  const greet = h >= 5 && h < 12 ? 'Good Morning' :
-                h >= 12 && h < 17 ? 'Good Afternoon' :
-                h >= 17 && h < 21 ? 'Good Evening' : 'Good Night';
+  if (w < 420) { document.getElementById('date-display').textContent = days[now.getDay()].slice(0,3).toUpperCase() + ' ' + months[now.getMonth()] + ' ' + now.getDate(); }
+  else { document.getElementById('date-display').textContent = days[now.getDay()].toUpperCase() + ', ' + months[now.getMonth()].toUpperCase() + ' ' + now.getDate(); }
+  const greet = h >= 5 && h < 12 ? 'Good Morning' : h >= 12 && h < 17 ? 'Good Afternoon' : h >= 17 && h < 21 ? 'Good Evening' : 'Good Night';
   document.getElementById('greeting-line').textContent = greet;
 }
-updateClock();
-setInterval(updateClock, 30000);
-window.addEventListener('resize', updateClock);
+updateClock(); setInterval(updateClock, 30000); window.addEventListener('resize', updateClock);
 
-// ── WEATHER — always Anaheim ──────────────────────────────────
 fetchWeather(33.8353, -117.9145);
-
 function fetchWeather(lat, lon) {
-  const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat +
-    '&longitude=' + lon +
-    '&current_weather=true&temperature_unit=fahrenheit&wind_speed_unit=mph';
+  const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current_weather=true&temperature_unit=fahrenheit&wind_speed_unit=mph';
   fetch(url).then(r => r.json()).then(data => {
-    const cw = data.current_weather;
-    const temp = Math.round(cw.temperature) + '°F';
-    const code = cw.weathercode;
+    const cw = data.current_weather; const temp = Math.round(cw.temperature) + '°F'; const code = cw.weathercode;
     let icon = '☀️', desc = 'Clear';
     if (code >= 1 && code <= 3) { icon = '⛅'; desc = 'Partly Cloudy'; }
     if (code >= 45 && code <= 48) { icon = '🌫️'; desc = 'Foggy'; }
@@ -721,70 +645,23 @@ function fetchWeather(lat, lon) {
   }).catch(() => { document.getElementById('weather-loading').textContent = ''; });
 }
 
-// ── MODAL ────────────────────────────────────────────────────
-function openModal() {
-  const nudge = document.getElementById('first-run-nudge');
-  nudge.classList.remove('show');
-  document.getElementById('input-name').value = params.name || '';
-  document.getElementById('input-trip').value = params.trip || '';
-  document.getElementById('modal-overlay').classList.add('open');
-  setTimeout(() => document.getElementById('input-name').focus(), 200);
-}
-
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
-}
-
-function handleOverlayClick(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeModal();
-}
-
-function clearTrip() {
-  document.getElementById('input-trip').value = '';
-}
-
+function openModal() { const nudge = document.getElementById('first-run-nudge'); nudge.classList.remove('show'); document.getElementById('input-name').value = params.name || ''; document.getElementById('input-trip').value = params.trip || ''; document.getElementById('modal-overlay').classList.add('open'); setTimeout(() => document.getElementById('input-name').focus(), 200); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function handleOverlayClick(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+function clearTrip() { document.getElementById('input-trip').value = ''; }
 function saveSettings() {
-  const name = document.getElementById('input-name').value.trim();
-  const trip = document.getElementById('input-trip').value;
-  persistSettings(name, trip);
-  params.name = name;
-  params.trip = trip;
-  document.getElementById('welcome-name').textContent = name ? name + ' Family' : 'Welcome';
-  updateCountdown();
-  const btn = document.getElementById('save-btn');
-  btn.textContent = '✓ Settings Saved!';
-  btn.style.background = 'linear-gradient(135deg, rgba(100,180,120,0.9) 0%, rgba(70,150,90,0.9) 100%)';
-  setTimeout(() => {
-    btn.textContent = 'Save Settings';
-    btn.style.background = '';
-    closeModal();
-  }, 2200);
+  const name = document.getElementById('input-name').value.trim(); const trip = document.getElementById('input-trip').value;
+  persistSettings(name, trip); params.name = name; params.trip = trip;
+  document.getElementById('welcome-name').textContent = name ? name + ' Family' : 'Welcome'; updateCountdown();
+  const btn = document.getElementById('save-btn'); btn.textContent = '✓ Settings Saved!'; btn.style.background = 'linear-gradient(135deg, rgba(100,180,120,0.9) 0%, rgba(70,150,90,0.9) 100%)';
+  setTimeout(() => { btn.textContent = 'Save Settings'; btn.style.background = ''; closeModal(); }, 2200);
 }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); if (e.key === 'Enter' && document.getElementById('modal-overlay').classList.contains('open')) saveSettings(); });
 
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModal();
-  if (e.key === 'Enter' && document.getElementById('modal-overlay').classList.contains('open')) saveSettings();
-});
-
-// ── MUSIC ────────────────────────────────────────────────────
-const scScript = document.createElement('script');
-scScript.src = 'https://w.soundcloud.com/player/api.js';
-document.head.appendChild(scScript);
-
+const scScript = document.createElement('script'); scScript.src = 'https://w.soundcloud.com/player/api.js'; document.head.appendChild(scScript);
 let scWidget = null, scReady = false, scPlaying = false;
-scScript.onload = function() {
-  scWidget = SC.Widget(document.getElementById('sc-player'));
-  scWidget.bind(SC.Widget.Events.READY, function() { scReady = true; scWidget.setVolume(40); });
-  scWidget.bind(SC.Widget.Events.PLAY,  function() { scPlaying = true; });
-  scWidget.bind(SC.Widget.Events.PAUSE, function() { scPlaying = false; });
-};
-function handleMusicBtn() {
-  const btn = document.getElementById('music-btn');
-  if (!scReady) return;
-  if (scPlaying) { scWidget.pause(); btn.textContent = '♪ Play Music'; }
-  else { scWidget.play(); btn.textContent = '♪ Pause Music'; }
-}
+scScript.onload = function() { scWidget = SC.Widget(document.getElementById('sc-player')); scWidget.bind(SC.Widget.Events.READY, function() { scReady = true; scWidget.setVolume(40); }); scWidget.bind(SC.Widget.Events.PLAY, function() { scPlaying = true; }); scWidget.bind(SC.Widget.Events.PAUSE, function() { scPlaying = false; }); };
+function handleMusicBtn() { const btn = document.getElementById('music-btn'); if (!scReady) return; if (scPlaying) { scWidget.pause(); btn.textContent = '♪ Play Music'; } else { scWidget.play(); btn.textContent = '♪ Pause Music'; } }
 </script>
-
 </body>
 </html>
