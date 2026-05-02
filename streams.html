@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a2a2a;
+    color: #f0e6c8;
+    font-family: 'Lato', sans-serif;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: linear-gradient(180deg, #0d3535 0%, #0a2a2a 100%);
+    border-bottom: 2px solid #c9a84c;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-title {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    color: #c9a84c;
+    letter-spacing: 2px;
+  }
+
+  .header-sub {
+    font-size: 11px;
+    color: #7ab5a0;
+    letter-spacing: 1px;
+    margin-top: 2px;
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+  }
+
+  .live-dot {
+    width: 10px; height: 10px;
+    background: #e05252;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+    animation: pulse 1.4s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .setup-panel {
+    padding: 32px 24px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .setup-card {
+    background: #0d3535;
+    border: 1px solid #c9a84c44;
+    border-radius: 12px;
+    padding: 28px;
+  }
+
+  .setup-card h2 {
+    font-family: 'Cinzel', serif;
+    color: #c9a84c;
+    font-size: 16px;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  .setup-card p {
+    font-size: 13px;
+    color: #7ab5a0;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .setup-card a {
+    color: #c9a84c;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #7ab5a0;
+    margin-bottom: 6px;
+  }
+
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    background: #0a2a2a;
+    border: 1px solid #c9a84c66;
+    border-radius: 8px;
+    color: #f0e6c8;
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+  }
+
+  input[type="text"]:focus, input[type="password"]:focus {
+    border-color: #c9a84c;
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .tag {
+    background: #0a2a2a;
+    border: 1px solid #c9a84c55;
+    border-radius: 20px;
+    padding: 4px 12px 4px 10px;
+    font-size: 12px;
+    color: #c9a84c;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tag-remove {
+    cursor: pointer;
+    color: #7ab5a0;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .tag-remove:hover { color: #e05252; }
+
+  .tag-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .tag-input-row input {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .btn {
+    background: #c9a84c;
+    color: #0a2a2a;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  .btn:hover { background: #e0bf6a; }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-outline {
+    background: transparent;
+    color: #c9a84c;
+    border: 1px solid #c9a84c;
+    font-size: 12px;
+    padding: 6px 14px;
+  }
+
+  .btn-outline:hover { background: #c9a84c22; }
+
+  .main-layout {
+    display: none;
+    height: calc(100vh - 68px);
+  }
+
+  .sidebar {
+    width: 320px;
+    min-width: 320px;
+    background: #0d3535;
+    border-right: 1px solid #c9a84c44;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid #c9a84c33;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sidebar-header span {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: #c9a84c;
+    letter-spacing: 1px;
+  }
+
+  .results-count {
+    font-size: 11px;
+    color: #7ab5a0;
+    font-family: 'Lato', sans-serif;
+  }
+
+  .streams-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .streams-list::-webkit-scrollbar { width: 4px; }
+  .streams-list::-webkit-scrollbar-track { background: #0a2a2a; }
+  .streams-list::-webkit-scrollbar-thumb { background: #c9a84c55; border-radius: 2px; }
+
+  .stream-card {
+    background: #0a2a2a;
+    border: 1px solid #c9a84c22;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    display: flex;
+    gap: 10px;
+  }
+
+  .stream-card:hover { border-color: #c9a84c77; background: #0d2e2e; }
+  .stream-card.active { border-color: #c9a84c; background: #0d3535; }
+
+  .thumb-wrap {
+    position: relative;
+    width: 80px;
+    min-width: 80px;
+    height: 50px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #0a2a2a;
+  }
+
+  .thumb-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .live-badge {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    background: #e05252;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+  }
+
+  .viewer-badge {
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    background: rgba(0,0,0,0.75);
+    color: #f0e6c8;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  .stream-info { flex: 1; min-width: 0; }
+
+  .stream-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #f0e6c8;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .stream-channel {
+    font-size: 11px;
+    color: #7ab5a0;
+  }
+
+  .player-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #050f0f;
+    overflow: hidden;
+  }
+
+  .player-wrap {
+    flex: 1;
+    position: relative;
+    background: #000;
+  }
+
+  .player-wrap iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    position: absolute;
+    top: 0; left: 0;
+  }
+
+  .player-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #7ab5a066;
+    gap: 12px;
+  }
+
+  .player-placeholder svg { opacity: 0.3; }
+
+  .player-placeholder p {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: #7ab5a0;
+  }
+
+  .player-meta {
+    padding: 10px 16px;
+    border-top: 1px solid #c9a84c33;
+    background: #0d3535;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .player-meta-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f0e6c8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+
+  .player-meta-channel {
+    font-size: 12px;
+    color: #c9a84c;
+    white-space: nowrap;
+  }
+
+  .search-controls {
+    padding: 8px;
+    border-bottom: 1px solid #c9a84c22;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .keyword-select {
+    flex: 1;
+    background: #0a2a2a;
+    border: 1px solid #c9a84c44;
+    border-radius: 6px;
+    color: #f0e6c8;
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    padding: 6px 10px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 12px;
+    color: #7ab5a0;
+    font-size: 13px;
+  }
+
+  .spinner {
+    width: 28px; height: 28px;
+    border: 2px solid #c9a84c33;
+    border-top-color: #c9a84c;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-state {
+    padding: 20px;
+    font-size: 12px;
+    color: #e05252;
+    background: #e0525222;
+    border-radius: 8px;
+    margin: 12px;
+    line-height: 1.5;
+  }
+
+  .empty-state {
+    padding: 30px 16px;
+    text-align: center;
+    color: #7ab5a0;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .footer-bar {
+    padding: 6px 16px;
+    font-size: 10px;
+    color: #7ab5a055;
+    border-top: 1px solid #c9a84c22;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  #refresh-timer { color: #7ab5a077; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">&#9654; Disney Live Streams</div>
+    <div class="header-sub">YouTube Live Finder</div>
+  </div>
+  <div id="header-right"></div>
+</div>
+
+<div id="setup-view" class="setup-panel">
+  <div class="setup-card">
+    <h2>Setup</h2>
+    <p>Enter your YouTube Data API v3 key to get started. Free quota is 10,000 units/day — each keyword search costs ~100 units. <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">Get a key here</a> — enable the YouTube Data API v3, then create credentials.</p>
+
+    <label>YouTube API Key</label>
+    <input type="password" id="api-key-input" placeholder="AIza..." />
+
+    <label>Search Keywords</label>
+    <div class="tag-row" id="tags-row"></div>
+    <div class="tag-input-row">
+      <input type="text" id="tag-input" placeholder="Add keyword (e.g. Disneyland live)" />
+      <button class="btn btn-outline" onclick="addTag()">Add</button>
+    </div>
+
+    <button class="btn" onclick="startApp()" style="width:100%; margin-top:4px;">Search for Live Streams</button>
+    <div id="setup-error" style="color:#e05252; font-size:12px; margin-top:12px; display:none;"></div>
+  </div>
+</div>
+
+<div id="main-view" class="main-layout" style="display:none; flex-direction:row;">
+  <div class="sidebar">
+    <div class="search-controls">
+      <select class="keyword-select" id="keyword-select">
+        <option value="__all__">All keywords</option>
+      </select>
+      <button class="btn btn-outline" onclick="fetchStreams()" style="padding:6px 10px; font-size:11px;">Refresh</button>
+    </div>
+    <div class="sidebar-header">
+      <span>Live Now</span>
+      <span class="results-count" id="results-count"></span>
+    </div>
+    <div class="streams-list" id="streams-list"></div>
+    <div class="footer-bar">
+      <span>Powered by YouTube Data API</span>
+      <span id="refresh-timer"></span>
+    </div>
+  </div>
+
+  <div class="player-area">
+    <div class="player-wrap" id="player-wrap">
+      <div class="player-placeholder" id="player-placeholder">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="22" stroke="#7ab5a0" stroke-width="2"/>
+          <polygon points="19,16 35,24 19,32" fill="#7ab5a0"/>
+        </svg>
+        <p>Select a stream to watch</p>
+      </div>
+    </div>
+    <div class="player-meta" id="player-meta" style="display:none;">
+      <div class="player-meta-title" id="meta-title"></div>
+      <div class="player-meta-channel" id="meta-channel"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let apiKey = '';
+let keywords = ['Disneyland live', 'Disney parks live', 'Walt Disney World live'];
+let allStreams = [];
+let activeVideoId = null;
+let refreshInterval = null;
+let countdown = 300;
+
+function renderTags() {
+  const row = document.getElementById('tags-row');
+  row.innerHTML = keywords.map((kw, i) =>
+    `<div class="tag">${kw}<span class="tag-remove" onclick="removeTag(${i})">×</span></div>`
+  ).join('');
+}
+
+function addTag() {
+  const inp = document.getElementById('tag-input');
+  const val = inp.value.trim();
+  if (val && !keywords.includes(val)) {
+    keywords.push(val);
+    renderTags();
+  }
+  inp.value = '';
+}
+
+function removeTag(i) {
+  keywords.splice(i, 1);
+  renderTags();
+}
+
+document.getElementById('tag-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addTag();
+});
+
+renderTags();
+
+async function startApp() {
+  const key = document.getElementById('api-key-input').value.trim();
+  const errEl = document.getElementById('setup-error');
+  if (!key) { errEl.textContent = 'Please enter an API key.'; errEl.style.display = 'block'; return; }
+  if (!keywords.length) { errEl.textContent = 'Please add at least one keyword.'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  apiKey = key;
+
+  const sel = document.getElementById('keyword-select');
+  sel.innerHTML = '<option value="__all__">All keywords</option>';
+  keywords.forEach(kw => {
+    const opt = document.createElement('option');
+    opt.value = kw; opt.textContent = kw;
+    sel.appendChild(opt);
+  });
+
+  document.getElementById('header-right').innerHTML = `<button class="btn btn-outline" onclick="resetApp()" style="font-size:11px; padding:6px 12px;">Change Settings</button>`;
+
+  document.getElementById('setup-view').style.display = 'none';
+  document.getElementById('main-view').style.display = 'flex';
+
+  await fetchStreams();
+  startRefreshTimer();
+}
+
+function resetApp() {
+  clearInterval(refreshInterval);
+  document.getElementById('setup-view').style.display = 'block';
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('header-right').innerHTML = '';
+  document.getElementById('player-placeholder').style.display = 'flex';
+  document.getElementById('player-meta').style.display = 'none';
+  const pw = document.getElementById('player-wrap');
+  const iframe = pw.querySelector('iframe');
+  if (iframe) iframe.remove();
+}
+
+async function fetchStreams() {
+  const list = document.getElementById('streams-list');
+  const sel = document.getElementById('keyword-select');
+  const activeKw = sel.value;
+  const toSearch = activeKw === '__all__' ? keywords : [activeKw];
+
+  list.innerHTML = `<div class="loading-state"><div class="spinner"></div><span>Searching for live streams...</span></div>`;
+  document.getElementById('results-count').textContent = '';
+
+  const seen = new Set();
+  allStreams = [];
+
+  try {
+    for (const kw of toSearch) {
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&q=${encodeURIComponent(kw)}&maxResults=15&key=${apiKey}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.error) {
+        throw new Error(data.error.message);
+      }
+
+      for (const item of (data.items || [])) {
+        const vid = item.id.videoId;
+        if (seen.has(vid)) continue;
+        seen.add(vid);
+        allStreams.push({
+          videoId: vid,
+          title: item.snippet.title,
+          channel: item.snippet.channelTitle,
+          thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url,
+          keyword: kw
+        });
+      }
+    }
+
+    renderStreams(allStreams);
+    document.getElementById('results-count').textContent = `${allStreams.length} live`;
+    countdown = 300;
+
+  } catch (err) {
+    list.innerHTML = `<div class="error-state"><strong>API Error:</strong> ${err.message}<br><br>Check that your API key is valid and has YouTube Data API v3 enabled.</div>`;
+  }
+}
+
+function renderStreams(streams) {
+  const list = document.getElementById('streams-list');
+  if (!streams.length) {
+    list.innerHTML = `<div class="empty-state">No live streams found right now.<br>Try different keywords or check back later.</div>`;
+    return;
+  }
+
+  list.innerHTML = streams.map(s => `
+    <div class="stream-card ${s.videoId === activeVideoId ? 'active' : ''}" onclick="selectStream('${s.videoId}', this, ${JSON.stringify(s.title).replace(/'/g,"&#39;")}, '${s.channel.replace(/'/g,"&#39;")}')">
+      <div class="thumb-wrap">
+        ${s.thumb ? `<img src="${s.thumb}" loading="lazy">` : ''}
+        <div class="live-badge">LIVE</div>
+      </div>
+      <div class="stream-info">
+        <div class="stream-title">${escHtml(s.title)}</div>
+        <div class="stream-channel">${escHtml(s.channel)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function selectStream(videoId, el, title, channel) {
+  activeVideoId = videoId;
+  document.querySelectorAll('.stream-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+
+  const pw = document.getElementById('player-wrap');
+  document.getElementById('player-placeholder').style.display = 'none';
+  const existing = pw.querySelector('iframe');
+  if (existing) existing.remove();
+
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+  iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+  iframe.allowFullscreen = true;
+  pw.appendChild(iframe);
+
+  document.getElementById('meta-title').textContent = title;
+  document.getElementById('meta-channel').textContent = channel;
+  document.getElementById('player-meta').style.display = 'flex';
+}
+
+function startRefreshTimer() {
+  clearInterval(refreshInterval);
+  const timerEl = document.getElementById('refresh-timer');
+  refreshInterval = setInterval(() => {
+    countdown--;
+    const m = Math.floor(countdown / 60);
+    const s = countdown % 60;
+    timerEl.textContent = `Refreshes in ${m}:${s.toString().padStart(2,'0')}`;
+    if (countdown <= 0) {
+      fetchStreams();
+    }
+  }, 1000);
+}
+
+document.getElementById('keyword-select').addEventListener('change', fetchStreams);
+</script>
+</body>
+</html>
