@@ -3,405 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live Streams — Disney Hotel TV</title>
+  <title>Live Streams — Magic Key TV</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --teal-dark:   #0a2a2a;
-      --teal-mid:    #0d3535;
-      --teal-light:  #1a4a4a;
-      --teal-accent: #7ab5a0;
-      --gold:        #c9a84c;
-      --gold-light:  #e0bf6a;
-      --gold-dim:    #a07830;
-      --cream:       #f0e6c8;
-      --cream-dim:   #c8b890;
-      --red-live:    #cc4444;
+      --teal-dark: #0a2a2a; --teal-mid: #0d3535; --teal-light: #1a4a4a;
+      --teal-accent: #7ab5a0; --gold: #c9a84c; --gold-light: #e0bf6a;
+      --gold-dim: #a07830; --cream: #f0e6c8; --cream-dim: #c8b890; --red-live: #cc4444;
     }
-
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      background: var(--teal-dark);
-      color: var(--cream);
-      font-family: 'Lato', sans-serif;
-    }
-
-    /* ── HEADER ── */
-    #header {
-      height: 64px;
-      background: var(--teal-mid);
-      border-bottom: 2px solid var(--gold);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 10;
-    }
-
-    #header-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    #home-btn {
-      font-family: 'Cinzel', serif;
-      font-size: 12px;
-      letter-spacing: 1.5px;
-      color: var(--gold);
-      text-decoration: none;
-      border: 1px solid var(--gold);
-      padding: 6px 14px;
-      border-radius: 4px;
-      transition: background 0.2s, color 0.2s;
-      white-space: nowrap;
-    }
-
-    #home-btn:hover {
-      background: var(--gold);
-      color: var(--teal-dark);
-    }
-
-    #wordmark {
-      font-family: 'Cinzel', serif;
-      font-size: 22px;
-      font-weight: 600;
-      letter-spacing: 3px;
-      color: var(--gold);
-      text-shadow: 0 0 20px rgba(201,168,76,0.3);
-    }
-
-    #header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    #live-indicator {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      letter-spacing: 1px;
-      color: var(--teal-accent);
-      text-transform: uppercase;
-    }
-
-    .live-dot {
-      width: 8px;
-      height: 8px;
-      background: var(--red-live);
-      border-radius: 50%;
-      animation: pulse 1.4s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: 0.4; transform: scale(0.75); }
-    }
-
-    /* ── LAYOUT ── */
-    #app {
-      display: flex;
-      height: calc(100vh - 64px);
-    }
-
-    /* ── SIDEBAR ── */
-    #sidebar {
-      width: 300px;
-      min-width: 300px;
-      background: var(--teal-mid);
-      border-right: 1px solid rgba(201,168,76,0.25);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    #sidebar-top {
-      padding: 12px 12px 8px;
-      border-bottom: 1px solid rgba(201,168,76,0.2);
-      flex-shrink: 0;
-    }
-
-    #keyword-select {
-      width: 100%;
-      background: var(--teal-dark);
-      border: 1px solid rgba(201,168,76,0.4);
-      border-radius: 6px;
-      color: var(--cream);
-      font-family: 'Lato', sans-serif;
-      font-size: 12px;
-      padding: 7px 10px;
-      outline: none;
-      cursor: pointer;
-      margin-bottom: 8px;
-    }
-
+    html, body { height: 100%; overflow: hidden; background: var(--teal-dark); color: var(--cream); font-family: 'Lato', sans-serif; }
+    #header { height: 64px; background: var(--teal-mid); border-bottom: 2px solid var(--gold); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; position: relative; z-index: 10; }
+    #header-left { display: flex; align-items: center; gap: 16px; }
+    #home-btn { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 1.5px; color: var(--gold); text-decoration: none; border: 1px solid var(--gold); padding: 6px 14px; border-radius: 4px; transition: background 0.2s, color 0.2s; white-space: nowrap; }
+    #home-btn:hover { background: var(--gold); color: var(--teal-dark); }
+    #wordmark { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 600; letter-spacing: 3px; color: var(--gold); text-shadow: 0 0 20px rgba(201,168,76,0.3); }
+    #header-right { display: flex; align-items: center; gap: 12px; }
+    #live-indicator { display: flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: 1px; color: var(--teal-accent); text-transform: uppercase; }
+    .live-dot { width: 8px; height: 8px; background: var(--red-live); border-radius: 50%; animation: pulse 1.4s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
+    #app { display: flex; height: calc(100vh - 64px); }
+    #sidebar { width: 300px; min-width: 300px; background: var(--teal-mid); border-right: 1px solid rgba(201,168,76,0.25); display: flex; flex-direction: column; overflow: hidden; }
+    #sidebar-top { padding: 12px 12px 8px; border-bottom: 1px solid rgba(201,168,76,0.2); flex-shrink: 0; }
+    #keyword-select { width: 100%; background: var(--teal-dark); border: 1px solid rgba(201,168,76,0.4); border-radius: 6px; color: var(--cream); font-family: 'Lato', sans-serif; font-size: 12px; padding: 7px 10px; outline: none; cursor: pointer; margin-bottom: 8px; }
     #keyword-select:focus { border-color: var(--gold); }
-
-    #sidebar-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 12px;
-      border-bottom: 1px solid rgba(201,168,76,0.15);
-      flex-shrink: 0;
-    }
-
-    #sidebar-label {
-      font-family: 'Cinzel', serif;
-      font-size: 11px;
-      letter-spacing: 1.5px;
-      color: var(--gold);
-      text-transform: uppercase;
-    }
-
-    #results-count {
-      font-size: 11px;
-      color: var(--teal-accent);
-    }
-
-    #refresh-btn {
-      font-family: 'Cinzel', serif;
-      font-size: 10px;
-      letter-spacing: 1px;
-      color: var(--gold);
-      background: transparent;
-      border: 1px solid rgba(201,168,76,0.4);
-      border-radius: 4px;
-      padding: 4px 10px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
+    #sidebar-bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid rgba(201,168,76,0.15); flex-shrink: 0; }
+    #sidebar-label { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; }
+    #results-count { font-size: 11px; color: var(--teal-accent); }
+    #refresh-btn { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px; color: var(--gold); background: transparent; border: 1px solid rgba(201,168,76,0.4); border-radius: 4px; padding: 4px 10px; cursor: pointer; transition: background 0.2s; }
     #refresh-btn:hover { background: rgba(201,168,76,0.15); }
-
-    #streams-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px;
-    }
-
+    #streams-list { flex: 1; overflow-y: auto; padding: 8px; }
     #streams-list::-webkit-scrollbar { width: 4px; }
     #streams-list::-webkit-scrollbar-track { background: var(--teal-dark); }
     #streams-list::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }
-
-    .stream-card {
-      display: flex;
-      gap: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid rgba(201,168,76,0.15);
-      background: var(--teal-dark);
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      margin-bottom: 7px;
-    }
-
+    .stream-card { display: flex; gap: 10px; padding: 10px; border-radius: 8px; border: 1px solid rgba(201,168,76,0.15); background: var(--teal-dark); cursor: pointer; transition: border-color 0.2s, background 0.2s; margin-bottom: 7px; }
     .stream-card:hover { border-color: rgba(201,168,76,0.5); background: rgba(13,53,53,0.8); }
     .stream-card.active { border-color: var(--gold); background: var(--teal-mid); }
-
-    .thumb-wrap {
-      position: relative;
-      width: 88px;
-      min-width: 88px;
-      height: 52px;
-      border-radius: 5px;
-      overflow: hidden;
-      background: #040f0f;
-    }
-
-    .thumb-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .badge-live {
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      background: var(--red-live);
-      color: #fff;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      padding: 1px 5px;
-      border-radius: 3px;
-    }
-
+    .thumb-wrap { position: relative; width: 88px; min-width: 88px; height: 52px; border-radius: 5px; overflow: hidden; background: #040f0f; }
+    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .badge-live { position: absolute; top: 3px; left: 3px; background: var(--red-live); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 0.5px; padding: 1px 5px; border-radius: 3px; }
     .stream-info { flex: 1; min-width: 0; }
-
-    .stream-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--cream);
-      line-height: 1.35;
-      margin-bottom: 5px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .stream-channel {
-      font-size: 11px;
-      color: var(--teal-accent);
-    }
-
-    /* ── SIDEBAR FOOTER ── */
-    #sidebar-footer {
-      padding: 8px 12px;
-      border-top: 1px solid rgba(201,168,76,0.15);
-      display: flex;
-      justify-content: space-between;
-      font-size: 10px;
-      color: rgba(122,181,160,0.5);
-      flex-shrink: 0;
-    }
-
-    /* ── PLAYER AREA ── */
-    #player-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: #040f0f;
-      overflow: hidden;
-    }
-
-    #player-wrap {
-      flex: 1;
-      position: relative;
-      background: #000;
-    }
-
-    #player-wrap iframe {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    #player-placeholder {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      color: rgba(122,181,160,0.4);
-    }
-
-    #player-placeholder .ph-icon {
-      width: 64px;
-      height: 64px;
-      border: 2px solid rgba(122,181,160,0.25);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #player-placeholder p {
-      font-family: 'Cinzel', serif;
-      font-size: 13px;
-      letter-spacing: 2px;
-      color: rgba(122,181,160,0.5);
-    }
-
-    #player-meta {
-      padding: 10px 18px;
-      border-top: 1px solid rgba(201,168,76,0.25);
-      background: var(--teal-mid);
-      display: none;
-      align-items: center;
-      gap: 16px;
-      flex-shrink: 0;
-    }
-
-    #meta-title {
-      flex: 1;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--cream);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    #meta-channel {
-      font-family: 'Cinzel', serif;
-      font-size: 11px;
-      letter-spacing: 1px;
-      color: var(--gold);
-      white-space: nowrap;
-    }
-
-    /* ── STATES ── */
-    .state-loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 16px;
-      gap: 14px;
-      color: var(--teal-accent);
-      font-size: 12px;
-      letter-spacing: 1px;
-    }
-
-    .spinner {
-      width: 28px;
-      height: 28px;
-      border: 2px solid rgba(201,168,76,0.2);
-      border-top-color: var(--gold);
-      border-radius: 50%;
-      animation: spin 0.75s linear infinite;
-    }
-
+    .stream-title { font-size: 12px; font-weight: 700; color: var(--cream); line-height: 1.35; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .stream-channel { font-size: 11px; color: var(--teal-accent); }
+    #sidebar-footer { padding: 8px 12px; border-top: 1px solid rgba(201,168,76,0.15); display: flex; justify-content: space-between; font-size: 10px; color: rgba(122,181,160,0.5); flex-shrink: 0; }
+    #player-area { flex: 1; display: flex; flex-direction: column; background: #040f0f; overflow: hidden; }
+    #player-wrap { flex: 1; position: relative; background: #000; }
+    #player-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+    #player-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: rgba(122,181,160,0.4); }
+    #player-placeholder .ph-icon { width: 64px; height: 64px; border: 2px solid rgba(122,181,160,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    #player-placeholder p { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 2px; color: rgba(122,181,160,0.5); }
+    #player-meta { padding: 10px 18px; border-top: 1px solid rgba(201,168,76,0.25); background: var(--teal-mid); display: none; align-items: center; gap: 16px; flex-shrink: 0; }
+    #meta-title { flex: 1; font-size: 13px; font-weight: 700; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #meta-channel { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px; color: var(--gold); white-space: nowrap; }
+    .state-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 16px; gap: 14px; color: var(--teal-accent); font-size: 12px; letter-spacing: 1px; }
+    .spinner { width: 28px; height: 28px; border: 2px solid rgba(201,168,76,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.75s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    .state-error {
-      margin: 12px;
-      padding: 14px 16px;
-      background: rgba(204,68,68,0.15);
-      border: 1px solid rgba(204,68,68,0.4);
-      border-radius: 8px;
-      font-size: 12px;
-      color: #e08080;
-      line-height: 1.6;
-    }
-
-    .state-empty {
-      padding: 40px 16px;
-      text-align: center;
-      font-size: 12px;
-      color: rgba(122,181,160,0.6);
-      line-height: 1.7;
-    }
-
-    /* ── BOTTOM NAV (matches other pages) ── */
-    #bottom-nav {
-      display: none; /* streams page uses full-height layout; home btn in header */
-    }
+    .state-error { margin: 12px; padding: 14px 16px; background: rgba(204,68,68,0.15); border: 1px solid rgba(204,68,68,0.4); border-radius: 8px; font-size: 12px; color: #e08080; line-height: 1.6; }
+    .state-empty { padding: 40px 16px; text-align: center; font-size: 12px; color: rgba(122,181,160,0.6); line-height: 1.7; }
   </style>
 </head>
 <body>
-
-  <!-- HEADER -->
   <div id="header">
     <div id="header-left">
       <a id="home-btn" href="index.html">&#8592; Home</a>
-      <div id="wordmark">Disney Hotel TV</div>
+      <div id="wordmark">Magic Key TV</div>
     </div>
     <div id="header-right">
       <div id="live-indicator">
@@ -411,10 +78,7 @@
     </div>
   </div>
 
-  <!-- MAIN LAYOUT -->
   <div id="app">
-
-    <!-- SIDEBAR -->
     <div id="sidebar">
       <div id="sidebar-top">
         <select id="keyword-select">
@@ -438,7 +102,6 @@
       </div>
     </div>
 
-    <!-- PLAYER -->
     <div id="player-area">
       <div id="player-wrap">
         <div id="player-placeholder">
@@ -455,115 +118,61 @@
         <div id="meta-channel"></div>
       </div>
     </div>
-
   </div>
 
   <script>
     const API_KEY = 'AIzaSyAfi34mpVlJtYwyxBinKSySur_BRRa54LA';
-    const KEYWORDS = [
-      'Disneyland live',
-      'Disney parks live',
-      'Walt Disney World live',
-      'Magic Kingdom live',
-      'EPCOT live'
-    ];
+    const KEYWORDS = ['Disneyland live','Disney parks live','Walt Disney World live','Magic Kingdom live','EPCOT live'];
     const REFRESH_SECS = 300;
-
-    let activeVideoId = null;
-    let timerInterval = null;
-    let countdown = REFRESH_SECS;
+    let activeVideoId = null, timerInterval = null, countdown = REFRESH_SECS;
 
     async function fetchStreams() {
       const sel = document.getElementById('keyword-select');
       const chosen = sel.value;
       const toSearch = chosen === '__all__' ? KEYWORDS : [chosen];
-
-      document.getElementById('streams-list').innerHTML =
-        `<div class="state-loading"><div class="spinner"></div><span>Searching YouTube...</span></div>`;
+      document.getElementById('streams-list').innerHTML = `<div class="state-loading"><div class="spinner"></div><span>Searching YouTube...</span></div>`;
       document.getElementById('results-count').textContent = '';
-
-      const seen = new Set();
-      const streams = [];
-
+      const seen = new Set(), streams = [];
       try {
         for (const kw of toSearch) {
           const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&q=${encodeURIComponent(kw)}&maxResults=15&key=${API_KEY}`;
           const res = await fetch(url);
           const data = await res.json();
-
           if (data.error) throw new Error(data.error.message);
-
           for (const item of (data.items || [])) {
             const vid = item.id.videoId;
             if (seen.has(vid)) continue;
             seen.add(vid);
-            streams.push({
-              videoId: vid,
-              title: item.snippet.title,
-              channel: item.snippet.channelTitle,
-              thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || ''
-            });
+            streams.push({ videoId: vid, title: item.snippet.title, channel: item.snippet.channelTitle, thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '' });
           }
         }
-
         renderStreams(streams);
         document.getElementById('results-count').textContent = streams.length + ' live';
         countdown = REFRESH_SECS;
-
       } catch (err) {
-        document.getElementById('streams-list').innerHTML =
-          `<div class="state-error"><strong>API Error:</strong> ${escHtml(err.message)}</div>`;
+        document.getElementById('streams-list').innerHTML = `<div class="state-error"><strong>API Error:</strong> ${escHtml(err.message)}</div>`;
       }
     }
 
     function renderStreams(streams) {
       const list = document.getElementById('streams-list');
-
-      if (!streams.length) {
-        list.innerHTML = `<div class="state-empty">No live Disney streams found right now.<br>Try a different keyword or check back soon.</div>`;
-        return;
-      }
-
-      list.innerHTML = streams.map(s => `
-        <div class="stream-card${s.videoId === activeVideoId ? ' active' : ''}"
-             data-id="${escAttr(s.videoId)}"
-             data-title="${escAttr(s.title)}"
-             data-channel="${escAttr(s.channel)}"
-             onclick="selectStream(this)">
-          <div class="thumb-wrap">
-            ${s.thumb ? `<img src="${escAttr(s.thumb)}" loading="lazy" alt="">` : ''}
-            <div class="badge-live">LIVE</div>
-          </div>
-          <div class="stream-info">
-            <div class="stream-title">${escHtml(s.title)}</div>
-            <div class="stream-channel">${escHtml(s.channel)}</div>
-          </div>
-        </div>
-      `).join('');
+      if (!streams.length) { list.innerHTML = `<div class="state-empty">No live Disney streams found right now.<br>Try a different keyword or check back soon.</div>`; return; }
+      list.innerHTML = streams.map(s => `<div class="stream-card${s.videoId === activeVideoId ? ' active' : ''}" data-id="${escAttr(s.videoId)}" data-title="${escAttr(s.title)}" data-channel="${escAttr(s.channel)}" onclick="selectStream(this)"><div class="thumb-wrap">${s.thumb ? `<img src="${escAttr(s.thumb)}" loading="lazy" alt="">` : ''}<div class="badge-live">LIVE</div></div><div class="stream-info"><div class="stream-title">${escHtml(s.title)}</div><div class="stream-channel">${escHtml(s.channel)}</div></div></div>`).join('');
     }
 
     function selectStream(el) {
-      const videoId = el.dataset.id;
-      const title   = el.dataset.title;
-      const channel = el.dataset.channel;
-
+      const videoId = el.dataset.id, title = el.dataset.title, channel = el.dataset.channel;
       activeVideoId = videoId;
-
       document.querySelectorAll('.stream-card').forEach(c => c.classList.remove('active'));
       el.classList.add('active');
-
       const pw = document.getElementById('player-wrap');
       document.getElementById('player-placeholder').style.display = 'none';
-
-      const old = pw.querySelector('iframe');
-      if (old) old.remove();
-
+      const old = pw.querySelector('iframe'); if (old) old.remove();
       const iframe = document.createElement('iframe');
       iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
       iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
       iframe.allowFullscreen = true;
       pw.appendChild(iframe);
-
       document.getElementById('meta-title').textContent = title;
       document.getElementById('meta-channel').textContent = channel;
       document.getElementById('player-meta').style.display = 'flex';
@@ -574,27 +183,16 @@
       const el = document.getElementById('timer-display');
       timerInterval = setInterval(() => {
         countdown--;
-        const m = Math.floor(countdown / 60);
-        const s = countdown % 60;
+        const m = Math.floor(countdown / 60), s = countdown % 60;
         el.textContent = `Refresh in ${m}:${s.toString().padStart(2, '0')}`;
         if (countdown <= 0) fetchStreams();
       }, 1000);
     }
 
-    function escHtml(s) {
-      return String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
-
-    function escAttr(s) {
-      return String(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
+    function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function escAttr(s) { return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
     document.getElementById('keyword-select').addEventListener('change', fetchStreams);
-
     fetchStreams();
     startTimer();
   </script>
