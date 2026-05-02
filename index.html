@@ -432,6 +432,7 @@
 <div id="menu-bar">
   <button id="music-btn" onclick="handleMusicBtn()">♪ Play Music</button>
 
+  <!-- 1. Disney Updates -->
   <div class="menu-item" onclick="window.location.href='updates.html'">
     <div class="menu-icon">
       <svg viewBox="0 0 36 36"><circle cx="11" cy="9" r="6"/><circle cx="25" cy="9" r="6"/><circle cx="18" cy="22" r="11"/></svg>
@@ -441,52 +442,7 @@
 
   <div class="menu-divider"></div>
 
-  <div class="menu-item" onclick="window.open('https://disneyland.disney.go.com/calendars/day/#/disneyland,downtown-disney-district,disney-california-adventure/', '_blank')">
-    <div class="menu-icon">
-      <svg viewBox="0 0 36 36">
-        <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5"/>
-        <circle cx="18" cy="18" r="15"/>
-        <line x1="18" y1="18" x2="18" y2="8" stroke="rgba(180,138,42,1)" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="18" y1="18" x2="24" y2="21" stroke="rgba(180,138,42,1)" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="18" cy="18" r="1.5" fill="rgba(180,138,42,1)"/>
-      </svg>
-    </div>
-    <div class="menu-label">Park<br>Hours</div>
-    <div class="menu-sublabel">Today's Schedule</div>
-  </div>
-
-  <div class="menu-divider"></div>
-
-  <div class="menu-item" onclick="window.open('https://disneyland.disney.go.com/maps/', '_blank')">
-    <div class="menu-icon">
-      <svg viewBox="0 0 36 36">
-        <polygon points="2,6 12,2 24,6 34,2 34,30 24,34 12,30 2,34" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5"/>
-        <polygon points="2,6 12,2 24,6 34,2 34,30 24,34 12,30 2,34"/>
-        <polyline points="12,2 12,30" stroke="rgba(180,138,42,0.7)" stroke-width="1.5" fill="none"/>
-        <polyline points="24,6 24,34" stroke="rgba(180,138,42,0.7)" stroke-width="1.5" fill="none"/>
-      </svg>
-    </div>
-    <div class="menu-label">Resort<br>Map</div>
-    <div class="menu-sublabel">Navigate</div>
-  </div>
-
-  <div class="menu-divider"></div>
-
-  <div class="menu-item" onclick="window.open('https://disneyland.disney.go.com/dining/', '_blank')">
-    <div class="menu-icon">
-      <svg viewBox="0 0 36 36">
-        <rect x="6.5" y="2" width="2.5" height="32" rx="1.2"/>
-        <path d="M5,2 Q5,11 9,15 Q13,11 13,2Z"/>
-        <rect x="25" y="2" width="2.5" height="32" rx="1.2"/>
-        <path d="M22,2 Q22,10 27.5,14 Q27.5,2 27.5,2Z"/>
-      </svg>
-    </div>
-    <div class="menu-label">Dining</div>
-    <div class="menu-sublabel">Reservations</div>
-  </div>
-
-  <div class="menu-divider"></div>
-
+  <!-- 2. Wait Times -->
   <div class="menu-item" onclick="window.location.href='waittimes.html'">
     <div class="menu-icon">
       <svg viewBox="0 0 36 36">
@@ -506,17 +462,13 @@
 
   <div class="menu-divider"></div>
 
-  <!-- RIDE SURVEY button -->
+  <!-- 3. Ride Survey -->
   <div class="menu-item" onclick="window.location.href='survey.html'">
     <div class="menu-icon">
       <svg viewBox="0 0 36 36">
-        <!-- pencil body -->
         <rect x="14" y="4" width="8" height="22" rx="1.5" transform="rotate(0 18 18)"/>
-        <!-- pencil tip triangle -->
         <polygon points="14,26 22,26 18,34"/>
-        <!-- eraser cap -->
         <rect x="14" y="2" width="8" height="4" rx="1"/>
-        <!-- lines on pencil (ruled lines effect) -->
         <line x1="14" y1="10" x2="22" y2="10" stroke="rgba(180,138,42,0.7)" stroke-width="1.2" fill="none"/>
         <line x1="14" y1="14" x2="22" y2="14" stroke="rgba(180,138,42,0.7)" stroke-width="1.2" fill="none"/>
         <line x1="14" y1="18" x2="22" y2="18" stroke="rgba(180,138,42,0.7)" stroke-width="1.2" fill="none"/>
@@ -525,6 +477,60 @@
     <div class="menu-label">Ride<br>Survey</div>
     <div class="menu-sublabel">Plan Your Day</div>
   </div>
+
+  <div class="menu-divider"></div>
+
+  <!-- 4. Live Streams -->
+  <div class="menu-item" onclick="window.location.href='streams.html'">
+    <div class="menu-icon">
+      <svg viewBox="0 0 36 36">
+        <!-- signal arcs -->
+        <path d="M6,18 Q6,9 18,5" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M30,18 Q30,9 18,5" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M10,22 Q10,13 18,10" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M26,22 Q26,13 18,10" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2" stroke-linecap="round"/>
+        <!-- play button -->
+        <circle cx="18" cy="22" r="8" fill="rgba(20,50,65,0.9)"/>
+        <polygon points="15,18.5 15,25.5 23,22" fill="rgba(180,138,42,1)"/>
+      </svg>
+    </div>
+    <div class="menu-label">Live<br>Streams</div>
+    <div class="menu-sublabel">Watch Now</div>
+  </div>
+
+  <div class="menu-divider"></div>
+
+  <!-- 5. Resort Map -->
+  <div class="menu-item" onclick="window.open('https://disneyland.disney.go.com/maps/', '_blank')">
+    <div class="menu-icon">
+      <svg viewBox="0 0 36 36">
+        <polygon points="2,6 12,2 24,6 34,2 34,30 24,34 12,30 2,34" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5"/>
+        <polygon points="2,6 12,2 24,6 34,2 34,30 24,34 12,30 2,34"/>
+        <polyline points="12,2 12,30" stroke="rgba(180,138,42,0.7)" stroke-width="1.5" fill="none"/>
+        <polyline points="24,6 24,34" stroke="rgba(180,138,42,0.7)" stroke-width="1.5" fill="none"/>
+      </svg>
+    </div>
+    <div class="menu-label">Resort<br>Map</div>
+    <div class="menu-sublabel">Navigate</div>
+  </div>
+
+  <div class="menu-divider"></div>
+
+  <!-- 6. Dining -->
+  <div class="menu-item" onclick="window.open('https://disneyland.disney.go.com/dining/', '_blank')">
+    <div class="menu-icon">
+      <svg viewBox="0 0 36 36">
+        <rect x="6.5" y="2" width="2.5" height="32" rx="1.2"/>
+        <path d="M5,2 Q5,11 9,15 Q13,11 13,2Z"/>
+        <rect x="25" y="2" width="2.5" height="32" rx="1.2"/>
+        <path d="M22,2 Q22,10 27.5,14 Q27.5,2 27.5,2Z"/>
+      </svg>
+    </div>
+    <div class="menu-label">Dining</div>
+    <div class="menu-sublabel">Reservations</div>
+  </div>
+
+  <!-- Park Hours removed from nav per reorder; accessible via direct link -->
 
 </div>
 
