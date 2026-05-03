@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ride Predictor – Magic Key TV</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal:#0a4a4a; --gold:#c9a84c; --gold-light:#e8c96d; --gold-dim:#8a6e2f;
+  --cream:#fdf6e3; --cream-dark:#f5e8c0; --card:#fff9ee;
+  --text:#1a1208; --muted:#5a4a2a;
+  --green:#2d6a2d; --green-bg:#e8f5e8;
+  --yellow:#8a7000; --yellow-bg:#fff8d6;
+  --red:#8a2020; --red-bg:#ffeaea;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;overflow-x:hidden}
+body{background:var(--teal);font-family:'Crimson Pro',Georgia,serif;color:var(--text);min-height:100%;display:flex;flex-direction:column;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+
+/* HEADER — sticky avoids fixed-position scroll jank on mobile */
+header{
+background:var(–teal);border-bottom:2px solid var(–gold);
+padding:0 1rem;display:flex;align-items:center;justify-content:space-between;
+height:54px;flex-shrink:0;position:sticky;top:0;z-index:50;gap:.6rem;overflow:hidden;
+}
+.hdr-left{display:flex;align-items:center;gap:.65rem;min-width:0;flex:1;overflow:hidden}
+.home-btn{font-family:‘Cinzel’,serif;font-size:.6rem;color:var(–gold);text-decoration:none;letter-spacing:.07em;opacity:.75;transition:opacity .2s;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.home-btn:hover{opacity:1}
+.hdr-div{width:1px;height:16px;background:var(–gold-dim);opacity:.4;flex-shrink:0}
+.hdr-title{font-family:‘Cinzel’,serif;font-size:.78rem;font-weight:600;color:var(–gold-light);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.hdr-right{display:flex;align-items:center;gap:.55rem;flex-shrink:0}
+#clock{font-family:‘Cinzel’,serif;font-size:.82rem;color:var(–gold);letter-spacing:.04em;white-space:nowrap}
+.badge{font-family:‘Cinzel’,serif;font-size:.48rem;letter-spacing:.09em;padding:.14rem .4rem;border-radius:999px;white-space:nowrap;background:rgba(45,106,45,.22);color:#7ec87e;border:1px solid rgba(126,200,126,.28)}
+.badge.stale{background:rgba(138,112,0,.18);color:var(–gold);border-color:rgba(201,168,76,.28)}
+.badge.err{background:rgba(138,32,32,.18);color:#d47070;border-color:rgba(212,112,112,.28)}
+@media(max-width:360px){.badge{display:none}}
+
+/* MAIN */
+main{flex:1;background:var(–cream);padding:1rem 1rem 2rem;display:flex;flex-direction:column;gap:1.1rem}
+@media(min-width:600px){main{padding:1.35rem 1.75rem 2rem;gap:1.35rem}}
+
+/* CONTEXT BAR */
+.ctx-bar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.ctx-lbl{font-family:‘Cinzel’,serif;font-size:.58rem;color:var(–muted);letter-spacing:.1em;text-transform:uppercase}
+.ctx-pill{background:var(–teal);color:var(–gold-light);font-family:‘Cinzel’,serif;font-size:.58rem;letter-spacing:.07em;padding:.17rem .6rem;border-radius:999px}
+.crowd{display:flex;align-items:center;gap:.38rem;margin-left:auto}
+.dots{display:flex;gap:3px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(–cream-dark);border:1px solid var(–gold-dim)}
+.dot.on{background:var(–gold);border-color:var(–gold)}
+.crowd-lbl{font-family:‘Cinzel’,serif;font-size:.56rem;color:var(–muted);letter-spacing:.05em}
+#updated{font-family:‘Crimson Pro’,serif;font-size:.6rem;color:var(–muted);font-style:italic;width:100%}
+
+/* CONTROLS */
+.controls{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+.tabs{display:flex;border:1.5px solid var(–gold-dim);border-radius:6px;overflow:hidden;width:fit-content}
+.tab{font-family:‘Cinzel’,serif;font-size:.62rem;letter-spacing:.06em;padding:.4rem .9rem;border:none;cursor:pointer;background:transparent;color:var(–gold-dim);transition:all .2s;border-right:1px solid var(–gold-dim);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.tab:last-child{border-right:none}
+.tab.on{background:var(–teal);color:var(–gold-light)}
+.tab:not(.on):hover{background:var(–cream-dark);color:var(–teal)}
+.search-wrap{position:relative;flex:1;min-width:140px;max-width:300px}
+.search-wrap svg{position:absolute;left:.55rem;top:50%;transform:translateY(-50%);width:11px;height:11px;opacity:.38;pointer-events:none;color:var(–muted)}
+input[type=text]{width:100%;font-family:‘Crimson Pro’,serif;font-size:.87rem;color:var(–text);background:var(–card);border:1px solid var(–gold-dim);border-radius:6px;padding:.37rem .75rem .37rem 1.75rem;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+input[type=text]:focus{border-color:var(–teal)}
+input[type=text]::placeholder{color:var(–muted);font-style:italic}
+
+/* SECTION */
+.sec-hdr{display:flex;align-items:baseline;gap:.6rem;border-bottom:1px solid var(–gold-dim);padding-bottom:.34rem;margin-bottom:.72rem;flex-wrap:wrap}
+.sec-title{font-family:‘Cinzel’,serif;font-size:.65rem;font-weight:600;color:var(–teal);letter-spacing:.1em;text-transform:uppercase}
+.sec-sub{font-family:‘Crimson Pro’,serif;font-size:.75rem;color:var(–muted);font-style:italic}
+
+/* PICK CARDS — 2 cols mobile, auto-fill desktop */
+.picks{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+@media(max-width:360px){.picks{grid-template-columns:1fr}}
+@media(min-width:580px){.picks{grid-template-columns:repeat(auto-fill,minmax(185px,1fr))}}
+
+.card{background:var(–card);border:1px solid var(–gold-dim);border-radius:8px;padding:.75rem .85rem;position:relative;overflow:hidden;transition:box-shadow .2s,transform .15s;animation:up .3s ease both;-webkit-tap-highlight-color:transparent;cursor:pointer;touch-action:manipulation}
+.card:active{transform:scale(.98)}
+.card::before{content:’’;position:absolute;top:0;left:0;right:0;height:3px}
+.card.go::before{background:var(–green)}
+.card.caution::before{background:#c9a000}
+.card.skip::before{background:var(–red)}
+.card:nth-child(1){animation-delay:.04s}.card:nth-child(2){animation-delay:.08s}
+.card:nth-child(3){animation-delay:.12s}.card:nth-child(4){animation-delay:.16s}
+
+.cbadge{font-family:‘Cinzel’,serif;font-size:.52rem;letter-spacing:.09em;text-transform:uppercase;padding:.14rem .44rem;border-radius:999px;display:inline-block;margin-bottom:.36rem}
+.go .cbadge{background:var(–green-bg);color:var(–green)}
+.caution .cbadge{background:var(–yellow-bg);color:var(–yellow)}
+.skip .cbadge{background:var(–red-bg);color:var(–red)}
+.cname{font-family:‘Cinzel’,serif;font-size:.7rem;font-weight:600;color:var(–teal);line-height:1.3;margin-bottom:.22rem}
+.cland{font-size:.64rem;color:var(–muted);font-style:italic;margin-bottom:.42rem}
+.cwait-row{display:flex;align-items:baseline;gap:.38rem}
+.cwait{font-family:‘Cinzel’,serif;font-size:1.18rem;font-weight:700;color:var(–teal);line-height:1}
+.cwait span{font-size:.57rem;font-weight:400;color:var(–muted)}
+.live-tag{font-family:‘Cinzel’,serif;font-size:.47rem;letter-spacing:.08em;padding:.1rem .32rem;border-radius:999px;background:rgba(45,106,45,.13);color:var(–green);border:1px solid rgba(45,106,45,.2)}
+.est-tag{font-family:‘Cinzel’,serif;font-size:.47rem;letter-spacing:.08em;padding:.1rem .32rem;border-radius:999px;background:rgba(90,74,42,.1);color:var(–muted);border:1px solid rgba(90,74,42,.2)}
+canvas.spark{margin-top:.42rem;height:22px;width:100%;display:block}
+.ctip{font-size:.64rem;color:var(–muted);font-style:italic;margin-top:.36rem;line-height:1.4}
+
+/* FAVORITES */
+.fav-btn{background:none;border:none;cursor:pointer;padding:0 0 0 .2rem;line-height:1;flex-shrink:0;font-size:15px;opacity:.3;transition:opacity .15s,transform .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.fav-btn:hover{opacity:.7}
+.fav-btn.on{opacity:1;transform:scale(1.15)}
+.fav-section{display:none}
+.fav-section.visible{display:block}
+
+/* ALL RIDES — single col on mobile */
+.grid{display:grid;grid-template-columns:1fr;gap:.42rem}
+@media(min-width:500px){.grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}}
+
+.row{background:var(–card);border:1px solid rgba(138,110,47,.18);border-radius:6px;padding:.5rem .7rem;display:flex;align-items:center;gap:.55rem;transition:background .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.row:active{background:var(–cream-dark)}
+.row.hide{display:none}
+.rdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.rdot.go{background:var(–green)}.rdot.caution{background:#c9a000}.rdot.skip{background:var(–red)}.rdot.closed{background:var(–muted);opacity:.4}
+.rcol{flex:1;min-width:0}
+.rname{font-family:‘Cinzel’,serif;font-size:.65rem;color:var(–teal);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rland{font-size:.57rem;color:var(–muted);font-style:italic}
+.rright{text-align:right;flex-shrink:0}
+.rwait{font-family:‘Cinzel’,serif;font-size:.82rem;font-weight:600;color:var(–teal);white-space:nowrap}
+.rwait small{font-family:‘Crimson Pro’,serif;font-size:.55rem;font-weight:400;color:var(–muted)}
+.rbest{font-size:.55rem;color:var(–green);font-style:italic;white-space:nowrap}
+.noresult{grid-column:1/-1;font-style:italic;color:var(–muted);font-size:.8rem;padding:.4rem 0;display:none}
+
+/* LEGEND */
+.legend{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center}
+.li{display:flex;align-items:center;gap:.28rem;font-size:.62rem;color:var(–muted);font-style:italic}
+.ld{width:7px;height:7px;border-radius:50%}
+
+/* DETAIL MODAL — sheet from bottom on mobile, centered on desktop */
+.modal-backdrop{position:fixed;inset:0;background:rgba(10,30,20,.6);z-index:100;display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;transition:opacity .2s;pointer-events:none}
+.modal-backdrop.open{opacity:1;pointer-events:all}
+@media(min-width:520px){.modal-backdrop{align-items:center;padding:1rem}}
+.modal{
+background:var(–cream);border:2px solid var(–gold);
+border-radius:14px 14px 0 0;
+width:100%;max-width:540px;
+padding:1rem 1.1rem 1.6rem;
+position:relative;
+max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+@media(min-width:520px){.modal{border-radius:10px;max-height:85vh;padding:1.2rem 1.35rem 1.4rem}}
+.modal-handle{width:36px;height:4px;background:var(–gold-dim);opacity:.4;border-radius:2px;margin:0 auto .85rem}
+@media(min-width:520px){.modal-handle{display:none}}
+.modal-close{position:absolute;top:.65rem;right:.85rem;background:none;border:none;font-family:‘Cinzel’,serif;font-size:.7rem;color:var(–gold-dim);cursor:pointer;letter-spacing:.08em;opacity:.7;transition:opacity .2s;-webkit-tap-highlight-color:transparent}
+.modal-close:hover{opacity:1}
+.modal-ride-name{font-family:‘Cinzel’,serif;font-size:.88rem;font-weight:600;color:var(–teal);margin-bottom:.12rem;padding-right:3rem;line-height:1.3}
+.modal-land{font-size:.7rem;color:var(–muted);font-style:italic;margin-bottom:.85rem}
+.modal-chart-wrap{position:relative;width:100%;height:145px}
+.modal-stats{display:flex;gap:.55rem;margin-top:.8rem;flex-wrap:wrap}
+.modal-stat{flex:1;min-width:75px;background:var(–cream-dark);border-radius:6px;padding:.48rem .62rem}
+.modal-stat-lbl{font-family:‘Cinzel’,serif;font-size:.53rem;letter-spacing:.08em;color:var(–muted);text-transform:uppercase;margin-bottom:.16rem}
+.modal-stat-val{font-family:‘Cinzel’,serif;font-size:.9rem;font-weight:600;color:var(–teal)}
+.modal-stat-sub{font-size:.6rem;color:var(–muted);font-style:italic;margin-top:.07rem}
+
+@keyframes up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="hdr-left">
+    <a class="home-btn" href="index.html">← Home</a>
+    <div class="hdr-div"></div>
+    <div class="hdr-title">Magic Key TV &middot; Ride Predictor</div>
+  </div>
+  <div class="hdr-right">
+    <span class="badge" id="badge">● LIVE</span>
+    <div id="clock">--:-- --</div>
+  </div>
+</header>
+
+<main>
+
+  <div class="ctx-bar">
+    <span class="ctx-lbl">Today</span>
+    <span class="ctx-pill" id="ctx-day">–</span>
+    <span class="ctx-pill" id="ctx-season">–</span>
+    <div class="crowd">
+      <span class="ctx-lbl">Crowd</span>
+      <div class="dots" id="dots">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <div class="dot"></div><div class="dot"></div>
+      </div>
+      <span class="crowd-lbl" id="crowd-lbl">–</span>
+    </div>
+    <span id="updated"></span>
+  </div>
+
+  <div class="controls">
+    <div class="tabs">
+      <button class="tab on" onclick="switchPark('dl',this)">Disneyland</button>
+      <button class="tab" onclick="switchPark('dca',this)">California Adventure</button>
+    </div>
+    <div class="search-wrap">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="6.5" cy="6.5" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
+      </svg>
+      <input type="text" id="q" placeholder="Search rides or lands…" oninput="filter(this.value)">
+    </div>
+  </div>
+
+  <div class="fav-section" id="fav-section">
+    <div class="sec-hdr">
+      <span class="sec-title">&#9733; My Rides</span>
+      <span class="sec-sub">your saved rides at a glance</span>
+    </div>
+    <div class="picks" id="fav-picks"></div>
+  </div>
+
+  <div>
+    <div class="sec-hdr">
+      <span class="sec-title">Best Bets Right Now</span>
+      <span class="sec-sub" id="picks-sub">–</span>
+    </div>
+    <div class="picks" id="picks"></div>
+  </div>
+
+  <div>
+    <div class="sec-hdr">
+      <span class="sec-title">All Attractions</span>
+      <span class="sec-sub">predicted wait · best window today</span>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="legend">
+    <div class="li"><div class="ld" style="background:var(--green)"></div>Go now (under 20 min)</div>
+    <div class="li"><div class="ld" style="background:#c9a000"></div>Moderate (20–40 min)</div>
+    <div class="li"><div class="ld" style="background:var(--red)"></div>Skip for now (over 40 min)</div>
+    <div class="li" style="margin-left:auto;font-size:.6rem;opacity:.7">LIVE tag = blended with Queue-Times data</div>
+  </div>
+
+</main>
+
+<!-- DETAIL MODAL -->
+
+<div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal()">✕ CLOSE</button>
+    <div class="modal-ride-name" id="modal-name"></div>
+    <div class="modal-land" id="modal-land"></div>
+    <div class="modal-chart-wrap">
+      <canvas id="modal-canvas" role="img" aria-label="Wait time prediction chart"></canvas>
+    </div>
+    <div class="modal-stats" id="modal-stats"></div>
+  </div>
+</div>
+
+<script>
+// Queue-Times park IDs
+const QT = {dl:16, dca:17};
+const PROXIES = [
+  u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+];
+
+async function fetchProxy(url) {
+  for (const fn of PROXIES) {
+    try {
+      const r = await fetch(fn(url), {signal:AbortSignal.timeout(7000)});
+      if (r.ok) return await r.json();
+    } catch(e) {}
+  }
+  return null;
+}
+
+async function loadLive(parkId) {
+  const d = await fetchProxy(`https://queue-times.com/parks/${parkId}/queue_times.json`);
+  if (!d?.lands) return {};
+  const m = {};
+  for (const land of d.lands)
+    for (const ride of land.rides)
+      m[ride.name.toLowerCase().trim()] = {wait:ride.wait_time, open:ride.is_open};
+  return m;
+}
+
+// ── RIDE DATA ────────────────────────────────────────────────────────────────
+// profile[i] = typical wait minutes, hour index 0=6am … 17=11pm, moderate weekday
+// qt = lowercase name as it appears in Queue-Times for live blending
+
+const DL = [
+  // Adventureland
+  {id:'indy',    name:'Indiana Jones Adventure',               land:'Adventureland',      qt:'indiana jones adventure',                       p:[10,10,20,40,60,75,80,75,70,65,60,60,65,70,65,55,45,30]},
+  {id:'jungle',  name:'Jungle Cruise',                         land:'Adventureland',      qt:'jungle cruise',                                 p:[5,5,10,20,30,40,45,45,40,35,30,35,40,45,40,30,20,10]},
+
+  // New Orleans Square
+  {id:'potc',    name:'Pirates of the Caribbean',              land:'New Orleans Square', qt:'pirates of the caribbean',                      p:[5,5,5,10,20,30,35,40,35,30,25,30,35,40,35,25,20,10]},
+  {id:'hm',      name:'Haunted Mansion',                       land:'New Orleans Square', qt:'haunted mansion',                               p:[5,5,5,10,20,35,40,45,40,35,30,35,40,50,45,35,25,15]},
+  // Critter Country
+  {id:'splash',  name:"Tiana's Bayou Adventure",               land:'Bayou Country',      qt:"tiana's bayou adventure",                       p:[5,5,10,25,45,65,70,65,60,55,50,55,65,70,60,45,30,15]},
+  {id:'pooh',    name:"The Many Adventures of Winnie the Pooh",land:'Bayou Country',      qt:"the many adventures of winnie the pooh",        p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  // Frontierland
+  {id:'btmr',    name:'Big Thunder Mountain Railroad',         land:'Frontierland',       qt:'big thunder mountain railroad',                 p:[5,5,10,25,40,55,60,65,60,55,50,55,60,65,60,50,40,25]},
+
+  // Fantasyland
+  {id:'matterhorn',name:'Matterhorn Bobsleds',                 land:'Fantasyland',        qt:'matterhorn bobsleds',                           p:[5,5,10,20,35,55,65,70,65,60,55,50,55,65,60,50,40,30]},
+  {id:'peter',   name:"Peter Pan's Flight",                    land:'Fantasyland',        qt:"peter pan's flight",                           p:[10,10,20,35,50,65,70,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'pinoc',   name:"Pinocchio's Daring Journey",            land:'Fantasyland',        qt:"pinocchio's daring journey",                   p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,5,5]},
+  {id:'dumbo',   name:'Dumbo the Flying Elephant',             land:'Fantasyland',        qt:'dumbo the flying elephant',                     p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'alice',   name:'Alice in Wonderland',                   land:'Fantasyland',        qt:'alice in wonderland',                           p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'toad',    name:"Mr. Toad's Wild Ride",                  land:'Fantasyland',        qt:"mr. toad's wild ride",                         p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'snow',    name:"Snow White's Enchanted Wish",           land:'Fantasyland',        qt:"snow white's enchanted wish",                  p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'carousel',name:'King Arthur Carrousel',                 land:'Fantasyland',        qt:'king arthur carrousel',                         p:[5,5,5,5,10,10,10,10,10,10,10,10,10,10,10,5,5,5]},
+  {id:'casey',   name:'Casey Jr. Circus Train',                land:'Fantasyland',        qt:'casey jr. circus train',                        p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'storybook',name:'Storybook Land Canal Boats',           land:'Fantasyland',        qt:'storybook land canal boats',                    p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'smallworld',name:"it's a small world",                  land:'Fantasyland',        qt:"it's a small world",                           p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
+
+  // Toontown
+  {id:'mmrr',    name:"Mickey & Minnie's Runaway Railway",     land:'Toontown',           qt:"mickey & minnie's runaway railway",             p:[10,15,25,40,55,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'roger',   name:"Roger Rabbit's Car Toon Spin",          land:'Toontown',           qt:"roger rabbit's car toon spin",                 p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'gadget',  name:"Chip 'n' Dale's GADGETcoaster",         land:'Toontown',           qt:"chip 'n' dale's gadgetcoaster",                p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  // Tomorrowland
+  {id:'space',   name:'Space Mountain',                        land:'Tomorrowland',       qt:'space mountain',                                p:[5,5,10,25,45,65,70,75,70,65,60,65,70,75,70,55,45,30]},
+  {id:'buzz',    name:'Buzz Lightyear Astro Blasters',         land:'Tomorrowland',       qt:'buzz lightyear astro blasters',                 p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'autopia', name:'Autopia',                               land:'Tomorrowland',       qt:'autopia',                                       p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'nemo',    name:'Finding Nemo Submarine Voyage',         land:'Tomorrowland',       qt:'finding nemo submarine voyage',                 p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'startours',name:"Star Tours — The Adventures Continue", land:'Tomorrowland',       qt:"star tours — the adventures continue",          p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+
+  // Galaxy's Edge
+  {id:'rotr',    name:"Star Wars: Rise of the Resistance",     land:"Galaxy's Edge",      qt:"star wars: rise of the resistance",             p:[20,30,50,75,100,120,120,110,100,95,90,95,110,115,100,80,60,40]},
+  {id:'falcon',  name:"Millennium Falcon: Smugglers Run",       land:"Galaxy's Edge",      qt:"millennium falcon: smugglers run",               p:[10,15,30,50,70,85,90,85,80,70,65,70,80,85,75,60,45,30]},
+
+];
+
+const DCA = [
+  // Cars Land
+  {id:'rsr',     name:'Radiator Springs Racers',                land:'Cars Land',          qt:'radiator springs racers',                       p:[20,30,55,80,100,115,110,105,95,90,85,90,100,110,100,80,60,40]},
+  {id:'luigi',   name:"Luigi's Rollickin' Roadsters",          land:'Cars Land',          qt:"luigi's rollickin' roadsters",                  p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,8,5]},
+  {id:'mater',   name:"Mater's Junkyard Jamboree",             land:'Cars Land',          qt:"mater's junkyard jamboree",                     p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
+  // Avengers Campus
+  {id:'gotg',    name:'Guardians of the Galaxy — Mission: BREAKOUT!',land:'Avengers Campus',qt:'guardians of the galaxy - mission: breakout!', p:[15,15,25,45,65,80,85,80,75,70,65,70,75,80,70,55,45,30]},
+  {id:'spidey',  name:'WEB SLINGERS: A Spider-Man Adventure',  land:'Avengers Campus',    qt:'web slingers: a spider-man adventure',           p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  // Pixar Pier
+  {id:'incred',  name:'Incredicoaster',                         land:'Pixar Pier',         qt:'incredicoaster',                                p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'tsmm',    name:'Toy Story Midway Mania!',                land:'Pixar Pier',         qt:'toy story midway mania!',                       p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'insideout',name:'Inside Out Emotional Whirlwind',        land:'Pixar Pier',         qt:'inside out emotional whirlwind',                p:[10,10,20,30,45,55,60,55,50,45,40,45,50,55,50,40,30,15]},
+  {id:'jessie',  name:"Jessie's Critter Carousel",              land:'Pixar Pier',         qt:"jessie's critter carousel",                     p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'ppar_s',  name:"Pixar Pal-A-Round — Swinging",           land:'Pixar Pier',         qt:"pixar pal-a-round - swinging",                  p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'ppar_ns', name:"Pixar Pal-A-Round — Non-Swinging",       land:'Pixar Pier',         qt:"pixar pal-a-round - non-swinging",              p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  // Grizzly Peak
+  {id:'soarin',  name:"Soarin' Around the World",               land:'Grizzly Peak',       qt:"soarin' around the world",                      p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'grizzly', name:'Grizzly River Run',                      land:'Grizzly Peak',       qt:'grizzly river run',                             p:[5,5,10,20,35,55,60,55,50,45,45,50,55,60,55,40,30,15]},
+
+  // Hollywood Land
+  {id:'monsters',name:"Monsters, Inc. Mike & Sulley to the Rescue!",land:'Hollywood Land', qt:"monsters, inc. mike & sulley to the rescue!",  p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,8,5]},
+
+  // Paradise Gardens
+  {id:'mermaid', name:"The Little Mermaid — Ariel's Undersea Adventure",land:'Paradise Gardens Park',qt:"the little mermaid ~ ariel's undersea adventure",p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,8,5]},
+  {id:'goofy',   name:"Goofy's Sky School",                     land:'Paradise Gardens Park',qt:"goofy's sky school",                         p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
+  {id:'jellyfish',name:"Jumpin' Jellyfish",                     land:'Paradise Gardens Park',qt:"jumpin' jellyfish",                          p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'swings',  name:'Silly Symphony Swings',                  land:'Paradise Gardens Park',qt:'silly symphony swings',                      p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+
+];
+
+const HRS = ['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm','11pm'];
+
+let park = 'dl', live = {}, searchQ = '';
+
+// Favorites — persisted per park key e.g. "favs_dl"
+function favsKey() { return `favs_${park}`; }
+function loadFavs() { try { return new Set(JSON.parse(localStorage.getItem(favsKey())||'[]')); } catch(e){ return new Set(); } }
+function saveFavs(s) { localStorage.setItem(favsKey(), JSON.stringify([...s])); }
+let favs = loadFavs();
+
+// Clock
+function tick() {
+  const n=new Date(); let h=n.getHours(); const m=String(n.getMinutes()).padStart(2,'0'),ap=h>=12?'PM':'AM';
+  h=h%12||12; document.getElementById('clock').textContent=`${h}:${m} ${ap}`;
+}
+setInterval(tick,1000); tick();
+
+// Helpers
+const hIdx = n => {
+  const raw = n.getHours() - 6;
+  const { start, end } = parkOpenRange();
+  return Math.max(start, Math.min(end, raw));
+};
+const dayType = n => [0,6].includes(n.getDay())?'Weekend':'Weekday';
+const season = n => {const m=n.getMonth();if(m===11||m===0)return'Holiday Season';if(m>=5&&m<=7)return'Summer';if(m===3||m===4)return'Spring Break';return'Regular Season';};
+const crowdLevel = (d,s) => {if(s==='Holiday Season')return d==='Weekend'?5:4;if(s==='Summer')return d==='Weekend'?5:4;if(s==='Spring Break')return d==='Weekend'?4:3;return d==='Weekend'?3:2;};
+const mult = l => ({1:.6,2:.8,3:1,4:1.25,5:1.5})[l];
+const status = w => w<=20?'go':w<=40?'caution':'skip';
+const slabel = s => ({go:'Go Now',caution:'Moderate',skip:'Skip'})[s];
+
+// Park hours: DL 8am–11pm (index 2–17), DCA 8am–10pm (index 2–16)
+function parkOpenRange() {
+  return { start: 2, end: park === 'dl' ? 17 : 16 };
+}
+
+const BLOCKS = [
+  { label: 'Mid-Morning',    start: 3,  end: 4  }, // 9–10am
+  { label: 'Lunch Break',    start: 5,  end: 7  }, // 11am–1pm
+  { label: 'Afternoon',      start: 7,  end: 10 }, // 1–4pm
+  { label: 'Late Afternoon', start: 10, end: 12 }, // 4–6pm
+  { label: 'Evening',        start: 12, end: 14 }, // 6–8pm
+];
+
+function bestBlock(p, m) {
+  const { start: pStart, end: pEnd } = parkOpenRange();
+
+  const scored = BLOCKS.map(b => {
+    const s = Math.max(b.start, pStart);
+    const e = Math.min(b.end, pEnd);
+    if (s >= e) return { ...b, avg: Infinity };
+    let sum = 0, count = 0;
+    for (let i = s; i <= e; i++) { sum += p[i] * m; count++; }
+    return { ...b, avg: count ? sum / count : Infinity };
+  }).filter(b => b.avg < Infinity);
+
+  if (!scored.length) return 'Afternoon';
+  scored.sort((a, b) => a.avg - b.avg);
+  return scored[0].label;
+}
+
+// Trend: looks at next 2 hours for a more useful signal
+function getTrend(p, m, hi) {
+  const curr  = p[hi] * m;
+  const next1 = p[Math.min(hi + 1, p.length - 1)] * m;
+  const next2 = p[Math.min(hi + 2, p.length - 1)] * m;
+  const delta1 = next1 - curr;
+  const delta2 = next2 - curr;
+
+  if (delta1 > 8)  return { arrow: '↑', phrase: 'Rising fast — go now',     color: 'var(--red)' };
+  if (delta1 > 3)  return { arrow: '↑', phrase: 'Wait climbing',             color: 'var(--red)' };
+  if (delta1 < -8) return { arrow: '↓', phrase: 'Dropping fast — good window', color: 'var(--green)' };
+  if (delta1 < -3) return { arrow: '↓', phrase: 'Wait easing',               color: 'var(--green)' };
+  // Steady now — look ahead
+  if (delta2 > 8)  return { arrow: '→', phrase: 'Go soon — gets busy',       color: '#c9a000' };
+  if (delta2 < -8) return { arrow: '→', phrase: 'Gets better soon',          color: '#c9a000' };
+  return             { arrow: '→', phrase: 'Holding steady',                  color: '#c9a000' };
+}
+
+function getLive(ride) {
+  if(!live||!Object.keys(live).length) return {wait:null, closed:false};
+  const k=ride.qt.toLowerCase().trim();
+  const match = live[k] || Object.entries(live).find(([key])=>key.includes(k.slice(0,10))||k.includes(key.slice(0,10)))?.[1];
+  if(!match) return {wait:null, closed:false};
+  if(!match.open) return {wait:null, closed:true};
+  return {wait:match.wait, closed:false};
+}
+
+function disneyRound(wait, rideId) {
+  if (wait === null) return null;
+  const r5 = Math.max(5, Math.round(wait / 5) * 5);
+  if (rideId === 'hm' && r5 === 5) return 13;
+  return r5;
+}
+
+// Wait display: live if available, otherwise historical estimate
+function resolveWait(lv, hist, rideId) {
+  if (lv.closed) return { wait: null, estimated: false };
+  if (lv.wait !== null) {
+    // Live data — use as-is, Disney-rounded
+    return { wait: disneyRound(lv.wait, rideId), estimated: false };
+  }
+  // No live match — use historical, flag as estimated
+  return { wait: disneyRound(hist, rideId), estimated: true };
+}
+
+// Sparkline
+function sparkline(canvas,p,m,hi) {
+  const W=canvas.width=canvas.offsetWidth||170, H=canvas.height=24;
+  const ctx=canvas.getContext('2d');
+  const vals=p.map(v=>v*m), max=Math.max(...vals,10);
+  const pts=vals.map((v,i)=>({x:(i/(vals.length-1))*W, y:H-(v/max)*(H-4)-2}));
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'rgba(10,74,74,.14)'); g.addColorStop(1,'rgba(10,74,74,0)');
+  ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+  pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,H); ctx.lineTo(pts[0].x,H);
+  ctx.closePath(); ctx.fillStyle=g; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+  pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle='#0a4a4a'; ctx.lineWidth=1.5; ctx.stroke();
+  if(hi>=0&&hi<pts.length){ctx.beginPath();ctx.arc(pts[hi].x,pts[hi].y,3.5,0,Math.PI*2);ctx.fillStyle='#c9a84c';ctx.fill();}
+}
+
+// Build a pick card (shared by favs and best bets)
+function makePickCard(r, m, hi) {
+  const el = document.createElement('div');
+  el.className = `card ${r.closed?'skip':r.status}`;
+  el.style.cursor = 'pointer';
+  el.style.opacity = r.closed ? '0.6' : '1';
+  el.onclick = e => { if(!e.target.classList.contains('fav-btn')) openModal(r.id); };
+  const waitRow = r.closed
+    ? `<div style="font-family:'Crimson Pro',serif;font-size:.85rem;color:var(--muted);font-style:italic;margin:.3rem 0 .5rem">Currently closed</div>`
+    : `<div class="cwait-row"><div class="cwait">${r.estimated?'~':''}${r.wait}<span> min</span></div>${!r.estimated?'<span class="live-tag">LIVE</span>':'<span class="est-tag">EST</span>'}</div>`;
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div class="cbadge">${r.closed?'Closed':slabel(r.status)}</div>
+      <button class="fav-btn on" onclick="event.stopPropagation();toggleFav('${r.id}',this)" title="Remove from My Rides" style="font-size:13px;margin-top:1px">&#9733;</button>
+    </div>
+    <div class="cname">${r.name}</div>
+    <div class="cland">${r.land}</div>
+    ${waitRow}
+    <canvas class="spark" id="sp-${r.id}-fav"></canvas>
+    ${r.trend?`<div class="ctip" style="color:${r.trend.color};font-style:normal;font-weight:600;margin-top:.38rem">${r.trend.arrow} ${r.trend.phrase}</div>`:''}
+    <div class="ctip" style="margin-top:.2rem">Tap for full day chart</div>`;
+  return el;
+}
+
+function renderFavs() {
+  const now=new Date(), dt=dayType(now), s=season(now);
+  const cl=crowdLevel(dt,s), m=mult(cl), hi=hIdx(now);
+  const rides = park==='dl'?DL:DCA;
+  const section = document.getElementById('fav-section');
+  const pg = document.getElementById('fav-picks');
+  pg.innerHTML='';
+
+  const favRides = rides
+    .filter(r=>favs.has(r.id))
+    .map(r=>{
+      const lv=getLive(r);
+      const hist=Math.round(r.p[hi]*m);
+      const {wait, estimated}=resolveWait(lv, hist, r.id);
+      const trend=lv.closed?null:getTrend(r.p,m,hi);
+      return {...r, wait, estimated, status:lv.closed?'closed':status(wait), trend, closed:lv.closed};
+    })
+    .sort((a,b)=>{
+      if(a.closed&&!b.closed) return 1;
+      if(!a.closed&&b.closed) return -1;
+      return a.wait-b.wait;
+    });
+
+  section.classList.toggle('visible', favRides.length > 0);
+  if (!favRides.length) return;
+
+  favRides.forEach(r => pg.appendChild(makePickCard(r, m, hi)));
+  requestAnimationFrame(()=>{
+    favRides.forEach(r=>{const c=document.getElementById(`sp-${r.id}-fav`);if(c)sparkline(c,r.p,m,hi);});
+  });
+}
+
+// Render
+function render() {
+  const now=new Date(), dt=dayType(now), s=season(now);
+  const cl=crowdLevel(dt,s), m=mult(cl), hi=hIdx(now);
+
+  document.getElementById('ctx-day').textContent=dt;
+  document.getElementById('ctx-season').textContent=s;
+  document.getElementById('crowd-lbl').textContent=['','Low','Mild','Moderate','Busy','Very Busy'][cl];
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i<cl));
+
+  const rides = park==='dl'?DL:DCA;
+  const computed = rides.map(r=>{
+    const lv=getLive(r);
+    const hist=Math.round(r.p[hi]*m);
+    const {wait, estimated}=resolveWait(lv, hist, r.id);
+    const trend=lv.closed?null:getTrend(r.p,m,hi);
+    return {...r, wait, estimated, status:lv.closed?'closed':status(wait), trend, closed:lv.closed};
+  });
+
+  // Top picks
+  const picks=[...computed].filter(r=>r.status==='go').sort((a,b)=>a.wait-b.wait).slice(0,4);
+  document.getElementById('picks-sub').textContent = picks.length
+    ? `rides worth heading to around ${HRS[hi]}`
+    : `all rides are busy around ${HRS[hi]} — see best windows below`;
+
+  const pg=document.getElementById('picks');
+  pg.innerHTML='';
+  if(!picks.length) {
+    pg.innerHTML='<div style="grid-column:1/-1;font-style:italic;color:var(--muted);font-size:.82rem;padding:.4rem 0">No short waits right now. Check the best windows in the table below.</div>';
+  } else {
+    picks.forEach(r=>{
+      const el=document.createElement('div');
+      el.className=`card ${r.status}`;
+      el.style.cursor='pointer';
+      el.onclick=()=>openModal(r.id);
+      el.innerHTML=`
+        <div class="cbadge">${slabel(r.status)}</div>
+        <div class="cname">${r.name}</div>
+        <div class="cland">${r.land}</div>
+        <div class="cwait-row">
+          <div class="cwait">${r.estimated?'~':''}${r.wait}<span> min</span></div>
+          ${!r.estimated?'<span class="live-tag">LIVE</span>':'<span class="est-tag">EST</span>'}
+        </div>
+        <canvas class="spark" id="sp-${r.id}"></canvas>
+        ${r.trend?`<div class="ctip" style="color:${r.trend.color};font-style:normal;font-weight:600">${r.trend.arrow} ${r.trend.phrase}</div>`:''}
+        <div class="ctip" style="margin-top:.2rem">Tap for full day chart</div>`;
+      pg.appendChild(el);
+    });
+    requestAnimationFrame(()=>{
+      picks.forEach(r=>{const c=document.getElementById(`sp-${r.id}`);if(c)sparkline(c,r.p,m,hi);});
+    });
+  }
+
+  // All rides
+  const ag=document.getElementById('grid');
+  ag.innerHTML='';
+  [...computed].sort((a,b)=>{
+    if(a.closed && !b.closed) return 1;
+    if(!a.closed && b.closed) return -1;
+    return a.wait-b.wait;
+  }).forEach(r=>{
+    const row=document.createElement('div');
+    row.className='row'+(searchQ&&!r.name.toLowerCase().includes(searchQ)&&!r.land.toLowerCase().includes(searchQ)?' hide':'')+(r.closed?' closed-row':'');
+    row.dataset.name=r.name.toLowerCase();
+    row.dataset.land=r.land.toLowerCase();
+    row.style.cursor='pointer';
+    row.onclick = e => { if(!e.target.classList.contains('fav-btn')) openModal(r.id); };
+    const waitDisplay = r.closed
+      ? `<div class="rwait" style="color:var(--muted);font-size:.72rem;font-weight:400;font-style:italic">Closed</div><div class="rbest">&nbsp;</div>`
+      : `<div class="rwait">${r.estimated?'~':''}${r.wait}<small> min ${r.estimated?'<span style="opacity:.55">est</span>':'●'}</small></div>
+         <div class="rbest" style="color:${r.trend.color}">${r.trend.arrow} ${r.trend.phrase}</div>`;
+    row.innerHTML=`
+      <div class="rdot ${r.closed?'closed':r.status}"></div>
+      <div class="rcol">
+        <div class="rname" style="${r.closed?'opacity:.5':''}">${r.name}</div>
+        <div class="rland">${r.land}</div>
+      </div>
+      <div class="rright">${waitDisplay}</div>
+      <button class="fav-btn${favs.has(r.id)?' on':''}" onclick="event.stopPropagation();toggleFav('${r.id}',this)" title="${favs.has(r.id)?'Remove from My Rides':'Add to My Rides'}">&#9733;</button>`;
+    ag.appendChild(row);
+  });
+
+  const nr=document.createElement('div');
+  nr.className='noresult'; nr.id='nores'; nr.textContent='No rides match your search.';
+  const visCount=[...ag.querySelectorAll('.row')].filter(r=>!r.classList.contains('hide')).length;
+  if(!visCount) nr.style.display='block';
+  ag.appendChild(nr);
+
+  renderFavs();
+}
+
+// Favorites
+function toggleFav(id, btn) {
+  if (favs.has(id)) { favs.delete(id); } else { favs.add(id); }
+  saveFavs(favs);
+  // Full render so ALL star buttons (card + row) reflect new state
+  render();
+}
+
+// ── DETAIL MODAL ─────────────────────────────────────────────────────────────
+function openModal(id) {
+  const rides = park==='dl'?DL:DCA;
+  const r = rides.find(x=>x.id===id);
+  if (!r) return;
+
+  const now=new Date(), dt=dayType(now), s=season(now);
+  const cl=crowdLevel(dt,s), m=mult(cl), hi=hIdx(now);
+  const {start, end} = parkOpenRange();
+
+  document.getElementById('modal-name').textContent = r.name;
+  document.getElementById('modal-land').textContent = r.land;
+
+  // Stats
+  const openVals = r.p.slice(start, end+1).map(v=>disneyRound(Math.round(v*m), r.id));
+  const minWait = Math.min(...openVals);
+  const maxWait = Math.max(...openVals);
+  const lv=getLive(r);
+  const isClosed=lv.closed;
+  const hist=Math.round(r.p[hi]*m);
+  const {wait: nowWait, estimated: nowEst} = resolveWait(lv, hist, r.id);
+  const trend = isClosed ? null : getTrend(r.p, m, hi);
+
+  // Build heat strip HTML — one cell per open hour
+  const heatHours = [];
+  for (let i = start; i <= end; i++) heatHours.push(i);
+  const heatMax = Math.max(...heatHours.map(i => r.p[i]*m), 1);
+  const heatCells = heatHours.map(i => {
+    const v = r.p[i]*m / heatMax;
+    const r_ = Math.round(30 + v*180);
+    const g_ = Math.round(106 - v*76);
+    const b_ = Math.round(45 - v*15);
+    const isCur = i === hi;
+    return `<div style="flex:1;height:${isCur?'22px':'16px'};border-radius:2px;background:rgb(${r_},${g_},${b_});opacity:${isCur?1:.75};position:relative;transition:height .2s;${isCur?'box-shadow:0 0 0 2px #c9a84c;':''}"></div>`;
+  }).join('');
+
+  const heatLabels = heatHours.filter((_,i)=>i%2===0).map(i=>`<div style="flex:1;font-size:9px;color:var(--muted);text-align:center;font-family:serif">${HRS[i]}</div>`).join('');
+
+  document.getElementById('modal-stats').innerHTML = `
+    <div class="modal-stat">
+      <div class="modal-stat-lbl">Right Now</div>
+      <div class="modal-stat-val" style="${isClosed?'font-size:.8rem;color:var(--muted)':''}">${isClosed?'Closed':(nowEst?'~':'')+nowWait+' min'}</div>
+      <div class="modal-stat-sub" style="color:${trend?trend.color:'inherit'}">${isClosed?'check back later':trend?`${trend.arrow} ${trend.phrase}`:''}</div>
+    </div>
+    <div class="modal-stat">
+      <div class="modal-stat-lbl">Today's Low</div>
+      <div class="modal-stat-val">${minWait} min</div>
+      <div class="modal-stat-sub">see chart for timing</div>
+    </div>
+    <div class="modal-stat">
+      <div class="modal-stat-lbl">Today's Peak</div>
+      <div class="modal-stat-val">${maxWait} min</div>
+      <div class="modal-stat-sub">avoid if possible</div>
+    </div>
+    <div style="width:100%;margin-top:.5rem">
+      <div style="font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.09em;color:var(--muted);text-transform:uppercase;margin-bottom:.3rem">Wait heat — today</div>
+      <div style="display:flex;gap:2px;align-items:flex-end;height:24px">${heatCells}</div>
+      <div style="display:flex;gap:0;margin-top:3px">${heatLabels}</div>
+    </div>`;
+
+  document.getElementById('modal-backdrop').classList.add('open');
+  requestAnimationFrame(()=>drawModalChart(r, m, hi, start, end));
+}
+
+function drawModalChart(r, m, hi, start, end) {
+  const canvas = document.getElementById('modal-canvas');
+  const W = canvas.width  = canvas.offsetWidth  || 480;
+  const H = canvas.height = canvas.offsetHeight || 160;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  const PAD = {top:12, right:10, bottom:28, left:36};
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top  - PAD.bottom;
+
+  // Only show open hours
+  const openP  = r.p.slice(start, end+1);
+  const openHRS = HRS.slice(start, end+1);
+  const vals   = openP.map(v=>Math.round(v*m));
+  const maxV   = Math.max(...vals, 20);
+  const n      = vals.length;
+
+  const px = i => PAD.left + (i/(n-1))*cW;
+  const py = v => PAD.top  + cH - (v/maxV)*cH;
+
+  // Grid lines
+  ctx.strokeStyle='rgba(138,110,47,.15)'; ctx.lineWidth=1;
+  [0,.25,.5,.75,1].forEach(f=>{
+    const y=PAD.top+cH*(1-f);
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+cW,y); ctx.stroke();
+    ctx.fillStyle='rgba(90,74,42,.5)'; ctx.font='9px serif'; ctx.textAlign='right';
+    ctx.fillText(Math.round(maxV*f), PAD.left-4, y+3);
+  });
+
+  // Fill
+  const grad=ctx.createLinearGradient(0,PAD.top,0,PAD.top+cH);
+  grad.addColorStop(0,'rgba(10,74,74,.18)'); grad.addColorStop(1,'rgba(10,74,74,.02)');
+  ctx.beginPath(); ctx.moveTo(px(0),py(vals[0]));
+  vals.forEach((_,i)=>ctx.lineTo(px(i),py(vals[i])));
+  ctx.lineTo(px(n-1),PAD.top+cH); ctx.lineTo(px(0),PAD.top+cH);
+  ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+
+  // Line
+  ctx.beginPath(); ctx.moveTo(px(0),py(vals[0]));
+  vals.forEach((_,i)=>ctx.lineTo(px(i),py(vals[i])));
+  ctx.strokeStyle='#0a4a4a'; ctx.lineWidth=2; ctx.stroke();
+
+  // X axis labels — every other hour to avoid crowding
+  ctx.fillStyle='rgba(90,74,42,.65)'; ctx.font='9px serif'; ctx.textAlign='center';
+  openHRS.forEach((lbl,i)=>{ if(i%2===0) ctx.fillText(lbl, px(i), H-6); });
+
+  // Current hour marker — vertical line only, no label
+  const curIdx = hi - start;
+  if (curIdx >= 0 && curIdx < n) {
+    ctx.beginPath(); ctx.moveTo(px(curIdx),PAD.top); ctx.lineTo(px(curIdx),PAD.top+cH);
+    ctx.strokeStyle='rgba(201,168,76,.4)'; ctx.lineWidth=1.5; ctx.setLineDash([3,3]); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(px(curIdx),py(vals[curIdx]),5,0,Math.PI*2);
+    ctx.fillStyle='#c9a84c'; ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+  }
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal-backdrop')) return;
+  document.getElementById('modal-backdrop').classList.remove('open');
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.getElementById('modal-backdrop').classList.remove('open'); });
+
+
+function filter(q) {
+  searchQ=q.toLowerCase().trim();
+  document.querySelectorAll('.row').forEach(r=>{
+    const match=!searchQ||r.dataset.name.includes(searchQ)||r.dataset.land.includes(searchQ);
+    r.classList.toggle('hide',!match);
+  });
+  const nores=document.getElementById('nores');
+  if(nores){
+    const vis=[...document.querySelectorAll('.row')].filter(r=>!r.classList.contains('hide')).length;
+    nores.style.display=vis?'none':'block';
+  }
+}
+
+// Live data fetch
+async function refresh() {
+  const badge=document.getElementById('badge');
+  badge.textContent='● FETCHING'; badge.className='badge stale';
+  const data=await loadLive(QT[park]);
+  if(data&&Object.keys(data).length){
+    live=data;
+    badge.textContent='● LIVE'; badge.className='badge';
+    const n=new Date();
+    document.getElementById('updated').textContent=`Live data as of ${n.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`;
+  } else {
+    badge.textContent='● HISTORICAL'; badge.className='badge err';
+    document.getElementById('updated').textContent='Live data unavailable — showing historical estimates only';
+  }
+  render();
+  // If detail modal is open, re-render with fresh data
+  if (document.getElementById('modal-backdrop').classList.contains('open')) {
+    const rides=park==='dl'?DL:DCA;
+    const name=document.getElementById('modal-name').textContent;
+    const r=rides.find(x=>x.name===name);
+    if(r) openModal(r.id);
+  }
+}
+
+function switchPark(p,btn) {
+  park=p; live={}; searchQ='';
+  favs = loadFavs();
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('q').value='';
+  refresh();
+}
+
+// Init
+refresh();
+setInterval(refresh, 5*60*1000);   // re-fetch live data every 5 min
+setInterval(render,  60*1000);      // re-render every minute to keep hour index current
+</script>
+
+</body>
+</html>
