@@ -129,18 +129,19 @@ canvas.spark{margin-top:.42rem;height:22px;width:100%;display:block}
 .ld{width:7px;height:7px;border-radius:50%}
 
 /* DETAIL MODAL — sheet from bottom on mobile, centered on desktop */
-.modal-backdrop{position:fixed;inset:0;background:rgba(10,30,20,.6);z-index:100;display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;transition:opacity .2s;pointer-events:none}
+.modal-backdrop{position:fixed;inset:0;background:rgba(10,30,20,.75);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;transition:opacity .2s;pointer-events:none}
 .modal-backdrop.open{opacity:1;pointer-events:all}
 @media(min-width:520px){.modal-backdrop{align-items:center;padding:1rem}}
 .modal{
-background:var(–cream);border:2px solid var(–gold);
+background:#fdf6e3;border:2px solid var(–gold);
 border-radius:14px 14px 0 0;
 width:100%;max-width:540px;
 padding:1rem 1.1rem 1.6rem;
 position:relative;
 max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+box-shadow:0 -8px 40px rgba(0,0,0,.35);
 }
-@media(min-width:520px){.modal{border-radius:10px;max-height:85vh;padding:1.2rem 1.35rem 1.4rem}}
+@media(min-width:520px){.modal{border-radius:10px;max-height:85vh;padding:1.2rem 1.35rem 1.4rem;box-shadow:0 8px 40px rgba(0,0,0,.35)}}
 .modal-handle{width:36px;height:4px;background:var(–gold-dim);opacity:.4;border-radius:2px;margin:0 auto .85rem}
 @media(min-width:520px){.modal-handle{display:none}}
 .modal-close{position:absolute;top:.65rem;right:.85rem;background:none;border:none;font-family:‘Cinzel’,serif;font-size:.7rem;color:var(–gold-dim);cursor:pointer;letter-spacing:.08em;opacity:.7;transition:opacity .2s;-webkit-tap-highlight-color:transparent}
@@ -230,7 +231,7 @@ max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
     <div class="li"><div class="ld" style="background:var(--green)"></div>Go now (under 20 min)</div>
     <div class="li"><div class="ld" style="background:#c9a000"></div>Moderate (20–40 min)</div>
     <div class="li"><div class="ld" style="background:var(--red)"></div>Skip for now (over 40 min)</div>
-    <div class="li" style="margin-left:auto;font-size:.6rem;opacity:.7">LIVE tag = blended with Queue-Times data</div>
+    <div class="li" style="margin-left:auto;font-size:.6rem;opacity:.7">LIVE = Queue-Times · EST = historical estimate</div>
   </div>
 
 </main>
