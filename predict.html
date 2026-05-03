@@ -112,8 +112,8 @@ canvas.spark{margin-top:.42rem;height:22px;width:100%;display:block}
 .row{background:var(–card);border:1px solid rgba(138,110,47,.18);border-radius:6px;padding:.5rem .7rem;display:flex;align-items:center;gap:.55rem;transition:background .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .row:active{background:var(–cream-dark)}
 .row.hide{display:none}
-.rdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.rdot.go{background:var(–green)}.rdot.caution{background:#c9a000}.rdot.skip{background:var(–red)}.rdot.closed{background:var(–muted);opacity:.4}
+.rdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rdot.go{background:var(–green)}.rdot.caution{background:#c9a000}.rdot.skip{background:var(–red)}.rdot.closed{background:var(–muted);opacity:.5}
 .rcol{flex:1;min-width:0}
 .rname{font-family:‘Cinzel’,serif;font-size:.65rem;color:var(–teal);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rland{font-size:.57rem;color:var(–muted);font-style:italic}
@@ -385,7 +385,7 @@ const dayType = n => [0,6].includes(n.getDay())?'Weekend':'Weekday';
 const season = n => {const m=n.getMonth();if(m===11||m===0)return'Holiday Season';if(m>=5&&m<=7)return'Summer';if(m===3||m===4)return'Spring Break';return'Regular Season';};
 const crowdLevel = (d,s) => {if(s==='Holiday Season')return d==='Weekend'?5:4;if(s==='Summer')return d==='Weekend'?5:4;if(s==='Spring Break')return d==='Weekend'?4:3;return d==='Weekend'?3:2;};
 const mult = l => ({1:.6,2:.8,3:1,4:1.25,5:1.5})[l];
-const status = w => w<=20?'go':w<=40?'caution':'skip';
+const status = w => (w===null||w===undefined) ? 'skip' : w<=20?'go':w<=40?'caution':'skip';
 const slabel = s => ({go:'Go Now',caution:'Moderate',skip:'Skip'})[s];
 
 // Park hours: DL 8am–11pm (index 2–17), DCA 8am–10pm (index 2–16)
@@ -609,7 +609,7 @@ function render() {
       : `<div class="rwait">${r.estimated?'~':''}${r.wait}<small> min ${r.estimated?'<span style="opacity:.55">est</span>':'●'}</small></div>
          <div class="rbest" style="color:${r.trend.color}">${r.trend.arrow} ${r.trend.phrase}</div>`;
     row.innerHTML=`
-      <div class="rdot ${r.closed?'closed':r.status}"></div>
+      <div class="rdot ${r.closed ? 'closed' : r.status}"></div>
       <div class="rcol">
         <div class="rname" style="${r.closed?'opacity:.5':''}">${r.name}</div>
         <div class="rland">${r.land}</div>
