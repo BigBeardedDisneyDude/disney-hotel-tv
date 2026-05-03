@@ -73,14 +73,18 @@ rgba(0,0,0,1.00) 100%
 position: fixed;
 top: 0; left: 0; right: 0;
 z-index: 101;
-background: linear-gradient(180deg, rgba(22,52,68,1.00) 0%, rgba(22,52,68,0.96) 100%);
+background: #163444;
+background: linear-gradient(180deg, #163444 0%, #163444 100%);
 box-shadow: 0 4px 20px rgba(0,0,0,0.5);
 border-bottom: 2px solid var(–gold);
 padding: 16px 24px 14px;
+padding-top: calc(16px + env(safe-area-inset-top, 0px));
 display: flex;
 align-items: center;
 justify-content: space-between;
 gap: 12px;
+-webkit-transform: translateZ(0);
+transform: translateZ(0);
 }
 #header-divider {
 position: absolute;
@@ -187,13 +191,16 @@ color: rgba(255,248,238,0.35); letter-spacing: 0.06em;
 position: fixed;
 bottom: 0; left: 0; right: 0;
 z-index: 101;
-background: linear-gradient(180deg, rgba(180,138,42,1.00) 0%, rgba(160,118,30,1.00) 100%);
+background: #b8861e;
+background: linear-gradient(180deg, #c8921e 0%, #a07820 100%);
 border-top: 1.5px solid rgba(255,220,100,0.4);
 padding: 8px 8px;
 padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
 display: flex;
 align-items: center;
 justify-content: space-around;
+-webkit-transform: translateZ(0);
+transform: translateZ(0);
 }
 .menu-item {
 display: flex; flex-direction: column; align-items: center;
@@ -223,13 +230,12 @@ bottom: calc(70px + env(safe-area-inset-bottom, 0px));
 right: 16px;
 z-index: 102;
 width: 34px; height: 34px;
-background: rgba(22,52,68,0.75);
+background: #163444;
 border: 1px solid rgba(201,168,76,0.3);
 border-radius: 50%;
 display: flex; align-items: center; justify-content: center;
 cursor: pointer;
 transition: all 0.3s;
-backdrop-filter: blur(8px);
 }
 #gear-btn:hover {
 background: rgba(201,168,76,0.15);
@@ -244,7 +250,7 @@ transform: rotate(30deg);
 position: absolute;
 top: 0; left: 50%;
 transform: translate(-50%, -100%);
-background: rgba(22,52,68,0.85);
+background: #163444;
 border: 1px solid rgba(201,168,76,0.4);
 border-bottom: none;
 border-radius: 14px 14px 0 0;
@@ -254,9 +260,9 @@ font-family: ‘Raleway’, sans-serif;
 font-size: 9px; font-weight: 300;
 letter-spacing: 0.28em; text-transform: uppercase;
 cursor: pointer; z-index: 102;
-transition: all 0.3s;
-backdrop-filter: blur(8px);
+transition: background 0.3s, border-color 0.3s;
 white-space: nowrap;
+-webkit-transform: translate(-50%, -100%);
 }
 #music-btn:hover { background: rgba(201,168,76,0.2); border-color: rgba(201,168,76,0.7); }
 
@@ -365,7 +371,7 @@ position: fixed;
 bottom: calc(112px + env(safe-area-inset-bottom, 0px));
 right: 16px;
 z-index: 103;
-background: rgba(22,52,68,0.95);
+background: #163444;
 border: 1px solid rgba(201,168,76,0.4);
 border-radius: 4px;
 padding: 8px 12px;
@@ -374,7 +380,6 @@ flex-direction: column;
 gap: 2px;
 animation: fadeIn 0.4s 0.8s ease both;
 max-width: 180px;
-backdrop-filter: blur(8px);
 }
 #first-run-nudge.show { display: flex; }
 #nudge-text { font-family: ‘Raleway’, sans-serif; font-weight: 300; font-size: 10px; letter-spacing: 0.1em; color: rgba(255,248,238,0.7); line-height: 1.5; }
