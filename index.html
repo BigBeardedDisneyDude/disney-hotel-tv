@@ -74,7 +74,6 @@ position: fixed;
 top: 0; left: 0; right: 0;
 z-index: 101;
 background: #163444;
-background: linear-gradient(180deg, #163444 0%, #163444 100%);
 box-shadow: 0 4px 20px rgba(0,0,0,0.5);
 border-bottom: 2px solid var(–gold);
 padding: 16px 24px 14px;
@@ -108,7 +107,6 @@ font-size: clamp(7px, 1.8vw, 9px);
 letter-spacing: 0.38em; color: var(–gold);
 text-transform: uppercase; opacity: 0.85;
 }
-#welcome-block { display: flex; flex-direction: column; gap: 1px; }
 #greeting-line {
 font-family: ‘Raleway’, sans-serif; font-weight: 200;
 font-size: clamp(9px, 2vw, 11px);
@@ -122,6 +120,21 @@ letter-spacing: 0.04em; color: var(–warm-white);
 text-shadow: 0 2px 12px rgba(0,0,0,0.7);
 line-height: 1.0;
 }
+#time-display {
+font-family: ‘Cinzel’, serif; font-weight: 600;
+font-size: clamp(20px, 5vw, 30px);
+color: var(–warm-white); letter-spacing: 0.06em; line-height: 1.0;
+}
+#date-display {
+font-family: ‘Raleway’, sans-serif; font-weight: 200;
+font-size: clamp(8px, 1.8vw, 10px);
+letter-spacing: 0.25em; color: var(–gold-light);
+text-transform: uppercase; opacity: 0.85;
+margin-top: 1px; white-space: nowrap;
+}
+#weather-temp { font-size: clamp(18px, 4.5vw, 24px); font-weight: 300; color: var(–warm-white); letter-spacing: 0.02em; }
+#weather-desc { font-size: clamp(9px, 2vw, 11px); font-weight: 200; color: rgba(255,248,238,0.7); letter-spacing: 0.1em; text-transform: uppercase; align-self: flex-end; margin-bottom: 2px; }
+#welcome-block { display: flex; flex-direction: column; gap: 1px; }
 
 /* Right info column */
 #info-right {
@@ -141,18 +154,6 @@ gap: 12px; flex-wrap: wrap; justify-content: flex-end;
 #weather-desc { font-size: clamp(9px, 2vw, 11px); font-weight: 200; color: rgba(255,248,238,0.7); letter-spacing: 0.1em; text-transform: uppercase; align-self: flex-end; margin-bottom: 2px; }
 @media (max-width: 480px) { #weather-desc { display: none; } }
 #time-block { display: flex; flex-direction: column; align-items: flex-end; }
-#time-display {
-font-family: ‘Cinzel’, serif; font-weight: 600;
-font-size: clamp(20px, 5vw, 30px);
-color: var(–warm-white); letter-spacing: 0.06em; line-height: 1.0;
-}
-#date-display {
-font-family: ‘Raleway’, sans-serif; font-weight: 200;
-font-size: clamp(8px, 1.8vw, 10px);
-letter-spacing: 0.25em; color: var(–gold-light);
-text-transform: uppercase; opacity: 0.85;
-margin-top: 1px; white-space: nowrap;
-}
 
 /* ── COUNTDOWN ── */
 #countdown-strip {
@@ -250,6 +251,7 @@ transform: rotate(30deg);
 position: absolute;
 top: 0; left: 50%;
 transform: translate(-50%, -100%);
+-webkit-transform: translate(-50%, -100%);
 background: #163444;
 border: 1px solid rgba(201,168,76,0.4);
 border-bottom: none;
@@ -260,11 +262,10 @@ font-family: ‘Raleway’, sans-serif;
 font-size: 9px; font-weight: 300;
 letter-spacing: 0.28em; text-transform: uppercase;
 cursor: pointer; z-index: 102;
-transition: background 0.3s, border-color 0.3s;
+transition: background 0.3s;
 white-space: nowrap;
--webkit-transform: translate(-50%, -100%);
 }
-#music-btn:hover { background: rgba(201,168,76,0.2); border-color: rgba(201,168,76,0.7); }
+#music-btn:hover { background: rgba(201,168,76,0.2); }
 
 /* ── MODAL OVERLAY ── */
 #modal-overlay {
