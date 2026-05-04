@@ -846,7 +846,8 @@ async function refresh() {
     document.getElementById('updated').textContent='Live data unavailable — showing historical estimates only';
   }
   render();
-  setLoading(false);, re-render with fresh data
+  setLoading(false);
+  // If detail modal is open, re-render with fresh data
   if (document.getElementById('modal-backdrop').classList.contains('open')) {
     const rides=park==='dl'?DL:DCA;
     const name=document.getElementById('modal-name').textContent;
