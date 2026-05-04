@@ -1,0 +1,111 @@
+name: Collect Wait Times
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # every 5 minutes, 24/7
+  workflow_dispatch:          # allows manual trigger from GitHub UI for testing
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3        # kill if something hangs, keeps runs clean
+
+    steps:
+      - name: Fetch Queue-Times and store in Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          node << 'EOF'
+          const PARKS = { dl: 16, dca: 17 };
+
+          // Derive context columns so queries stay fast and simple
+          function getContext(date) {
+            // Convert UTC to Pacific time
+            const pt = new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+            const month = pt.getMonth() + 1; // 1-12
+            const dow   = pt.getDay();        // 0=Sun, 6=Sat
+            const hour  = pt.getHours();      // 0-23
+
+            // Season buckets — same logic as predict.html
+            let season;
+            if (month === 12 || month === 1)          season = 'holiday';
+            else if (month >= 6 && month <= 8)        season = 'summer';
+            else if (month === 3 || month === 4)      season = 'spring_break';
+            else                                      season = 'regular';
+
+            return {
+              day_of_week: dow,
+              hour_of_day: hour,
+              month,
+              is_weekend: dow === 0 || dow === 6,
+              season
+            };
+          }
+
+          async function run() {
+            const now = new Date();
+            const ctx = getContext(now);
+            const rows = [];
+
+            for (const [park, parkId] of Object.entries(PARKS)) {
+              let data;
+              try {
+                const res = await fetch(
+                  `https://queue-times.com/parks/${parkId}/queue_times.json`,
+                  { signal: AbortSignal.timeout(8000) }
+                );
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                data = await res.json();
+              } catch (err) {
+                console.error(`Failed to fetch ${park}:`, err.message);
+                continue;
+              }
+
+              for (const land of data.lands || []) {
+                for (const ride of land.rides || []) {
+                  rows.push({
+                    park,
+                    ride_name:   ride.name,
+                    wait_time:   ride.is_open ? (ride.wait_time || 0) : null,
+                    is_open:     ride.is_open,
+                    recorded_at: now.toISOString(),
+                    ...ctx
+                  });
+                }
+              }
+            }
+
+            if (rows.length === 0) {
+              console.log('No rows to insert — both parks may have failed');
+              return;
+            }
+
+            // Insert to Supabase in one batch
+            const res = await fetch(
+              `${process.env.SUPABASE_URL}/rest/v1/wait_times`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type':  'application/json',
+                  'apikey':        process.env.SUPABASE_KEY,
+                  'Authorization': `Bearer ${process.env.SUPABASE_KEY}`,
+                  'Prefer':        'return=minimal'
+                },
+                body: JSON.stringify(rows)
+              }
+            );
+
+            if (!res.ok) {
+              const text = await res.text();
+              throw new Error(`Supabase insert failed: ${res.status} ${text}`);
+            }
+
+            console.log(`✓ Stored ${rows.length} rows at ${now.toISOString()}`);
+          }
+
+          run().catch(err => {
+            console.error('Collector failed:', err);
+            process.exit(1);
+          });
+          EOF
