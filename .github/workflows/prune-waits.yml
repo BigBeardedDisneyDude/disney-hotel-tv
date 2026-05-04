@@ -1,0 +1,51 @@
+name: Prune Old Wait Time Data
+
+on:
+  schedule:
+    - cron: '0 5 * * 0'   # 5am UTC every Sunday (9pm Saturday PT)
+  workflow_dispatch:        # manual trigger for testing
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Delete rows older than 120 days
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          node << 'EOF'
+          // Keep 120 days — enough for a full season cycle across all day types.
+          // This keeps Supabase well under the 500MB free limit forever.
+          // At ~1.4MB/day × 120 days = ~168MB max, with plenty of headroom.
+
+          const cutoff = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString();
+
+          async function run() {
+            const res = await fetch(
+              `${process.env.SUPABASE_URL}/rest/v1/wait_times?recorded_at=lt.${cutoff}`,
+              {
+                method: 'DELETE',
+                headers: {
+                  'apikey':        process.env.SUPABASE_KEY,
+                  'Authorization': `Bearer ${process.env.SUPABASE_KEY}`,
+                  'Prefer':        'return=minimal'
+                }
+              }
+            );
+
+            if (!res.ok) {
+              const text = await res.text();
+              throw new Error(`Supabase delete failed: ${res.status} ${text}`);
+            }
+
+            console.log(`✓ Pruned rows older than ${cutoff}`);
+          }
+
+          run().catch(err => {
+            console.error('Prune failed:', err);
+            process.exit(1);
+          });
+          EOF
