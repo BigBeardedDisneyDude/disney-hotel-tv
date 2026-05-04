@@ -208,6 +208,7 @@ box-shadow:0 -8px 40px rgba(0,0,0,.35);
       <span class="crowd-lbl" id="crowd-lbl">–</span>
     </div>
     <span id="updated"></span>
+    <span id="data-source" style="font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.08em;padding:.14rem .5rem;border-radius:999px;display:none"></span>
   </div>
 
   <div class="controls">
@@ -299,7 +300,105 @@ box-shadow:0 -8px 40px rgba(0,0,0,.35);
 </div>
 
 <script>
-// Queue-Times park IDs
+// ── SUPABASE CONFIG ───────────────────────────────────────────────────────────
+// Replace these two values after you create your Supabase project.
+// These are safe to expose — anon key is read/insert only, no destructive access.
+const SUPABASE_URL = 'https://qumvjdwimpvnaijjwght.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1bXZqZHdpbXB2bmFpamp3Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NzQ4ODcsImV4cCI6MjA5MzQ1MDg4N30.BjBeX8GSZkZoUnW3Ecy3MTPdHVV-6E2U1oJnVHiyr5I';
+
+// Minimum number of historical data points needed per slot before we trust
+// the data over the hardcoded fallback. Roughly 2 weeks of that day/hour.
+const MIN_SAMPLES = 10;
+
+// ── HISTORICAL PROFILE CACHE ─────────────────────────────────────────────────
+// Loaded once at startup. Shape: profiles[park][rideName][hour] = avgWait | null
+let historicalProfiles = null;
+let usingRealData = false;
+
+async function loadHistoricalProfiles() {
+  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') return; // not configured yet
+
+  const now = new Date();
+  const pt  = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+  const dow    = pt.getDay();
+  const season = getSeason(pt.getMonth() + 1);
+
+  // Query: all open-ride rows for this day-of-week + season combo
+  // Returns ride_name, hour_of_day, avg wait — grouped and filtered server-side
+  const params = new URLSearchParams({
+    select:      'park,ride_name,hour_of_day,wait_time',
+    day_of_week: `eq.${dow}`,
+    season:      `eq.${season}`,
+    is_open:     'eq.true',
+    wait_time:   'gte.0',
+    order:       'ride_name,hour_of_day'
+  });
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times?${params}`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!res.ok) throw new Error(`Supabase ${res.status}`);
+    const rows = await res.json();
+
+    if (!rows.length) return; // no data yet, stay on fallback
+
+    // Aggregate: group by park → ride_name → hour → collect waits
+    const buckets = {};
+    for (const row of rows) {
+      const key = `${row.park}|${row.ride_name}|${row.hour_of_day}`;
+      if (!buckets[key]) buckets[key] = [];
+      buckets[key].push(row.wait_time);
+    }
+
+    // Build profiles[park][rideName] = array of 18 values (index 0=6am…17=11pm)
+    const profiles = { dl: {}, dca: {} };
+    for (const [key, waits] of Object.entries(buckets)) {
+      if (waits.length < MIN_SAMPLES) continue; // not enough data yet
+      const [park, rideName, hourStr] = key.split('|');
+      const hour = parseInt(hourStr);
+      const idx  = hour - 6; // convert hour to profile index
+      if (idx < 0 || idx > 17) continue;
+      if (!profiles[park][rideName]) profiles[park][rideName] = new Array(18).fill(null);
+      profiles[park][rideName][idx] = Math.round(waits.reduce((a,b)=>a+b,0) / waits.length);
+    }
+
+    // Only switch to real data if we have profiles for at least half the rides
+    const dlCoverage  = Object.keys(profiles.dl).length  / DL.length;
+    const dcaCoverage = Object.keys(profiles.dca).length / DCA.length;
+    if (dlCoverage > 0.5 || dcaCoverage > 0.5) {
+      historicalProfiles = profiles;
+      usingRealData = true;
+      console.log(`Historical data loaded: ${Object.keys(profiles.dl).length} DL rides, ${Object.keys(profiles.dca).length} DCA rides`);
+    }
+  } catch(e) {
+    console.warn('Could not load historical profiles:', e.message);
+    // Silent fail — hardcoded fallback kicks in automatically
+  }
+}
+
+// Returns the profile array for a ride — real data if available, hardcoded if not
+function getProfile(ride) {
+  if (!usingRealData || !historicalProfiles) return { p: ride.p, real: false };
+  const parkKey = park; // current park tab
+  const rideProfile = historicalProfiles[parkKey]?.[ride.name];
+  if (!rideProfile) return { p: ride.p, real: false };
+
+  // Fill any null slots (hours with <MIN_SAMPLES) from hardcoded fallback
+  // so the sparkline and modal chart never have gaps
+  const filled = rideProfile.map((v, i) => v !== null ? v : ride.p[i]);
+  return { p: filled, real: true };
+}
+
+function getSeason(month) {
+  if (month === 12 || month === 1)     return 'holiday';
+  if (month >= 6 && month <= 8)        return 'summer';
+  if (month === 3 || month === 4)      return 'spring_break';
+  return 'regular';
+}
+
+// ── QUEUE-TIMES PARK IDs ──────────────────────────────────────────────────────
 const QT = {dl:16, dca:17};
 const PROXIES = [
   u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
@@ -429,7 +528,10 @@ const hIdx = n => {
   return Math.max(start, Math.min(end, raw));
 };
 const dayType = n => [0,6].includes(n.getDay())?'Weekend':'Weekday';
-const season = n => {const m=n.getMonth();if(m===11||m===0)return'Holiday Season';if(m>=5&&m<=7)return'Summer';if(m===3||m===4)return'Spring Break';return'Regular Season';};
+const season = n => {
+  const s = getSeason(n.getMonth() + 1);
+  return {holiday:'Holiday Season', summer:'Summer', spring_break:'Spring Break', regular:'Regular Season'}[s];
+};
 const crowdLevel = (d,s) => {if(s==='Holiday Season')return d==='Weekend'?5:4;if(s==='Summer')return d==='Weekend'?5:4;if(s==='Spring Break')return d==='Weekend'?4:3;return d==='Weekend'?3:2;};
 const mult = l => ({1:.6,2:.8,3:1,4:1.25,5:1.5})[l];
 const status = w => (w===null||w===undefined) ? 'skip' : w<=20?'go':w<=40?'caution':'skip';
@@ -564,10 +666,11 @@ function renderFavs() {
     .filter(r=>favs.has(r.id))
     .map(r=>{
       const lv=getLive(r);
-      const hist=Math.round(r.p[hi]*m);
+      const {p, real} = getProfile(r);
+      const hist=Math.round(p[hi]*m);
       const {wait, estimated}=resolveWait(lv, hist, r.id);
-      const trend=lv.closed?null:getTrend(r.p,m,hi);
-      return {...r, wait, estimated, status:lv.closed?'closed':status(wait), trend, closed:lv.closed};
+      const trend=lv.closed?null:getTrend(p,m,hi);
+      return {...r, p, real, wait, estimated, status:lv.closed?'closed':status(wait), trend, closed:lv.closed};
     })
     .sort((a,b)=>{
       if(a.closed&&!b.closed) return 1;
@@ -594,13 +697,30 @@ function render() {
   document.getElementById('crowd-lbl').textContent=['','Low','Mild','Moderate','Busy','Very Busy'][cl];
   document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i<cl));
 
+  // Data source badge
+  const dsBadge = document.getElementById('data-source');
+  if (usingRealData) {
+    dsBadge.textContent = '✦ Real historical data';
+    dsBadge.style.display = 'inline';
+    dsBadge.style.background = 'rgba(45,106,45,.18)';
+    dsBadge.style.color = 'var(--green)';
+    dsBadge.style.border = '1px solid rgba(45,106,45,.25)';
+  } else {
+    dsBadge.textContent = '~ Estimated profile';
+    dsBadge.style.display = 'inline';
+    dsBadge.style.background = 'rgba(138,110,47,.12)';
+    dsBadge.style.color = 'var(--muted)';
+    dsBadge.style.border = '1px solid rgba(138,110,47,.2)';
+  }
+
   const rides = park==='dl'?DL:DCA;
   const computed = rides.map(r=>{
     const lv=getLive(r);
-    const hist=Math.round(r.p[hi]*m);
+    const {p, real} = getProfile(r);
+    const hist=Math.round(p[hi]*m);
     const {wait, estimated}=resolveWait(lv, hist, r.id);
-    const trend=lv.closed?null:getTrend(r.p,m,hi);
-    return {...r, wait, estimated, status:lv.closed?'closed':status(wait), trend, closed:lv.closed};
+    const trend=lv.closed?null:getTrend(p,m,hi);
+    return {...r, p, real, wait, estimated, status:lv.closed?'closed':status(wait), trend, closed:lv.closed};
   });
 
   // Top picks
@@ -692,26 +812,27 @@ function openModal(id) {
   const now=new Date(), dt=dayType(now), s=season(now);
   const cl=crowdLevel(dt,s), m=mult(cl), hi=hIdx(now);
   const {start, end} = parkOpenRange();
+  const {p, real} = getProfile(r);
 
   document.getElementById('modal-name').textContent = r.name;
-  document.getElementById('modal-land').textContent = r.land;
+  document.getElementById('modal-land').textContent = r.land + (real ? ' · ✦ real data' : ' · est. profile');
 
   // Stats
-  const openVals = r.p.slice(start, end+1).map(v=>disneyRound(Math.round(v*m), r.id));
+  const openVals = p.slice(start, end+1).map(v=>disneyRound(Math.round(v*m), r.id));
   const minWait = Math.min(...openVals);
   const maxWait = Math.max(...openVals);
   const lv=getLive(r);
   const isClosed=lv.closed;
-  const hist=Math.round(r.p[hi]*m);
+  const hist=Math.round(p[hi]*m);
   const {wait: nowWait, estimated: nowEst} = resolveWait(lv, hist, r.id);
-  const trend = isClosed ? null : getTrend(r.p, m, hi);
+  const trend = isClosed ? null : getTrend(p, m, hi);
 
   // Build heat strip HTML — one cell per open hour
   const heatHours = [];
   for (let i = start; i <= end; i++) heatHours.push(i);
-  const heatMax = Math.max(...heatHours.map(i => r.p[i]*m), 1);
+  const heatMax = Math.max(...heatHours.map(i => p[i]*m), 1);
   const heatCells = heatHours.map(i => {
-    const v = r.p[i]*m / heatMax;
+    const v = p[i]*m / heatMax;
     const r_ = Math.round(30 + v*180);
     const g_ = Math.round(106 - v*76);
     const b_ = Math.round(45 - v*15);
@@ -744,10 +865,10 @@ function openModal(id) {
     </div>`;
 
   document.getElementById('modal-backdrop').classList.add('open');
-  requestAnimationFrame(()=>drawModalChart(r, m, hi, start, end));
+  requestAnimationFrame(()=>drawModalChart(p, m, hi, start, end));
 }
 
-function drawModalChart(r, m, hi, start, end) {
+function drawModalChart(p, m, hi, start, end) {
   const canvas = document.getElementById('modal-canvas');
   const W = canvas.width  = canvas.offsetWidth  || 480;
   const H = canvas.height = canvas.offsetHeight || 160;
@@ -759,7 +880,7 @@ function drawModalChart(r, m, hi, start, end) {
   const cH = H - PAD.top  - PAD.bottom;
 
   // Only show open hours
-  const openP  = r.p.slice(start, end+1);
+  const openP   = p.slice(start, end+1);
   const openHRS = HRS.slice(start, end+1);
   const vals   = openP.map(v=>Math.round(v*m));
   const maxV   = Math.max(...vals, 20);
@@ -855,21 +976,27 @@ async function refresh() {
     if(r) openModal(r.id);
   }
 }
-
 function switchPark(p,btn) {
   park=p; live={}; searchQ='';
   favs = loadFavs();
+  historicalProfiles = null;
+  usingRealData = false;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   btn.classList.add('on');
   document.getElementById('q').value='';
   setLoading(true);
-  refresh();
+  // Load historical profiles for new park, then fetch live data
+  loadHistoricalProfiles().then(() => refresh());
 }
 
-// Init
-refresh();
-setInterval(refresh, 5*60*1000);   // re-fetch live data every 5 min
-setInterval(render,  60*1000);      // re-render every minute to keep hour index current
+// Init — load historical profiles first, then kick off live fetch
+loadHistoricalProfiles().then(() => {
+  refresh();
+  setInterval(refresh, 5*60*1000);   // re-fetch live data every 5 min
+  setInterval(render,  60*1000);      // re-render every minute to keep hour index current
+  // Reload historical profiles once a day in case new data has accumulated
+  setInterval(loadHistoricalProfiles, 24*60*60*1000);
+});
 </script>
 
 </body>
