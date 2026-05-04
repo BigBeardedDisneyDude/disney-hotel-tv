@@ -156,6 +156,26 @@ box-shadow:0 -8px 40px rgba(0,0,0,.35);
 .modal-stat-sub{font-size:.6rem;color:var(--muted);font-style:italic;margin-top:.07rem}
 
 @keyframes up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* LOADING SKELETON */
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skeleton{
+  background:linear-gradient(90deg,var(--cream-dark) 25%,var(--card) 50%,var(--cream-dark) 75%);
+  background-size:800px 100%;
+  animation:shimmer 1.4s infinite linear;
+  border-radius:6px;
+}
+.skel-card{height:130px;border-radius:8px;}
+.skel-row{height:46px;border-radius:6px;}
+.loading-overlay{display:none;flex-direction:column;gap:1.1rem}
+.loading-overlay.visible{display:flex}
+.lo-picks{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+@media(min-width:580px){.lo-picks{grid-template-columns:repeat(auto-fill,minmax(185px,1fr))}}
+.lo-grid{display:grid;grid-template-columns:1fr;gap:.42rem}
+@media(min-width:500px){.lo-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}}
+.lo-label{height:14px;width:140px;border-radius:4px;}
+.main-content{display:flex;flex-direction:column;gap:1.1rem}
+.main-content.hidden{display:none}
 </style>
 
 </head>
@@ -203,6 +223,31 @@ box-shadow:0 -8px 40px rgba(0,0,0,.35);
     </div>
   </div>
 
+  <!-- LOADING SKELETON — shown during park switch -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div>
+      <div class="skeleton lo-label" style="margin-bottom:.72rem"></div>
+      <div class="lo-picks">
+        <div class="skeleton skel-card"></div>
+        <div class="skeleton skel-card"></div>
+        <div class="skeleton skel-card"></div>
+        <div class="skeleton skel-card"></div>
+      </div>
+    </div>
+    <div>
+      <div class="skeleton lo-label" style="margin-bottom:.72rem"></div>
+      <div class="lo-grid">
+        <div class="skeleton skel-row"></div>
+        <div class="skeleton skel-row"></div>
+        <div class="skeleton skel-row"></div>
+        <div class="skeleton skel-row"></div>
+        <div class="skeleton skel-row"></div>
+        <div class="skeleton skel-row"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content" id="main-content">
   <div class="fav-section" id="fav-section">
     <div class="sec-hdr">
       <span class="sec-title">&#9733; My Rides</span>
@@ -226,6 +271,8 @@ box-shadow:0 -8px 40px rgba(0,0,0,.35);
     </div>
     <div class="grid" id="grid"></div>
   </div>
+
+  </div><!-- /main-content -->
 
   <div class="legend">
     <div class="li"><div class="ld" style="background:var(--green)"></div>Go now (under 20 min)</div>
@@ -779,6 +826,11 @@ function filter(q) {
   }
 }
 
+function setLoading(on) {
+  document.getElementById('loading-overlay').classList.toggle('visible', on);
+  document.getElementById('main-content').classList.toggle('hidden', on);
+}
+
 // Live data fetch
 async function refresh() {
   const badge=document.getElementById('badge');
@@ -794,7 +846,7 @@ async function refresh() {
     document.getElementById('updated').textContent='Live data unavailable — showing historical estimates only';
   }
   render();
-  // If detail modal is open, re-render with fresh data
+  setLoading(false);, re-render with fresh data
   if (document.getElementById('modal-backdrop').classList.contains('open')) {
     const rides=park==='dl'?DL:DCA;
     const name=document.getElementById('modal-name').textContent;
@@ -809,6 +861,7 @@ function switchPark(p,btn) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   btn.classList.add('on');
   document.getElementById('q').value='';
+  setLoading(true);
   refresh();
 }
 
