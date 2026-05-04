@@ -90,7 +90,8 @@ jobs:
                   'Content-Type':  'application/json',
                   'apikey':        process.env.SUPABASE_KEY,
                   'Authorization': `Bearer ${process.env.SUPABASE_KEY}`,
-                  'Prefer':        'return=minimal'
+                  'Prefer':        'return=minimal',
+                  'db-schema':     'public'
                 },
                 body: JSON.stringify(rows)
               }
