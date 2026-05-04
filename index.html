@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Magic Key TV</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tv-mode.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -97,43 +98,43 @@ z-index: 102;
 #wordmark .dh-logo {
 font-family: ‘Cinzel’, serif; font-weight: 400;
 font-size: clamp(14px, 3.5vw, 20px);
-letter-spacing: 0.10em; color: var(–warm-white);
+letter-spacing: 0.10em; color: #fff8ee !important;
 text-shadow: 0 1px 8px rgba(0,0,0,0.6);
 }
-#wordmark .dh-logo .d-letter { font-style: italic; color: var(–gold-light); }
+#wordmark .dh-logo .d-letter { font-style: italic; color: #e8cc7a !important; }
 #wordmark .dh-sub {
 font-family: ‘Raleway’, sans-serif; font-weight: 200;
 font-size: clamp(7px, 1.8vw, 9px);
-letter-spacing: 0.38em; color: var(–gold);
+letter-spacing: 0.38em; color: #c9a84c !important;
 text-transform: uppercase; opacity: 0.85;
 }
 #greeting-line {
 font-family: ‘Raleway’, sans-serif; font-weight: 200;
 font-size: clamp(9px, 2vw, 11px);
-letter-spacing: 0.28em; color: var(–gold-light);
+letter-spacing: 0.28em; color: #e8cc7a !important;
 text-transform: uppercase;
 }
 #welcome-name {
 font-family: ‘Cinzel’, serif; font-weight: 700;
 font-size: clamp(18px, 5vw, 30px);
-letter-spacing: 0.04em; color: var(–warm-white);
+letter-spacing: 0.04em; color: #fff8ee !important;
 text-shadow: 0 2px 12px rgba(0,0,0,0.7);
 line-height: 1.0;
 }
 #time-display {
 font-family: ‘Cinzel’, serif; font-weight: 600;
 font-size: clamp(20px, 5vw, 30px);
-color: var(–warm-white); letter-spacing: 0.06em; line-height: 1.0;
+color: #fff8ee !important; letter-spacing: 0.06em; line-height: 1.0;
 }
 #date-display {
 font-family: ‘Raleway’, sans-serif; font-weight: 200;
 font-size: clamp(8px, 1.8vw, 10px);
-letter-spacing: 0.25em; color: var(–gold-light);
+letter-spacing: 0.25em; color: #e8cc7a !important;
 text-transform: uppercase; opacity: 0.85;
 margin-top: 1px; white-space: nowrap;
 }
-#weather-temp { font-size: clamp(18px, 4.5vw, 24px); font-weight: 300; color: var(–warm-white); letter-spacing: 0.02em; }
-#weather-desc { font-size: clamp(9px, 2vw, 11px); font-weight: 200; color: rgba(255,248,238,0.7); letter-spacing: 0.1em; text-transform: uppercase; align-self: flex-end; margin-bottom: 2px; }
+#weather-temp { font-size: clamp(18px, 4.5vw, 24px); font-weight: 300; color: #fff8ee !important; letter-spacing: 0.02em; }
+#weather-desc { font-size: clamp(9px, 2vw, 11px); font-weight: 200; color: rgba(255,248,238,0.7) !important; letter-spacing: 0.1em; text-transform: uppercase; align-self: flex-end; margin-bottom: 2px; }
 #welcome-block { display: flex; flex-direction: column; gap: 1px; }
 
 /* Right info column */
@@ -393,7 +394,6 @@ max-width: 180px;
 body { animation: fadeIn 1.5s ease-out; }
 </style>
 
- <link rel="stylesheet" href="tv-mode.css">
 </head>
 <body>
 <script src="tv-mode.js"></script>
