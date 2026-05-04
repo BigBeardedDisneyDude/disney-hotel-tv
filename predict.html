@@ -18,13 +18,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html{height:100%;overflow-x:hidden}
 body{background:var(--cream);font-family:'Crimson Pro',Georgia,serif;color:var(--text);min-height:100%;display:flex;flex-direction:column;overflow-x:hidden;-webkit-overflow-scrolling:touch}
-
-/* HEADER — sticky avoids fixed-position scroll jank on mobile */
-header{
-background:var(--teal);border-bottom:2px solid var(--gold);
-padding:0 1rem;display:flex;align-items:center;justify-content:space-between;
-height:54px;flex-shrink:0;position:sticky;top:0;z-index:50;gap:.6rem;overflow:hidden;
-}
+header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;position:sticky;top:0;z-index:50;gap:.6rem;overflow:hidden}
 .hdr-left{display:flex;align-items:center;gap:.65rem;min-width:0;flex:1;overflow:hidden}
 .home-btn{font-family:'Cinzel',serif;font-size:.6rem;color:var(--gold);text-decoration:none;letter-spacing:.07em;opacity:.75;transition:opacity .2s;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .home-btn:hover{opacity:1}
@@ -36,12 +30,8 @@ height:54px;flex-shrink:0;position:sticky;top:0;z-index:50;gap:.6rem;overflow:hi
 .badge.stale{background:rgba(138,112,0,.18);color:var(--gold);border-color:rgba(201,168,76,.28)}
 .badge.err{background:rgba(138,32,32,.18);color:#d47070;border-color:rgba(212,112,112,.28)}
 @media(max-width:360px){.badge{display:none}}
-
-/* MAIN */
 main{flex:1;background:var(--cream);padding:1rem 1rem 2rem;display:flex;flex-direction:column;gap:1.1rem}
 @media(min-width:600px){main{padding:1.35rem 1.75rem 2rem;gap:1.35rem}}
-
-/* CONTEXT BAR */
 .ctx-bar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .ctx-lbl{font-family:'Cinzel',serif;font-size:.58rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
 .ctx-pill{background:var(--teal);color:var(--gold-light);font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.07em;padding:.17rem .6rem;border-radius:999px}
@@ -51,8 +41,6 @@ main{flex:1;background:var(--cream);padding:1rem 1rem 2rem;display:flex;flex-dir
 .dot.on{background:var(--gold);border-color:var(--gold)}
 .crowd-lbl{font-family:'Cinzel',serif;font-size:.56rem;color:var(--muted);letter-spacing:.05em}
 #updated{font-family:'Crimson Pro',serif;font-size:.6rem;color:var(--muted);font-style:italic;width:100%}
-
-/* CONTROLS */
 .controls{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
 .tabs{display:flex;border:1.5px solid var(--gold-dim);border-radius:6px;overflow:hidden;width:fit-content}
 .tab{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.06em;padding:.4rem .9rem;border:none;cursor:pointer;background:transparent;color:var(--gold-dim);transition:all .2s;border-right:1px solid var(--gold-dim);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
@@ -64,17 +52,12 @@ main{flex:1;background:var(--cream);padding:1rem 1rem 2rem;display:flex;flex-dir
 input[type=text]{width:100%;font-family:'Crimson Pro',serif;font-size:.87rem;color:var(--text);background:var(--card);border:1px solid var(--gold-dim);border-radius:6px;padding:.37rem .75rem .37rem 1.75rem;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
 input[type=text]:focus{border-color:var(--teal)}
 input[type=text]::placeholder{color:var(--muted);font-style:italic}
-
-/* SECTION */
 .sec-hdr{display:flex;align-items:baseline;gap:.6rem;border-bottom:1px solid var(--gold-dim);padding-bottom:.34rem;margin-bottom:.72rem;flex-wrap:wrap}
 .sec-title{font-family:'Cinzel',serif;font-size:.65rem;font-weight:600;color:var(--teal);letter-spacing:.1em;text-transform:uppercase}
 .sec-sub{font-family:'Crimson Pro',serif;font-size:.75rem;color:var(--muted);font-style:italic}
-
-/* PICK CARDS — 2 cols mobile, auto-fill desktop */
 .picks{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
 @media(max-width:360px){.picks{grid-template-columns:1fr}}
 @media(min-width:580px){.picks{grid-template-columns:repeat(auto-fill,minmax(185px,1fr))}}
-
 .card{background:var(--card);border:1px solid var(--gold-dim);border-radius:8px;padding:.75rem .85rem;position:relative;overflow:hidden;transition:box-shadow .2s,transform .15s;animation:up .3s ease both;-webkit-tap-highlight-color:transparent;cursor:pointer;touch-action:manipulation}
 .card:active{transform:scale(.98)}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
@@ -83,7 +66,6 @@ input[type=text]::placeholder{color:var(--muted);font-style:italic}
 .card.skip::before{background:var(--red)}
 .card:nth-child(1){animation-delay:.04s}.card:nth-child(2){animation-delay:.08s}
 .card:nth-child(3){animation-delay:.12s}.card:nth-child(4){animation-delay:.16s}
-
 .cbadge{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.09em;text-transform:uppercase;padding:.14rem .44rem;border-radius:999px;display:inline-block;margin-bottom:.36rem}
 .go .cbadge{background:var(--green-bg);color:var(--green)}
 .caution .cbadge{background:var(--yellow-bg);color:var(--yellow)}
@@ -97,18 +79,13 @@ input[type=text]::placeholder{color:var(--muted);font-style:italic}
 .est-tag{font-family:'Cinzel',serif;font-size:.47rem;letter-spacing:.08em;padding:.1rem .32rem;border-radius:999px;background:rgba(90,74,42,.1);color:var(--muted);border:1px solid rgba(90,74,42,.2)}
 canvas.spark{margin-top:.42rem;height:22px;width:100%;display:block}
 .ctip{font-size:.64rem;color:var(--muted);font-style:italic;margin-top:.36rem;line-height:1.4}
-
-/* FAVORITES */
 .fav-btn{background:none;border:none;cursor:pointer;padding:0 0 0 .2rem;line-height:1;flex-shrink:0;font-size:15px;opacity:.3;transition:opacity .15s,transform .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .fav-btn:hover{opacity:.7}
 .fav-btn.on{opacity:1;transform:scale(1.15)}
 .fav-section{display:none}
 .fav-section.visible{display:block}
-
-/* ALL RIDES — single col on mobile */
 .grid{display:grid;grid-template-columns:1fr;gap:.42rem}
 @media(min-width:500px){.grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}}
-
 .row{background:var(--card);border:1px solid rgba(138,110,47,.18);border-radius:6px;padding:.5rem .7rem;display:flex;align-items:center;gap:.55rem;transition:background .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .row:active{background:var(--cream-dark)}
 .row.hide{display:none}
@@ -122,25 +99,13 @@ canvas.spark{margin-top:.42rem;height:22px;width:100%;display:block}
 .rwait small{font-family:'Crimson Pro',serif;font-size:.55rem;font-weight:400;color:var(--muted)}
 .rbest{font-size:.55rem;color:var(--green);font-style:italic;white-space:nowrap}
 .noresult{grid-column:1/-1;font-style:italic;color:var(--muted);font-size:.8rem;padding:.4rem 0;display:none}
-
-/* LEGEND */
 .legend{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center}
 .li{display:flex;align-items:center;gap:.28rem;font-size:.62rem;color:var(--muted);font-style:italic}
 .ld{width:7px;height:7px;border-radius:50%}
-
-/* DETAIL MODAL — sheet from bottom on mobile, centered on desktop */
 .modal-backdrop{position:fixed;inset:0;background:rgba(10,30,20,.75);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;transition:opacity .2s;pointer-events:none}
 .modal-backdrop.open{opacity:1;pointer-events:all}
 @media(min-width:520px){.modal-backdrop{align-items:center;padding:1rem}}
-.modal{
-background:#fdf6e3;border:2px solid var(--gold);
-border-radius:14px 14px 0 0;
-width:100%;max-width:540px;
-padding:1rem 1.1rem 1.6rem;
-position:relative;
-max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
-box-shadow:0 -8px 40px rgba(0,0,0,.35);
-}
+.modal{background:#fdf6e3;border:2px solid var(--gold);border-radius:14px 14px 0 0;width:100%;max-width:540px;padding:1rem 1.1rem 1.6rem;position:relative;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -8px 40px rgba(0,0,0,.35)}
 @media(min-width:520px){.modal{border-radius:10px;max-height:85vh;padding:1.2rem 1.35rem 1.4rem;box-shadow:0 8px 40px rgba(0,0,0,.35)}}
 .modal-handle{width:36px;height:4px;background:var(--gold-dim);opacity:.4;border-radius:2px;margin:0 auto .85rem}
 @media(min-width:520px){.modal-handle{display:none}}
@@ -154,30 +119,21 @@ box-shadow:0 -8px 40px rgba(0,0,0,.35);
 .modal-stat-lbl{font-family:'Cinzel',serif;font-size:.53rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:.16rem}
 .modal-stat-val{font-family:'Cinzel',serif;font-size:.9rem;font-weight:600;color:var(--teal)}
 .modal-stat-sub{font-size:.6rem;color:var(--muted);font-style:italic;margin-top:.07rem}
-
 @keyframes up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-
-/* LOADING SKELETON */
 @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
-.skeleton{
-  background:linear-gradient(90deg,var(--cream-dark) 25%,var(--card) 50%,var(--cream-dark) 75%);
-  background-size:800px 100%;
-  animation:shimmer 1.4s infinite linear;
-  border-radius:6px;
-}
-.skel-card{height:130px;border-radius:8px;}
-.skel-row{height:46px;border-radius:6px;}
+.skeleton{background:linear-gradient(90deg,var(--cream-dark) 25%,var(--card) 50%,var(--cream-dark) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite linear;border-radius:6px}
+.skel-card{height:130px;border-radius:8px}
+.skel-row{height:46px;border-radius:6px}
 .loading-overlay{display:none;flex-direction:column;gap:1.1rem}
 .loading-overlay.visible{display:flex}
 .lo-picks{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
 @media(min-width:580px){.lo-picks{grid-template-columns:repeat(auto-fill,minmax(185px,1fr))}}
 .lo-grid{display:grid;grid-template-columns:1fr;gap:.42rem}
 @media(min-width:500px){.lo-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}}
-.lo-label{height:14px;width:140px;border-radius:4px;}
+.lo-label{height:14px;width:140px;border-radius:4px}
 .main-content{display:flex;flex-direction:column;gap:1.1rem}
 .main-content.hidden{display:none}
 </style>
-
 </head>
 <body>
 
@@ -224,7 +180,6 @@ box-shadow:0 -8px 40px rgba(0,0,0,.35);
     </div>
   </div>
 
-  <!-- LOADING SKELETON — shown during park switch -->
   <div class="loading-overlay" id="loading-overlay">
     <div>
       <div class="skeleton lo-label" style="margin-bottom:.72rem"></div>
@@ -272,8 +227,7 @@ box-shadow:0 -8px 40px rgba(0,0,0,.35);
     </div>
     <div class="grid" id="grid"></div>
   </div>
-
-  </div><!-- /main-content -->
+  </div>
 
   <div class="legend">
     <div class="li"><div class="ld" style="background:var(--green)"></div>Go now (under 20 min)</div>
@@ -283,8 +237,6 @@ box-shadow:0 -8px 40px rgba(0,0,0,.35);
   </div>
 
 </main>
-
-<!-- DETAIL MODAL -->
 
 <div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
   <div class="modal" id="modal">
@@ -301,30 +253,20 @@ box-shadow:0 -8px 40px rgba(0,0,0,.35);
 
 <script>
 // ── SUPABASE CONFIG ───────────────────────────────────────────────────────────
-// Replace these two values after you create your Supabase project.
-// These are safe to expose — anon key is read/insert only, no destructive access.
 const SUPABASE_URL = 'https://qumvjdwimpvnaijjwght.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1bXZqZHdpbXB2bmFpamp3Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NzQ4ODcsImV4cCI6MjA5MzQ1MDg4N30.BjBeX8GSZkZoUnW3Ecy3MTPdHVV-6E2U1oJnVHiyr5I';
-
-// Minimum number of historical data points needed per slot before we trust
-// the data over the hardcoded fallback. Roughly 2 weeks of that day/hour.
 const MIN_SAMPLES = 10;
 
 // ── HISTORICAL PROFILE CACHE ─────────────────────────────────────────────────
-// Loaded once at startup. Shape: profiles[park][rideName][hour] = avgWait | null
 let historicalProfiles = null;
 let usingRealData = false;
 
 async function loadHistoricalProfiles() {
-  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') return; // not configured yet
-
+  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
   const now = new Date();
   const pt  = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
   const dow    = pt.getDay();
   const season = getSeason(pt.getMonth() + 1);
-
-  // Query: all open-ride rows for this day-of-week + season combo
-  // Returns ride_name, hour_of_day, avg wait — grouped and filtered server-side
   const params = new URLSearchParams({
     select:      'park,ride_name,hour_of_day,wait_time',
     day_of_week: `eq.${dow}`,
@@ -333,7 +275,6 @@ async function loadHistoricalProfiles() {
     wait_time:   'gte.0',
     order:       'ride_name,hour_of_day'
   });
-
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times?${params}`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
@@ -341,30 +282,23 @@ async function loadHistoricalProfiles() {
     });
     if (!res.ok) throw new Error(`Supabase ${res.status}`);
     const rows = await res.json();
-
-    if (!rows.length) return; // no data yet, stay on fallback
-
-    // Aggregate: group by park → ride_name → hour → collect waits
+    if (!rows.length) return;
     const buckets = {};
     for (const row of rows) {
       const key = `${row.park}|${row.ride_name}|${row.hour_of_day}`;
       if (!buckets[key]) buckets[key] = [];
       buckets[key].push(row.wait_time);
     }
-
-    // Build profiles[park][rideName] = array of 18 values (index 0=6am…17=11pm)
     const profiles = { dl: {}, dca: {} };
     for (const [key, waits] of Object.entries(buckets)) {
-      if (waits.length < MIN_SAMPLES) continue; // not enough data yet
+      if (waits.length < MIN_SAMPLES) continue;
       const [park, rideName, hourStr] = key.split('|');
       const hour = parseInt(hourStr);
-      const idx  = hour - 6; // convert hour to profile index
+      const idx  = hour - 6;
       if (idx < 0 || idx > 17) continue;
       if (!profiles[park][rideName]) profiles[park][rideName] = new Array(18).fill(null);
       profiles[park][rideName][idx] = Math.round(waits.reduce((a,b)=>a+b,0) / waits.length);
     }
-
-    // Only switch to real data if we have profiles for at least half the rides
     const dlCoverage  = Object.keys(profiles.dl).length  / DL.length;
     const dcaCoverage = Object.keys(profiles.dca).length / DCA.length;
     if (dlCoverage > 0.5 || dcaCoverage > 0.5) {
@@ -374,19 +308,14 @@ async function loadHistoricalProfiles() {
     }
   } catch(e) {
     console.warn('Could not load historical profiles:', e.message);
-    // Silent fail — hardcoded fallback kicks in automatically
   }
 }
 
-// Returns the profile array for a ride — real data if available, hardcoded if not
 function getProfile(ride) {
   if (!usingRealData || !historicalProfiles) return { p: ride.p, real: false };
-  const parkKey = park; // current park tab
+  const parkKey = park;
   const rideProfile = historicalProfiles[parkKey]?.[ride.name];
   if (!rideProfile) return { p: ride.p, real: false };
-
-  // Fill any null slots (hours with <MIN_SAMPLES) from hardcoded fallback
-  // so the sparkline and modal chart never have gaps
   const filled = rideProfile.map((v, i) => v !== null ? v : ride.p[i]);
   return { p: filled, real: true };
 }
@@ -426,102 +355,107 @@ async function loadLive(parkId) {
   return m;
 }
 
+// ── PARK HOURS (ThemeParks.wiki) ─────────────────────────────────────────────
+// Entity IDs for Disneyland Resort parks
+const TW_IDS = {
+  dl:  '7340550b-c14d-4def-80bb-acbe51f931d1',
+  dca: '832fcd51-ea19-4e77-85c7-75d5843b127d'
+};
+// Cached open/close times. Shape: { open: Date|null, close: Date|null }
+const parkHours = { dl: null, dca: null };
+
+async function loadParkHours(parkKey) {
+  const id  = TW_IDS[parkKey];
+  const url = `https://api.themeparks.wiki/v1/entity/${id}/schedule`;
+  const data = await fetchProxy(url);
+  if (!data?.schedule) return;
+  // YYYY-MM-DD in PT
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+  const today = data.schedule.find(s => s.date === todayStr && s.type === 'OPERATING');
+  if (!today) return;
+  parkHours[parkKey] = {
+    open:  new Date(today.openingTime),
+    close: new Date(today.closingTime)
+  };
+  console.log(`Park hours loaded for ${parkKey}: ${today.openingTime} – ${today.closingTime}`);
+}
+
+function isParkOpen() {
+  const hours = parkHours[park];
+  // Fail open — if hours haven't loaded yet, don't block anything
+  if (!hours?.open || !hours?.close) return true;
+  const now = new Date();
+  return now >= hours.open && now < hours.close;
+}
+
 // ── RIDE DATA ────────────────────────────────────────────────────────────────
-// profile[i] = typical wait minutes, hour index 0=6am … 17=11pm, moderate weekday
-// qt = lowercase name as it appears in Queue-Times for live blending
-
 const DL = [
-  // Adventureland
-  {id:'indy',    name:'Indiana Jones Adventure',               land:'Adventureland',      qt:'indiana jones adventure',                       p:[10,10,20,40,60,75,80,75,70,65,60,60,65,70,65,55,45,30]},
-  {id:'jungle',  name:'Jungle Cruise',                         land:'Adventureland',      qt:'jungle cruise',                                 p:[5,5,10,20,30,40,45,45,40,35,30,35,40,45,40,30,20,10]},
-
-  // New Orleans Square
-  {id:'potc',    name:'Pirates of the Caribbean',              land:'New Orleans Square', qt:'pirates of the caribbean',                      p:[5,5,5,10,20,30,35,40,35,30,25,30,35,40,35,25,20,10]},
-  {id:'hm',      name:'Haunted Mansion',                       land:'New Orleans Square', qt:'haunted mansion',                               p:[5,5,5,10,20,35,40,45,40,35,30,35,40,50,45,35,25,15]},
-  // Critter Country
-  {id:'splash',  name:"Tiana's Bayou Adventure",               land:'Bayou Country',      qt:"tiana's bayou adventure",                       p:[5,5,10,25,45,65,70,65,60,55,50,55,65,70,60,45,30,15]},
-  {id:'pooh',    name:"The Many Adventures of Winnie the Pooh",land:'Bayou Country',      qt:"the many adventures of winnie the pooh",        p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
-  // Frontierland
-  {id:'btmr',    name:'Big Thunder Mountain Railroad',         land:'Frontierland',       qt:'big thunder mountain railroad',                 p:[5,5,10,25,40,55,60,65,60,55,50,55,60,65,60,50,40,25]},
-
-  // Fantasyland
-  {id:'matterhorn',name:'Matterhorn Bobsleds',                 land:'Fantasyland',        qt:'matterhorn bobsleds',                           p:[5,5,10,20,35,55,65,70,65,60,55,50,55,65,60,50,40,30]},
-  {id:'peter',   name:"Peter Pan's Flight",                    land:'Fantasyland',        qt:"peter pan's flight",                           p:[10,10,20,35,50,65,70,70,65,60,55,60,65,70,65,50,40,25]},
-  {id:'pinoc',   name:"Pinocchio's Daring Journey",            land:'Fantasyland',        qt:"pinocchio's daring journey",                   p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,5,5]},
-  {id:'dumbo',   name:'Dumbo the Flying Elephant',             land:'Fantasyland',        qt:'dumbo the flying elephant',                     p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
-  {id:'alice',   name:'Alice in Wonderland',                   land:'Fantasyland',        qt:'alice in wonderland',                           p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
-  {id:'toad',    name:"Mr. Toad's Wild Ride",                  land:'Fantasyland',        qt:"mr. toad's wild ride",                         p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
-  {id:'snow',    name:"Snow White's Enchanted Wish",           land:'Fantasyland',        qt:"snow white's enchanted wish",                  p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
-  {id:'carousel',name:'King Arthur Carrousel',                 land:'Fantasyland',        qt:'king arthur carrousel',                         p:[5,5,5,5,10,10,10,10,10,10,10,10,10,10,10,5,5,5]},
-  {id:'casey',   name:'Casey Jr. Circus Train',                land:'Fantasyland',        qt:'casey jr. circus train',                        p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
-  {id:'storybook',name:'Storybook Land Canal Boats',           land:'Fantasyland',        qt:'storybook land canal boats',                    p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
-  {id:'smallworld',name:"it's a small world",                  land:'Fantasyland',        qt:"it's a small world",                           p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
-
-  // Toontown
-  {id:'mmrr',    name:"Mickey & Minnie's Runaway Railway",     land:'Toontown',           qt:"mickey & minnie's runaway railway",             p:[10,15,25,40,55,65,70,65,60,55,50,55,60,65,60,45,35,20]},
-  {id:'roger',   name:"Roger Rabbit's Car Toon Spin",          land:'Toontown',           qt:"roger rabbit's car toon spin",                 p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
-  {id:'gadget',  name:"Chip 'n' Dale's GADGETcoaster",         land:'Toontown',           qt:"chip 'n' dale's gadgetcoaster",                p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
-  // Tomorrowland
-  {id:'space',   name:'Space Mountain',                        land:'Tomorrowland',       qt:'space mountain',                                p:[5,5,10,25,45,65,70,75,70,65,60,65,70,75,70,55,45,30]},
-  {id:'buzz',    name:'Buzz Lightyear Astro Blasters',         land:'Tomorrowland',       qt:'buzz lightyear astro blasters',                 p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
-  {id:'autopia', name:'Autopia',                               land:'Tomorrowland',       qt:'autopia',                                       p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
-  {id:'nemo',    name:'Finding Nemo Submarine Voyage',         land:'Tomorrowland',       qt:'finding nemo submarine voyage',                 p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
-  {id:'startours',name:"Star Tours — The Adventures Continue", land:'Tomorrowland',       qt:"star tours — the adventures continue",          p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
-
-  // Galaxy's Edge
-  {id:'rotr',    name:"Star Wars: Rise of the Resistance",     land:"Galaxy's Edge",      qt:"star wars: rise of the resistance",             p:[20,30,50,75,100,120,120,110,100,95,90,95,110,115,100,80,60,40]},
-  {id:'falcon',  name:"Millennium Falcon: Smugglers Run",       land:"Galaxy's Edge",      qt:"millennium falcon: smugglers run",               p:[10,15,30,50,70,85,90,85,80,70,65,70,80,85,75,60,45,30]},
-
+  {id:'indy',      name:'Indiana Jones Adventure',                  land:'Adventureland',        qt:'indiana jones adventure',                      p:[10,10,20,40,60,75,80,75,70,65,60,60,65,70,65,55,45,30]},
+  {id:'jungle',    name:'Jungle Cruise',                            land:'Adventureland',        qt:'jungle cruise',                                p:[5,5,10,20,30,40,45,45,40,35,30,35,40,45,40,30,20,10]},
+  {id:'potc',      name:'Pirates of the Caribbean',                 land:'New Orleans Square',   qt:'pirates of the caribbean',                     p:[5,5,5,10,20,30,35,40,35,30,25,30,35,40,35,25,20,10]},
+  {id:'hm',        name:'Haunted Mansion',                          land:'New Orleans Square',   qt:'haunted mansion',                              p:[5,5,5,10,20,35,40,45,40,35,30,35,40,50,45,35,25,15]},
+  {id:'splash',    name:"Tiana's Bayou Adventure",                  land:'Bayou Country',        qt:"tiana's bayou adventure",                      p:[5,5,10,25,45,65,70,65,60,55,50,55,65,70,60,45,30,15]},
+  {id:'pooh',      name:"The Many Adventures of Winnie the Pooh",   land:'Bayou Country',        qt:"the many adventures of winnie the pooh",       p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'btmr',      name:'Big Thunder Mountain Railroad',            land:'Frontierland',         qt:'big thunder mountain railroad',                p:[5,5,10,25,40,55,60,65,60,55,50,55,60,65,60,50,40,25]},
+  {id:'matterhorn',name:'Matterhorn Bobsleds',                      land:'Fantasyland',          qt:'matterhorn bobsleds',                          p:[5,5,10,20,35,55,65,70,65,60,55,50,55,65,60,50,40,30]},
+  {id:'peter',     name:"Peter Pan's Flight",                       land:'Fantasyland',          qt:"peter pan's flight",                           p:[10,10,20,35,50,65,70,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'pinoc',     name:"Pinocchio's Daring Journey",               land:'Fantasyland',          qt:"pinocchio's daring journey",                   p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,5,5]},
+  {id:'dumbo',     name:'Dumbo the Flying Elephant',                land:'Fantasyland',          qt:'dumbo the flying elephant',                    p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'alice',     name:'Alice in Wonderland',                      land:'Fantasyland',          qt:'alice in wonderland',                          p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'toad',      name:"Mr. Toad's Wild Ride",                     land:'Fantasyland',          qt:"mr. toad's wild ride",                         p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'snow',      name:"Snow White's Enchanted Wish",              land:'Fantasyland',          qt:"snow white's enchanted wish",                  p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'carousel',  name:'King Arthur Carrousel',                    land:'Fantasyland',          qt:'king arthur carrousel',                        p:[5,5,5,5,10,10,10,10,10,10,10,10,10,10,10,5,5,5]},
+  {id:'casey',     name:'Casey Jr. Circus Train',                   land:'Fantasyland',          qt:'casey jr. circus train',                       p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'storybook', name:'Storybook Land Canal Boats',               land:'Fantasyland',          qt:'storybook land canal boats',                   p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'smallworld',name:"it's a small world",                       land:'Fantasyland',          qt:"it's a small world",                           p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
+  {id:'mmrr',      name:"Mickey & Minnie's Runaway Railway",        land:'Toontown',             qt:"mickey & minnie's runaway railway",             p:[10,15,25,40,55,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'roger',     name:"Roger Rabbit's Car Toon Spin",             land:'Toontown',             qt:"roger rabbit's car toon spin",                 p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'gadget',    name:"Chip 'n' Dale's GADGETcoaster",            land:'Toontown',             qt:"chip 'n' dale's gadgetcoaster",                p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'space',     name:'Space Mountain',                           land:'Tomorrowland',         qt:'space mountain',                               p:[5,5,10,25,45,65,70,75,70,65,60,65,70,75,70,55,45,30]},
+  {id:'buzz',      name:'Buzz Lightyear Astro Blasters',            land:'Tomorrowland',         qt:'buzz lightyear astro blasters',                p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'autopia',   name:'Autopia',                                  land:'Tomorrowland',         qt:'autopia',                                      p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'nemo',      name:'Finding Nemo Submarine Voyage',            land:'Tomorrowland',         qt:'finding nemo submarine voyage',                p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'startours', name:"Star Tours — The Adventures Continue",     land:'Tomorrowland',         qt:"star tours — the adventures continue",         p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'rotr',      name:"Star Wars: Rise of the Resistance",        land:"Galaxy's Edge",        qt:"star wars: rise of the resistance",            p:[20,30,50,75,100,120,120,110,100,95,90,95,110,115,100,80,60,40]},
+  {id:'falcon',    name:"Millennium Falcon: Smugglers Run",         land:"Galaxy's Edge",        qt:"millennium falcon: smugglers run",             p:[10,15,30,50,70,85,90,85,80,70,65,70,80,85,75,60,45,30]},
 ];
 
 const DCA = [
-  // Cars Land
-  {id:'rsr',     name:'Radiator Springs Racers',                land:'Cars Land',          qt:'radiator springs racers',                       p:[20,30,55,80,100,115,110,105,95,90,85,90,100,110,100,80,60,40]},
-  {id:'luigi',   name:"Luigi's Rollickin' Roadsters",          land:'Cars Land',          qt:"luigi's rollickin' roadsters",                  p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,8,5]},
-  {id:'mater',   name:"Mater's Junkyard Jamboree",             land:'Cars Land',          qt:"mater's junkyard jamboree",                     p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
-  // Avengers Campus
-  {id:'gotg',    name:'Guardians of the Galaxy — Mission: BREAKOUT!',land:'Avengers Campus',qt:'guardians of the galaxy - mission: breakout!', p:[15,15,25,45,65,80,85,80,75,70,65,70,75,80,70,55,45,30]},
-  {id:'spidey',  name:'WEB SLINGERS: A Spider-Man Adventure',  land:'Avengers Campus',    qt:'web slingers: a spider-man adventure',           p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
-  // Pixar Pier
-  {id:'incred',  name:'Incredicoaster',                         land:'Pixar Pier',         qt:'incredicoaster',                                p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
-  {id:'tsmm',    name:'Toy Story Midway Mania!',                land:'Pixar Pier',         qt:'toy story midway mania!',                       p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
-  {id:'insideout',name:'Inside Out Emotional Whirlwind',        land:'Pixar Pier',         qt:'inside out emotional whirlwind',                p:[10,10,20,30,45,55,60,55,50,45,40,45,50,55,50,40,30,15]},
-  {id:'jessie',  name:"Jessie's Critter Carousel",              land:'Pixar Pier',         qt:"jessie's critter carousel",                     p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
-  {id:'ppar_s',  name:"Pixar Pal-A-Round — Swinging",           land:'Pixar Pier',         qt:"pixar pal-a-round - swinging",                  p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
-  {id:'ppar_ns', name:"Pixar Pal-A-Round — Non-Swinging",       land:'Pixar Pier',         qt:"pixar pal-a-round - non-swinging",              p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
-  // Grizzly Peak
-  {id:'soarin',  name:"Soarin' Around the World",               land:'Grizzly Peak',       qt:"soarin' around the world",                      p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
-  {id:'grizzly', name:'Grizzly River Run',                      land:'Grizzly Peak',       qt:'grizzly river run',                             p:[5,5,10,20,35,55,60,55,50,45,45,50,55,60,55,40,30,15]},
-
-  // Hollywood Land
-  {id:'monsters',name:"Monsters, Inc. Mike & Sulley to the Rescue!",land:'Hollywood Land', qt:"monsters, inc. mike & sulley to the rescue!",  p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,8,5]},
-
-  // Paradise Gardens
-  {id:'mermaid', name:"The Little Mermaid — Ariel's Undersea Adventure",land:'Paradise Gardens Park',qt:"the little mermaid ~ ariel's undersea adventure",p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,8,5]},
-  {id:'goofy',   name:"Goofy's Sky School",                     land:'Paradise Gardens Park',qt:"goofy's sky school",                         p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
-  {id:'jellyfish',name:"Jumpin' Jellyfish",                     land:'Paradise Gardens Park',qt:"jumpin' jellyfish",                          p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
-  {id:'swings',  name:'Silly Symphony Swings',                  land:'Paradise Gardens Park',qt:'silly symphony swings',                      p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
-
+  {id:'rsr',       name:'Radiator Springs Racers',                  land:'Cars Land',            qt:'radiator springs racers',                      p:[20,30,55,80,100,115,110,105,95,90,85,90,100,110,100,80,60,40]},
+  {id:'luigi',     name:"Luigi's Rollickin' Roadsters",             land:'Cars Land',            qt:"luigi's rollickin' roadsters",                 p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,8,5]},
+  {id:'mater',     name:"Mater's Junkyard Jamboree",                land:'Cars Land',            qt:"mater's junkyard jamboree",                    p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
+  {id:'gotg',      name:'Guardians of the Galaxy — Mission: BREAKOUT!',land:'Avengers Campus',  qt:'guardians of the galaxy - mission: breakout!', p:[15,15,25,45,65,80,85,80,75,70,65,70,75,80,70,55,45,30]},
+  {id:'spidey',    name:'WEB SLINGERS: A Spider-Man Adventure',     land:'Avengers Campus',      qt:'web slingers: a spider-man adventure',         p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'incred',    name:'Incredicoaster',                           land:'Pixar Pier',           qt:'incredicoaster',                               p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'tsmm',      name:'Toy Story Midway Mania!',                  land:'Pixar Pier',           qt:'toy story midway mania!',                      p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'insideout', name:'Inside Out Emotional Whirlwind',           land:'Pixar Pier',           qt:'inside out emotional whirlwind',               p:[10,10,20,30,45,55,60,55,50,45,40,45,50,55,50,40,30,15]},
+  {id:'jessie',    name:"Jessie's Critter Carousel",                land:'Pixar Pier',           qt:"jessie's critter carousel",                    p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'ppar_s',    name:"Pixar Pal-A-Round — Swinging",             land:'Pixar Pier',           qt:"pixar pal-a-round - swinging",                 p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'ppar_ns',   name:"Pixar Pal-A-Round — Non-Swinging",         land:'Pixar Pier',           qt:"pixar pal-a-round - non-swinging",             p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'soarin',    name:"Soarin' Around the World",                 land:'Grizzly Peak',         qt:"soarin' around the world",                     p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'grizzly',   name:'Grizzly River Run',                        land:'Grizzly Peak',         qt:'grizzly river run',                            p:[5,5,10,20,35,55,60,55,50,45,45,50,55,60,55,40,30,15]},
+  {id:'monsters',  name:"Monsters, Inc. Mike & Sulley to the Rescue!",land:'Hollywood Land',    qt:"monsters, inc. mike & sulley to the rescue!",  p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,8,5]},
+  {id:'mermaid',   name:"The Little Mermaid — Ariel's Undersea Adventure",land:'Paradise Gardens Park',qt:"the little mermaid ~ ariel's undersea adventure",p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,8,5]},
+  {id:'goofy',     name:"Goofy's Sky School",                       land:'Paradise Gardens Park',qt:"goofy's sky school",                          p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
+  {id:'jellyfish', name:"Jumpin' Jellyfish",                        land:'Paradise Gardens Park',qt:"jumpin' jellyfish",                           p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'swings',    name:'Silly Symphony Swings',                    land:'Paradise Gardens Park',qt:'silly symphony swings',                       p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
 ];
 
 const HRS = ['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm','11pm'];
 
 let park = 'dl', live = {}, searchQ = '';
 
-// Favorites — persisted per park key e.g. "favs_dl"
 function favsKey() { return `favs_${park}`; }
 function loadFavs() { try { return new Set(JSON.parse(localStorage.getItem(favsKey())||'[]')); } catch(e){ return new Set(); } }
 function saveFavs(s) { localStorage.setItem(favsKey(), JSON.stringify([...s])); }
 let favs = loadFavs();
 
-// Clock
 function tick() {
   const n=new Date(); let h=n.getHours(); const m=String(n.getMinutes()).padStart(2,'0'),ap=h>=12?'PM':'AM';
   h=h%12||12; document.getElementById('clock').textContent=`${h}:${m} ${ap}`;
 }
 setInterval(tick,1000); tick();
 
-// Helpers
 const hIdx = n => {
   const raw = n.getHours() - 6;
   const { start, end } = parkOpenRange();
@@ -537,22 +471,20 @@ const mult = l => ({1:.6,2:.8,3:1,4:1.25,5:1.5})[l];
 const status = w => (w===null||w===undefined) ? 'skip' : w<=20?'go':w<=40?'caution':'skip';
 const slabel = s => ({go:'Go Now',caution:'Moderate',skip:'Skip'})[s];
 
-// Park hours: DL 8am–11pm (index 2–17), DCA 8am–10pm (index 2–16)
 function parkOpenRange() {
   return { start: 2, end: park === 'dl' ? 17 : 16 };
 }
 
 const BLOCKS = [
-  { label: 'Mid-Morning',    start: 3,  end: 4  }, // 9–10am
-  { label: 'Lunch Break',    start: 5,  end: 7  }, // 11am–1pm
-  { label: 'Afternoon',      start: 7,  end: 10 }, // 1–4pm
-  { label: 'Late Afternoon', start: 10, end: 12 }, // 4–6pm
-  { label: 'Evening',        start: 12, end: 14 }, // 6–8pm
+  { label: 'Mid-Morning',    start: 3,  end: 4  },
+  { label: 'Lunch Break',    start: 5,  end: 7  },
+  { label: 'Afternoon',      start: 7,  end: 10 },
+  { label: 'Late Afternoon', start: 10, end: 12 },
+  { label: 'Evening',        start: 12, end: 14 },
 ];
 
 function bestBlock(p, m) {
   const { start: pStart, end: pEnd } = parkOpenRange();
-
   const scored = BLOCKS.map(b => {
     const s = Math.max(b.start, pStart);
     const e = Math.min(b.end, pEnd);
@@ -561,31 +493,31 @@ function bestBlock(p, m) {
     for (let i = s; i <= e; i++) { sum += p[i] * m; count++; }
     return { ...b, avg: count ? sum / count : Infinity };
   }).filter(b => b.avg < Infinity);
-
   if (!scored.length) return 'Afternoon';
   scored.sort((a, b) => a.avg - b.avg);
   return scored[0].label;
 }
 
-// Trend: looks at next 2 hours for a more useful signal
 function getTrend(p, m, hi) {
   const curr  = p[hi] * m;
   const next1 = p[Math.min(hi + 1, p.length - 1)] * m;
   const next2 = p[Math.min(hi + 2, p.length - 1)] * m;
   const delta1 = next1 - curr;
   const delta2 = next2 - curr;
-
-  if (delta1 > 8)  return { arrow: '↑', phrase: 'Rising fast — go now',     color: 'var(--red)' };
-  if (delta1 > 3)  return { arrow: '↑', phrase: 'Wait climbing',             color: 'var(--red)' };
+  if (delta1 > 8)  return { arrow: '↑', phrase: 'Rising fast — go now',       color: 'var(--red)' };
+  if (delta1 > 3)  return { arrow: '↑', phrase: 'Wait climbing',               color: 'var(--red)' };
   if (delta1 < -8) return { arrow: '↓', phrase: 'Dropping fast — good window', color: 'var(--green)' };
-  if (delta1 < -3) return { arrow: '↓', phrase: 'Wait easing',               color: 'var(--green)' };
-  // Steady now — look ahead
-  if (delta2 > 8)  return { arrow: '→', phrase: 'Go soon — gets busy',       color: '#c9a000' };
-  if (delta2 < -8) return { arrow: '→', phrase: 'Gets better soon',          color: '#c9a000' };
-  return             { arrow: '→', phrase: 'Holding steady',                  color: '#c9a000' };
+  if (delta1 < -3) return { arrow: '↓', phrase: 'Wait easing',                 color: 'var(--green)' };
+  if (delta2 > 8)  return { arrow: '→', phrase: 'Go soon — gets busy',         color: '#c9a000' };
+  if (delta2 < -8) return { arrow: '→', phrase: 'Gets better soon',            color: '#c9a000' };
+  return             { arrow: '→', phrase: 'Holding steady',                    color: '#c9a000' };
 }
 
 function getLive(ride) {
+  // ── PARK HOURS GATE ───────────────────────────────────────────────────────
+  // If the park is currently closed per posted hours, treat all rides as closed.
+  if (!isParkOpen()) return { wait: null, closed: true };
+  // ─────────────────────────────────────────────────────────────────────────
   if(!live||!Object.keys(live).length) return {wait:null, closed:false};
   const k=ride.qt.toLowerCase().trim();
   const match = live[k] || Object.entries(live).find(([key])=>key.includes(k.slice(0,10))||k.includes(key.slice(0,10)))?.[1];
@@ -601,18 +533,12 @@ function disneyRound(wait, rideId) {
   return r5;
 }
 
-// Wait display: live if available, otherwise historical estimate
 function resolveWait(lv, hist, rideId) {
   if (lv.closed) return { wait: null, estimated: false };
-  if (lv.wait !== null) {
-    // Live data — use as-is, Disney-rounded
-    return { wait: disneyRound(lv.wait, rideId), estimated: false };
-  }
-  // No live match — use historical, flag as estimated
+  if (lv.wait !== null) return { wait: disneyRound(lv.wait, rideId), estimated: false };
   return { wait: disneyRound(hist, rideId), estimated: true };
 }
 
-// Sparkline
 function sparkline(canvas,p,m,hi) {
   const W=canvas.width=canvas.offsetWidth||170, H=canvas.height=24;
   const ctx=canvas.getContext('2d');
@@ -630,7 +556,6 @@ function sparkline(canvas,p,m,hi) {
   if(hi>=0&&hi<pts.length){ctx.beginPath();ctx.arc(pts[hi].x,pts[hi].y,3.5,0,Math.PI*2);ctx.fillStyle='#c9a84c';ctx.fill();}
 }
 
-// Build a pick card (shared by favs and best bets)
 function makePickCard(r, m, hi) {
   const el = document.createElement('div');
   el.className = `card ${r.closed?'skip':r.status}`;
@@ -661,7 +586,6 @@ function renderFavs() {
   const section = document.getElementById('fav-section');
   const pg = document.getElementById('fav-picks');
   pg.innerHTML='';
-
   const favRides = rides
     .filter(r=>favs.has(r.id))
     .map(r=>{
@@ -677,17 +601,14 @@ function renderFavs() {
       if(!a.closed&&b.closed) return -1;
       return a.wait-b.wait;
     });
-
   section.classList.toggle('visible', favRides.length > 0);
   if (!favRides.length) return;
-
   favRides.forEach(r => pg.appendChild(makePickCard(r, m, hi)));
   requestAnimationFrame(()=>{
     favRides.forEach(r=>{const c=document.getElementById(`sp-${r.id}-fav`);if(c)sparkline(c,r.p,m,hi);});
   });
 }
 
-// Render
 function render() {
   const now=new Date(), dt=dayType(now), s=season(now);
   const cl=crowdLevel(dt,s), m=mult(cl), hi=hIdx(now);
@@ -697,7 +618,6 @@ function render() {
   document.getElementById('crowd-lbl').textContent=['','Low','Mild','Moderate','Busy','Very Busy'][cl];
   document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i<cl));
 
-  // Data source badge
   const dsBadge = document.getElementById('data-source');
   if (usingRealData) {
     dsBadge.textContent = '✦ Real historical data';
@@ -723,7 +643,6 @@ function render() {
     return {...r, p, real, wait, estimated, status:lv.closed?'closed':status(wait), trend, closed:lv.closed};
   });
 
-  // Top picks
   const picks=[...computed].filter(r=>r.status==='go').sort((a,b)=>a.wait-b.wait).slice(0,4);
   document.getElementById('picks-sub').textContent = picks.length
     ? `rides worth heading to around ${HRS[hi]}`
@@ -757,7 +676,6 @@ function render() {
     });
   }
 
-  // All rides
   const ag=document.getElementById('grid');
   ag.innerHTML='';
   [...computed].sort((a,b)=>{
@@ -795,11 +713,9 @@ function render() {
   renderFavs();
 }
 
-// Favorites
 function toggleFav(id, btn) {
   if (favs.has(id)) { favs.delete(id); } else { favs.add(id); }
   saveFavs(favs);
-  // Full render so ALL star buttons (card + row) reflect new state
   render();
 }
 
@@ -808,16 +724,12 @@ function openModal(id) {
   const rides = park==='dl'?DL:DCA;
   const r = rides.find(x=>x.id===id);
   if (!r) return;
-
   const now=new Date(), dt=dayType(now), s=season(now);
   const cl=crowdLevel(dt,s), m=mult(cl), hi=hIdx(now);
   const {start, end} = parkOpenRange();
   const {p, real} = getProfile(r);
-
   document.getElementById('modal-name').textContent = r.name;
   document.getElementById('modal-land').textContent = r.land + (real ? ' · ✦ real data' : ' · est. profile');
-
-  // Stats
   const openVals = p.slice(start, end+1).map(v=>disneyRound(Math.round(v*m), r.id));
   const minWait = Math.min(...openVals);
   const maxWait = Math.max(...openVals);
@@ -826,8 +738,6 @@ function openModal(id) {
   const hist=Math.round(p[hi]*m);
   const {wait: nowWait, estimated: nowEst} = resolveWait(lv, hist, r.id);
   const trend = isClosed ? null : getTrend(p, m, hi);
-
-  // Build heat strip HTML — one cell per open hour
   const heatHours = [];
   for (let i = start; i <= end; i++) heatHours.push(i);
   const heatMax = Math.max(...heatHours.map(i => p[i]*m), 1);
@@ -839,9 +749,7 @@ function openModal(id) {
     const isCur = i === hi;
     return `<div style="flex:1;height:${isCur?'22px':'16px'};border-radius:2px;background:rgb(${r_},${g_},${b_});opacity:${isCur?1:.75};position:relative;transition:height .2s;${isCur?'box-shadow:0 0 0 2px #c9a84c;':''}"></div>`;
   }).join('');
-
   const heatLabels = heatHours.filter((_,i)=>i%2===0).map(i=>`<div style="flex:1;font-size:9px;color:var(--muted);text-align:center;font-family:serif">${HRS[i]}</div>`).join('');
-
   document.getElementById('modal-stats').innerHTML = `
     <div class="modal-stat">
       <div class="modal-stat-lbl">Right Now</div>
@@ -863,7 +771,6 @@ function openModal(id) {
       <div style="display:flex;gap:2px;align-items:flex-end;height:24px">${heatCells}</div>
       <div style="display:flex;gap:0;margin-top:3px">${heatLabels}</div>
     </div>`;
-
   document.getElementById('modal-backdrop').classList.add('open');
   requestAnimationFrame(()=>drawModalChart(p, m, hi, start, end));
 }
@@ -874,22 +781,16 @@ function drawModalChart(p, m, hi, start, end) {
   const H = canvas.height = canvas.offsetHeight || 160;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0,0,W,H);
-
   const PAD = {top:12, right:10, bottom:28, left:36};
   const cW = W - PAD.left - PAD.right;
   const cH = H - PAD.top  - PAD.bottom;
-
-  // Only show open hours
   const openP   = p.slice(start, end+1);
   const openHRS = HRS.slice(start, end+1);
   const vals   = openP.map(v=>Math.round(v*m));
   const maxV   = Math.max(...vals, 20);
   const n      = vals.length;
-
   const px = i => PAD.left + (i/(n-1))*cW;
   const py = v => PAD.top  + cH - (v/maxV)*cH;
-
-  // Grid lines
   ctx.strokeStyle='rgba(138,110,47,.15)'; ctx.lineWidth=1;
   [0,.25,.5,.75,1].forEach(f=>{
     const y=PAD.top+cH*(1-f);
@@ -897,25 +798,17 @@ function drawModalChart(p, m, hi, start, end) {
     ctx.fillStyle='rgba(90,74,42,.5)'; ctx.font='9px serif'; ctx.textAlign='right';
     ctx.fillText(Math.round(maxV*f), PAD.left-4, y+3);
   });
-
-  // Fill
   const grad=ctx.createLinearGradient(0,PAD.top,0,PAD.top+cH);
   grad.addColorStop(0,'rgba(10,74,74,.18)'); grad.addColorStop(1,'rgba(10,74,74,.02)');
   ctx.beginPath(); ctx.moveTo(px(0),py(vals[0]));
   vals.forEach((_,i)=>ctx.lineTo(px(i),py(vals[i])));
   ctx.lineTo(px(n-1),PAD.top+cH); ctx.lineTo(px(0),PAD.top+cH);
   ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
-
-  // Line
   ctx.beginPath(); ctx.moveTo(px(0),py(vals[0]));
   vals.forEach((_,i)=>ctx.lineTo(px(i),py(vals[i])));
   ctx.strokeStyle='#0a4a4a'; ctx.lineWidth=2; ctx.stroke();
-
-  // X axis labels — every other hour to avoid crowding
   ctx.fillStyle='rgba(90,74,42,.65)'; ctx.font='9px serif'; ctx.textAlign='center';
   openHRS.forEach((lbl,i)=>{ if(i%2===0) ctx.fillText(lbl, px(i), H-6); });
-
-  // Current hour marker — vertical line only, no label
   const curIdx = hi - start;
   if (curIdx >= 0 && curIdx < n) {
     ctx.beginPath(); ctx.moveTo(px(curIdx),PAD.top); ctx.lineTo(px(curIdx),PAD.top+cH);
@@ -932,7 +825,6 @@ function closeModal(e) {
   document.getElementById('modal-backdrop').classList.remove('open');
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.getElementById('modal-backdrop').classList.remove('open'); });
-
 
 function filter(q) {
   searchQ=q.toLowerCase().trim();
@@ -952,7 +844,6 @@ function setLoading(on) {
   document.getElementById('main-content').classList.toggle('hidden', on);
 }
 
-// Live data fetch
 async function refresh() {
   const badge=document.getElementById('badge');
   badge.textContent='● FETCHING'; badge.className='badge stale';
@@ -968,7 +859,6 @@ async function refresh() {
   }
   render();
   setLoading(false);
-  // If detail modal is open, re-render with fresh data
   if (document.getElementById('modal-backdrop').classList.contains('open')) {
     const rides=park==='dl'?DL:DCA;
     const name=document.getElementById('modal-name').textContent;
@@ -976,6 +866,7 @@ async function refresh() {
     if(r) openModal(r.id);
   }
 }
+
 function switchPark(p,btn) {
   park=p; live={}; searchQ='';
   favs = loadFavs();
@@ -985,17 +876,29 @@ function switchPark(p,btn) {
   btn.classList.add('on');
   document.getElementById('q').value='';
   setLoading(true);
-  // Load historical profiles for new park, then fetch live data
-  loadHistoricalProfiles().then(() => refresh());
+  // Load park hours + historical profiles for new park, then fetch live
+  Promise.all([
+    loadParkHours(p),
+    loadHistoricalProfiles()
+  ]).then(() => refresh());
 }
 
-// Init — load historical profiles first, then kick off live fetch
-loadHistoricalProfiles().then(() => {
+// ── INIT ─────────────────────────────────────────────────────────────────────
+// Load both parks' hours + historical profiles, then kick off the live fetch.
+Promise.all([
+  loadParkHours('dl'),
+  loadParkHours('dca'),
+  loadHistoricalProfiles()
+]).then(() => {
   refresh();
   setInterval(refresh, 5*60*1000);   // re-fetch live data every 5 min
   setInterval(render,  60*1000);      // re-render every minute to keep hour index current
-  // Reload historical profiles once a day in case new data has accumulated
-  setInterval(loadHistoricalProfiles, 24*60*60*1000);
+  // Reload hours + historical profiles once per day
+  setInterval(() => {
+    loadParkHours('dl');
+    loadParkHours('dca');
+    loadHistoricalProfiles();
+  }, 24*60*60*1000);
 });
 </script>
 
