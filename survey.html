@@ -331,6 +331,12 @@
   .tag-thrill { background: rgba(212,80,80,0.15); color: #f09595; }
   .tag-family { background: rgba(76,175,130,0.12); color: #7dd4b0; }
   .tag-kiddie { background: rgba(174,149,236,0.15); color: #c4aff0; }
+  .height-badge {
+    font-size: 10px; padding: 2px 7px; border-radius: 12px; white-space: nowrap;
+    font-weight: 700; letter-spacing: 0.04em; flex-shrink: 0;
+    background: rgba(201,168,76,0.1); color: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.2);
+  }
 
   .rating-btns { display: flex; gap: 3px; flex-shrink: 0; }
   .r-btn {
@@ -609,58 +615,59 @@ const FIREBASE_CONFIG = {
 };
 
 const RIDES = [
-  { id:'dl_smallworld', name:"it's a small world", park:"DL", land:"Fantasyland", type:"family" },
-  { id:'dl_pirates', name:"Pirates of the Caribbean", park:"DL", land:"New Orleans Square", type:"family" },
-  { id:'dl_haunted', name:"Haunted Mansion", park:"DL", land:"New Orleans Square", type:"family" },
-  { id:'dl_tiana', name:"Tiana's Bayou Adventure", park:"DL", land:"Bayou Country", type:"thrill" },
-  { id:'dl_pooh', name:"The Many Adventures of Winnie the Pooh", park:"DL", land:"Bayou Country", type:"family" },
-  { id:'dl_indiana', name:"Indiana Jones Adventure", park:"DL", land:"Adventureland", type:"thrill" },
-  { id:'dl_jungle', name:"Jungle Cruise", park:"DL", land:"Adventureland", type:"family" },
-  { id:'dl_treehouse', name:"Adventureland Treehouse", park:"DL", land:"Adventureland", type:"family" },
-  { id:'dl_matterhorn', name:"Matterhorn Bobsleds", park:"DL", land:"Fantasyland", type:"thrill" },
-  { id:'dl_dumbo', name:"Dumbo the Flying Elephant", park:"DL", land:"Fantasyland", type:"kiddie" },
-  { id:'dl_casey', name:"Casey Jr. Circus Train", park:"DL", land:"Fantasyland", type:"kiddie" },
-  { id:'dl_storybook', name:"Storybook Land Canal Boats", park:"DL", land:"Fantasyland", type:"family" },
-  { id:'dl_teacups', name:"Mad Tea Party", park:"DL", land:"Fantasyland", type:"family" },
-  { id:'dl_peter_pan', name:"Peter Pan's Flight", park:"DL", land:"Fantasyland", type:"family" },
-  { id:'dl_pinocchio', name:"Pinocchio's Daring Journey", park:"DL", land:"Fantasyland", type:"family" },
-  { id:'dl_snowwhite', name:"Snow White's Enchanted Wish", park:"DL", land:"Fantasyland", type:"family" },
-  { id:'dl_mr_toad', name:"Mr. Toad's Wild Ride", park:"DL", land:"Fantasyland", type:"family" },
-  { id:'dl_alice', name:"Alice in Wonderland", park:"DL", land:"Fantasyland", type:"family" },
-  { id:'dl_carousel', name:"King Arthur Carrousel", park:"DL", land:"Fantasyland", type:"family" },
-  { id:'dl_autopia', name:"Autopia", park:"DL", land:"Tomorrowland", type:"kiddie" },
-  { id:'dl_buzz', name:"Buzz Lightyear Astro Blasters", park:"DL", land:"Tomorrowland", type:"family" },
-  { id:'dl_space', name:"Space Mountain", park:"DL", land:"Tomorrowland", type:"thrill" },
-  { id:'dl_nemo', name:"Finding Nemo Submarine Voyage", park:"DL", land:"Tomorrowland", type:"family" },
-  { id:'dl_astro', name:"Astro Orbitor", park:"DL", land:"Tomorrowland", type:"kiddie" },
-  { id:'dl_monorail', name:"Disneyland Monorail", park:"DL", land:"Tomorrowland", type:"family" },
-  { id:'dl_rise', name:"Star Wars: Rise of the Resistance", park:"DL", land:"Star Wars: Galaxy's Edge", type:"thrill" },
-  { id:'dl_smugglers', name:"Millennium Falcon: Smugglers Run", park:"DL", land:"Star Wars: Galaxy's Edge", type:"family" },
-  { id:'dl_btr', name:"Big Thunder Mountain Railroad", park:"DL", land:"Frontierland", type:"thrill" },
-  { id:'dl_mark_twain', name:"Mark Twain Riverboat", park:"DL", land:"Frontierland", type:"family" },
-  { id:'dl_columbia', name:"Sailing Ship Columbia", park:"DL", land:"Frontierland", type:"family" },
-  { id:'dl_roger', name:"Roger Rabbit's Car Toon Spin", park:"DL", land:"Mickey's Toontown", type:"family" },
-  { id:'dl_runaway', name:"Mickey & Minnie's Runaway Railway", park:"DL", land:"Mickey's Toontown", type:"family" },
-  { id:'dl_gadget', name:"Gadget's Go Coaster", park:"DL", land:"Mickey's Toontown", type:"kiddie" },
-  { id:'dca_radiator', name:"Radiator Springs Racers", park:"DCA", land:"Cars Land", type:"thrill" },
-  { id:'dca_mater', name:"Mater's Junkyard Jamboree", park:"DCA", land:"Cars Land", type:"family" },
-  { id:'dca_luigi', name:"Luigi's Rollickin' Roadsters", park:"DCA", land:"Cars Land", type:"family" },
-  { id:'dca_guardians', name:"Guardians of the Galaxy – Mission: BREAKOUT!", park:"DCA", land:"Avengers Campus", type:"thrill" },
-  { id:'dca_webslingers', name:"WEB SLINGERS: A Spider-Man Adventure", park:"DCA", land:"Avengers Campus", type:"family" },
-  { id:'dca_incredicoaster', name:"Incredicoaster", park:"DCA", land:"Pixar Pier", type:"thrill" },
-  { id:'dca_jessie', name:"Jessie's Critter Carousel", park:"DCA", land:"Pixar Pier", type:"kiddie" },
-  { id:'dca_inside_out', name:"Inside Out Emotional Whirlwind", park:"DCA", land:"Pixar Pier", type:"family" },
-  { id:'dca_toy_story', name:"Toy Story Midway Mania!", park:"DCA", land:"Pixar Pier", type:"family" },
-  { id:'dca_pal_swing', name:"Pixar Pal-A-Round (Swinging)", park:"DCA", land:"Pixar Pier", type:"thrill" },
-  { id:'dca_pal_ns', name:"Pixar Pal-A-Round (Non-Swinging)", park:"DCA", land:"Pixar Pier", type:"family" },
-  { id:'dca_soarin', name:"Soarin'", park:"DCA", land:"Grizzly Peak", type:"family" },
-  { id:'dca_grizzly', name:"Grizzly River Run", park:"DCA", land:"Grizzly Peak", type:"thrill" },
-  { id:'dca_monsters', name:"Monsters, Inc. Mike & Sulley to the Rescue!", park:"DCA", land:"Hollywood Land", type:"family" },
-  { id:'dca_ariel', name:"The Little Mermaid – Ariel's Undersea Adventure", park:"DCA", land:"Paradise Gardens Park", type:"family" },
-  { id:'dca_goofy', name:"Goofy's Sky School", park:"DCA", land:"Paradise Gardens Park", type:"thrill" },
-  { id:'dca_silly', name:"Silly Symphony Swings", park:"DCA", land:"Paradise Gardens Park", type:"family" },
-  { id:'dca_jellyfish', name:"Jumpin' Jellyfish", park:"DCA", land:"Paradise Gardens Park", type:"family" },
-  { id:'dca_zephyr', name:"Golden Zephyr", park:"DCA", land:"Paradise Gardens Park", type:"family" },
+  // height: null = no requirement, number = inches required
+  { id:'dl_smallworld',  name:"it's a small world",                         park:"DL",  land:"Fantasyland",               type:"family", height:null },
+  { id:'dl_pirates',     name:"Pirates of the Caribbean",                    park:"DL",  land:"New Orleans Square",        type:"family", height:null },
+  { id:'dl_haunted',     name:"Haunted Mansion",                             park:"DL",  land:"New Orleans Square",        type:"family", height:null },
+  { id:'dl_tiana',       name:"Tiana's Bayou Adventure",                     park:"DL",  land:"Bayou Country",             type:"thrill", height:40 },
+  { id:'dl_pooh',        name:"The Many Adventures of Winnie the Pooh",      park:"DL",  land:"Bayou Country",             type:"family", height:null },
+  { id:'dl_indiana',     name:"Indiana Jones Adventure",                     park:"DL",  land:"Adventureland",             type:"thrill", height:46 },
+  { id:'dl_jungle',      name:"Jungle Cruise",                               park:"DL",  land:"Adventureland",             type:"family", height:null },
+  { id:'dl_treehouse',   name:"Adventureland Treehouse",                     park:"DL",  land:"Adventureland",             type:"family", height:null },
+  { id:'dl_matterhorn',  name:"Matterhorn Bobsleds",                         park:"DL",  land:"Fantasyland",               type:"thrill", height:42 },
+  { id:'dl_dumbo',       name:"Dumbo the Flying Elephant",                   park:"DL",  land:"Fantasyland",               type:"kiddie", height:null },
+  { id:'dl_casey',       name:"Casey Jr. Circus Train",                      park:"DL",  land:"Fantasyland",               type:"kiddie", height:null },
+  { id:'dl_storybook',   name:"Storybook Land Canal Boats",                  park:"DL",  land:"Fantasyland",               type:"family", height:null },
+  { id:'dl_teacups',     name:"Mad Tea Party",                               park:"DL",  land:"Fantasyland",               type:"family", height:null },
+  { id:'dl_peter_pan',   name:"Peter Pan's Flight",                          park:"DL",  land:"Fantasyland",               type:"family", height:null },
+  { id:'dl_pinocchio',   name:"Pinocchio's Daring Journey",                  park:"DL",  land:"Fantasyland",               type:"family", height:null },
+  { id:'dl_snowwhite',   name:"Snow White's Enchanted Wish",                 park:"DL",  land:"Fantasyland",               type:"family", height:null },
+  { id:'dl_mr_toad',     name:"Mr. Toad's Wild Ride",                        park:"DL",  land:"Fantasyland",               type:"family", height:null },
+  { id:'dl_alice',       name:"Alice in Wonderland",                         park:"DL",  land:"Fantasyland",               type:"family", height:null },
+  { id:'dl_carousel',    name:"King Arthur Carrousel",                       park:"DL",  land:"Fantasyland",               type:"family", height:null },
+  { id:'dl_autopia',     name:"Autopia",                                     park:"DL",  land:"Tomorrowland",              type:"kiddie", height:54 },
+  { id:'dl_buzz',        name:"Buzz Lightyear Astro Blasters",               park:"DL",  land:"Tomorrowland",              type:"family", height:null },
+  { id:'dl_space',       name:"Space Mountain",                              park:"DL",  land:"Tomorrowland",              type:"thrill", height:40 },
+  { id:'dl_nemo',        name:"Finding Nemo Submarine Voyage",               park:"DL",  land:"Tomorrowland",              type:"family", height:null },
+  { id:'dl_astro',       name:"Astro Orbitor",                               park:"DL",  land:"Tomorrowland",              type:"kiddie", height:null },
+  { id:'dl_monorail',    name:"Disneyland Monorail",                         park:"DL",  land:"Tomorrowland",              type:"family", height:null },
+  { id:'dl_rise',        name:"Star Wars: Rise of the Resistance",           park:"DL",  land:"Star Wars: Galaxy's Edge",  type:"thrill", height:40 },
+  { id:'dl_smugglers',   name:"Millennium Falcon: Smugglers Run",            park:"DL",  land:"Star Wars: Galaxy's Edge",  type:"family", height:38 },
+  { id:'dl_btr',         name:"Big Thunder Mountain Railroad",               park:"DL",  land:"Frontierland",              type:"thrill", height:40 },
+  { id:'dl_mark_twain',  name:"Mark Twain Riverboat",                        park:"DL",  land:"Frontierland",              type:"family", height:null },
+  { id:'dl_columbia',    name:"Sailing Ship Columbia",                       park:"DL",  land:"Frontierland",              type:"family", height:null },
+  { id:'dl_roger',       name:"Roger Rabbit's Car Toon Spin",                park:"DL",  land:"Mickey's Toontown",         type:"family", height:null },
+  { id:'dl_runaway',     name:"Mickey & Minnie's Runaway Railway",           park:"DL",  land:"Mickey's Toontown",         type:"family", height:null },
+  { id:'dl_gadget',      name:"Gadget's Go Coaster",                         park:"DL",  land:"Mickey's Toontown",         type:"kiddie", height:35 },
+  { id:'dca_radiator',   name:"Radiator Springs Racers",                     park:"DCA", land:"Cars Land",                 type:"thrill", height:40 },
+  { id:'dca_mater',      name:"Mater's Junkyard Jamboree",                   park:"DCA", land:"Cars Land",                 type:"family", height:null },
+  { id:'dca_luigi',      name:"Luigi's Rollickin' Roadsters",                park:"DCA", land:"Cars Land",                 type:"family", height:null },
+  { id:'dca_guardians',  name:"Guardians of the Galaxy – Mission: BREAKOUT!",park:"DCA", land:"Avengers Campus",           type:"thrill", height:40 },
+  { id:'dca_webslingers',name:"WEB SLINGERS: A Spider-Man Adventure",        park:"DCA", land:"Avengers Campus",           type:"family", height:null },
+  { id:'dca_incredicoaster',name:"Incredicoaster",                           park:"DCA", land:"Pixar Pier",                type:"thrill", height:48 },
+  { id:'dca_jessie',     name:"Jessie's Critter Carousel",                   park:"DCA", land:"Pixar Pier",                type:"kiddie", height:null },
+  { id:'dca_inside_out', name:"Inside Out Emotional Whirlwind",              park:"DCA", land:"Pixar Pier",                type:"family", height:null },
+  { id:'dca_toy_story',  name:"Toy Story Midway Mania!",                     park:"DCA", land:"Pixar Pier",                type:"family", height:null },
+  { id:'dca_pal_swing',  name:"Pixar Pal-A-Round (Swinging)",                park:"DCA", land:"Pixar Pier",                type:"thrill", height:40 },
+  { id:'dca_pal_ns',     name:"Pixar Pal-A-Round (Non-Swinging)",            park:"DCA", land:"Pixar Pier",                type:"family", height:null },
+  { id:'dca_soarin',     name:"Soarin'",                                     park:"DCA", land:"Grizzly Peak",              type:"family", height:40 },
+  { id:'dca_grizzly',    name:"Grizzly River Run",                           park:"DCA", land:"Grizzly Peak",              type:"thrill", height:42 },
+  { id:'dca_monsters',   name:"Monsters, Inc. Mike & Sulley to the Rescue!", park:"DCA", land:"Hollywood Land",            type:"family", height:null },
+  { id:'dca_ariel',      name:"The Little Mermaid – Ariel's Undersea Adventure",park:"DCA",land:"Paradise Gardens Park",  type:"family", height:null },
+  { id:'dca_goofy',      name:"Goofy's Sky School",                          park:"DCA", land:"Paradise Gardens Park",     type:"thrill", height:42 },
+  { id:'dca_silly',      name:"Silly Symphony Swings",                       park:"DCA", land:"Paradise Gardens Park",     type:"family", height:40 },
+  { id:'dca_jellyfish',  name:"Jumpin' Jellyfish",                           park:"DCA", land:"Paradise Gardens Park",     type:"family", height:null },
+  { id:'dca_zephyr',     name:"Golden Zephyr",                               park:"DCA", land:"Paradise Gardens Park",     type:"family", height:null },
 ];
 
 // ── STATE ──
@@ -782,7 +789,8 @@ function buildRideList() {
       rides.forEach(r => {
         const tc = r.type === 'thrill' ? 'tag-thrill' : r.type === 'kiddie' ? 'tag-kiddie' : 'tag-family';
         const tl = r.type === 'thrill' ? 'Thrill' : r.type === 'kiddie' ? 'Kiddie' : 'Family';
-        html += `<div class="ride-row"><div class="ride-name">${r.name}</div><span class="ride-tag ${tc}">${tl}</span><div class="rating-btns">`;
+        const hb = r.height ? `<span class="height-badge">↕ ${r.height}"</span>` : '';
+        html += `<div class="ride-row"><div class="ride-name">${r.name}</div><span class="ride-tag ${tc}">${tl}</span>${hb}<div class="rating-btns">`;
         for (let i = 0; i <= 5; i++) html += `<button class="r-btn" id="rb-${r.id}-${i}" onclick="setRating('${r.id}',${i})">${i}</button>`;
         html += `</div></div>`;
       });
@@ -903,7 +911,7 @@ function buildResults() {
       <span class="result-rank">${i + 1}</span>
       <div style="flex:1;min-width:0;">
         <div class="result-name">${r.name}</div>
-        <div class="result-meta">${r.land} · ${r.park === 'DL' ? 'Disneyland' : 'DCA'}${partialNote}</div>
+        <div class="result-meta">${r.land} · ${r.park === 'DL' ? 'Disneyland' : 'DCA'}${r.height ? ` · ↕ ${r.height}"` : ''}${partialNote}</div>
         ${mustBadge || skipBadge || unratedNote ? `<div class="result-badges">${mustBadge}${skipBadge}${unratedNote}</div>` : ''}
       </div>
       <div class="result-right">
