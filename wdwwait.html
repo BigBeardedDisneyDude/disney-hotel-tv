@@ -3,67 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BoardWalk TV — Walt Disney World Resort</title>
+  <title>Wait Times — BoardWalk TV</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      /* ── Pulled directly from real BoardWalk in-room TV screen ── */
-      --green-deep:   #2b5425;   /* header / footer bg */
+      --green-deep:   #2b5425;
       --green-mid:    #3a6e33;
       --green-border: #4a8a40;
-      --green-pale:   #a8c9a0;   /* muted text on green */
+      --green-pale:   #a8c9a0;
 
-      --tan:          #c8a96e;   /* welcome banner fill */
+      --tan:          #c8a96e;
       --tan-dark:     #a8854a;
       --tan-light:    #e0c898;
       --tan-pale:     #f0e0c0;
 
-      --burgundy:     #7a3028;   /* accent badge */
+      --burgundy:     #7a3028;
       --burgundy-mid: #9a4838;
 
       --warm-white:   #fdf8ee;
       --warm-off:     #e8dfc8;
       --body-bg:      #121f10;
+
+      --green-ui:     #5cb87a;
+      --yellow-ui:    #e8c84a;
+      --orange-ui:    #e8944a;
+      --red-ui:       #e85c4a;
+      --closed-col:   rgba(253,248,238,0.18);
     }
 
     html, body {
-      width: 100%; height: 100%;
-      overflow: hidden;
+      width: 100%; min-height: 100%;
       background: var(--body-bg);
+      color: var(--warm-white);
       font-family: 'Raleway', sans-serif;
-    }
-
-    #bg {
-      position: fixed; inset: 0; z-index: 0;
-      overflow: hidden;
-    }
-    #bg-fallback {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 45%, #1e3d1a 0%, #0d1a0b 100%);
-      z-index: 0; transition: opacity 0.8s ease;
-    }
-    #bg-video {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      object-fit: cover; object-position: center center;
-      z-index: 1;
-    }
-    #bg::after {
-      content: ''; position: absolute; inset: 0; z-index: 2;
-      background: linear-gradient(180deg,
-        rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.00) 18%,
-        rgba(0,0,0,0.00) 55%, rgba(0,0,0,0.45) 82%,
-        rgba(0,0,0,0.88) 100%
-      );
     }
 
     /* ── HEADER ── */
     #header {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       background: var(--green-deep);
-      box-shadow: 0 3px 20px rgba(0,0,0,0.6);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.55);
       padding-top: env(safe-area-inset-top, 0px);
       transform: translateZ(0);
     }
@@ -76,114 +57,65 @@
       );
     }
 
-
+    #room-badge {
+      position: absolute; top: 3px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--burgundy);
+      padding: 0 18px;
+      border-radius: 0 0 6px 6px;
+      font-family: 'Raleway', sans-serif; font-weight: 300;
+      font-size: 9px; letter-spacing: 0.34em; text-transform: uppercase;
+      color: var(--tan-pale); line-height: 22px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      white-space: nowrap; z-index: 1;
+    }
 
     #header-inner {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 24px 12px; gap: 12px;
+      padding: 12px 24px 10px; gap: 12px; flex-wrap: wrap;
     }
 
-    #header-left { display: flex; flex-direction: column; gap: 5px; }
+    #header-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex-shrink: 1; }
 
-    #wordmark { display: flex; flex-direction: column; gap: 1px; }
+    #back-btn {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 10px;
+      letter-spacing: 0.22em; color: var(--tan-light); text-transform: uppercase;
+      background: none; border: 1px solid rgba(200,169,110,0.35); border-radius: 3px;
+      padding: 5px 10px; cursor: pointer; transition: all .25s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    #back-btn:hover { background: rgba(200,169,110,0.12); border-color: var(--tan-light); }
+    #back-btn::before { content: '\2190 '; }
+
+    #wordmark { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
     .bw-script {
       font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 300;
-      font-size: clamp(11px, 2.5vw, 14px);
+      font-size: clamp(10px, 2.2vw, 13px);
       letter-spacing: 0.06em; color: var(--tan-light); line-height: 1;
     }
     .bw-logo {
       font-family: 'Playfair Display', serif; font-weight: 700; font-style: italic;
-      font-size: clamp(18px, 4.5vw, 28px);
+      font-size: clamp(14px, 3.5vw, 20px);
       letter-spacing: 0.04em; color: var(--warm-white); line-height: 1;
-      text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+      white-space: nowrap;
     }
     .bw-sub {
       font-family: 'Raleway', sans-serif; font-weight: 200;
-      font-size: clamp(7px, 1.5vw, 9px);
-      letter-spacing: 0.38em; text-transform: uppercase;
+      font-size: clamp(7px, 1.4vw, 8px);
+      letter-spacing: 0.35em; text-transform: uppercase;
       color: var(--green-pale); opacity: 0.8;
     }
 
-    /* tan welcome band — mimics the real screen's name banner */
-    #welcome-band {
-      display: inline-flex; flex-direction: column; gap: 1px;
-      background: var(--tan);
-      border-radius: 3px; padding: 5px 14px 6px;
-      border-left: 3px solid var(--tan-dark);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 1px 6px rgba(0,0,0,0.3);
-      margin-top: 3px; align-self: flex-start;
+    #header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0; }
+    #page-title {
+      font-family: 'Playfair Display', serif; font-weight: 700; font-style: italic;
+      font-size: clamp(15px, 3.8vw, 22px);
+      letter-spacing: 0.04em; color: var(--warm-white);
     }
-    #greeting-line {
-      font-family: 'Raleway', sans-serif; font-weight: 300;
-      font-size: clamp(8px, 1.8vw, 10px);
-      letter-spacing: 0.28em; text-transform: uppercase;
-      color: rgba(26,16,8,0.6);
-    }
-    #welcome-name {
-      font-family: 'Playfair Display', serif; font-weight: 700;
-      font-size: clamp(17px, 4.2vw, 26px);
-      letter-spacing: 0.03em; color: #1a1008; line-height: 1.0;
-    }
-    #countdown-strip {
-      display: none; align-items: center; gap: 5px; margin-top: 2px;
-    }
-    #countdown-strip.visible { display: flex; }
-    #countdown-text {
+    #page-subtitle {
       font-family: 'Raleway', sans-serif; font-weight: 200;
       font-size: clamp(8px, 1.8vw, 10px);
-      letter-spacing: 0.22em; color: rgba(26,16,8,0.55); text-transform: uppercase;
-    }
-    #countdown-number {
-      font-family: 'Playfair Display', serif; font-weight: 700;
-      font-size: clamp(10px, 2.2vw, 13px); color: var(--burgundy);
-    }
-    #countdown-unit {
-      font-family: 'Raleway', sans-serif; font-weight: 200;
-      font-size: clamp(8px, 1.6vw, 10px);
-      letter-spacing: 0.2em; color: rgba(26,16,8,0.5); text-transform: uppercase;
-    }
-    #countdown-label {
-      font-family: 'Cormorant Garamond', serif; font-style: italic;
-      font-size: clamp(9px, 2vw, 11px); color: rgba(122,48,40,0.7);
-    }
-
-    #header-right {
-      display: flex; flex-direction: column; align-items: flex-end;
-      gap: 4px; flex-shrink: 0;
-    }
-    #weather-row {
-      display: flex; align-items: center; gap: 7px; font-family: 'Raleway', sans-serif;
-    }
-    #weather-icon { font-size: clamp(16px, 4vw, 20px); line-height: 1; }
-    #weather-temp {
-      font-family: 'Playfair Display', serif; font-weight: 400;
-      font-size: clamp(18px, 4.5vw, 26px);
-      color: var(--warm-white); letter-spacing: 0.02em; line-height: 1;
-    }
-    #weather-desc {
-      font-size: clamp(9px, 2vw, 11px); font-weight: 200;
-      color: var(--green-pale); letter-spacing: 0.1em;
-      text-transform: uppercase; align-self: flex-end; margin-bottom: 2px;
-    }
-    #time-display {
-      font-family: 'Playfair Display', serif; font-weight: 700;
-      font-size: clamp(22px, 5.5vw, 34px);
-      color: var(--warm-white); letter-spacing: 0.04em; line-height: 1.0;
-    }
-    #date-display {
-      font-family: 'Raleway', sans-serif; font-weight: 200;
-      font-size: clamp(8px, 1.8vw, 10px);
-      letter-spacing: 0.25em; color: var(--tan-light);
-      text-transform: uppercase; opacity: 0.9; margin-top: 1px; white-space: nowrap;
-    }
-    @media (max-width: 480px) {
-      #weather-desc { display: none; }
-      #header-inner { padding: 10px 16px 8px; gap: 8px; }
-      .bw-logo { font-size: clamp(16px, 5vw, 22px); }
-      #welcome-name { font-size: clamp(15px, 5vw, 22px); }
-      #footer-inner { flex-direction: column; align-items: flex-start; gap: 10px; padding: 10px 16px 12px; }
-      #footer-nav { width: 100%; justify-content: space-between; }
-      .nav-btn { flex: 1; }
+      letter-spacing: 0.22em; color: var(--tan-light); text-transform: uppercase; opacity: 0.85;
     }
 
     #header-bottom-rule {
@@ -192,392 +124,422 @@
       opacity: 0.5;
     }
 
-    #main { position: fixed; inset: 0; z-index: 1; }
+    @media (max-width: 480px) {
+      #header-inner { flex-direction: column; align-items: flex-start; padding: 10px 16px 8px; }
+      #header-right { align-items: flex-start; width: 100%; border-top: 1px solid rgba(200,169,110,0.15); padding-top: 6px; margin-top: 2px; }
+      #page-subtitle { display: none; }
+      #main { padding-top: 130px; }
+    }
+
+    /* ── MAIN ── */
+    #main { padding: 86px 12px 30px; max-width: 980px; margin: 0 auto; }
+    @media (min-width: 600px) { #main { padding: 92px 40px 40px; } }
+
+    /* ── TOOLBAR ── */
+    #toolbar {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 18px; padding-bottom: 14px;
+      border-bottom: 1px solid rgba(200,169,110,0.18);
+      gap: 10px; flex-wrap: wrap;
+    }
+    #status-text {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 11px;
+      letter-spacing: 0.2em; color: rgba(253,248,238,0.38); text-transform: uppercase;
+      padding-top: 8px;
+    }
+    .toolbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    /* park tabs — 4 parks, 2x2 on mobile */
+    .park-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    @media (min-width: 560px) {
+      .park-tabs { display: flex; }
+    }
+    .park-tab {
+      font-family: 'Raleway', sans-serif; font-size: clamp(9px, 2vw, 11px); font-weight: 300;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(200,169,110,0.5); background: none;
+      border: 1px solid rgba(200,169,110,0.25); padding: 7px 11px;
+      cursor: pointer; transition: all .2s; white-space: nowrap; text-align: center;
+    }
+    /* grid layout: clean 2x2 borders */
+    .park-tabs .park-tab:nth-child(1) { border-radius: 3px 0 0 0; }
+    .park-tabs .park-tab:nth-child(2) { border-radius: 0 3px 0 0; border-left: none; }
+    .park-tabs .park-tab:nth-child(3) { border-radius: 0 0 0 3px; border-top: none; }
+    .park-tabs .park-tab:nth-child(4) { border-radius: 0 0 3px 0; border-left: none; border-top: none; }
+    /* flex layout (wider screens): single row */
+    @media (min-width: 560px) {
+      .park-tabs .park-tab:nth-child(1) { border-radius: 3px 0 0 3px; }
+      .park-tabs .park-tab:nth-child(2) { border-radius: 0; border-left: none; border-top: 1px solid rgba(200,169,110,0.25); }
+      .park-tabs .park-tab:nth-child(3) { border-radius: 0; border-left: none; border-top: 1px solid rgba(200,169,110,0.25); }
+      .park-tabs .park-tab:nth-child(4) { border-radius: 0 3px 3px 0; border-left: none; border-top: 1px solid rgba(200,169,110,0.25); }
+    }
+    .park-tab.active { color: var(--body-bg); background: var(--tan); border-color: var(--tan); font-weight: 400; }
+    .park-tab:not(.active):hover { background: rgba(200,169,110,0.1); border-color: rgba(200,169,110,0.5); color: var(--tan-light); }
+
+    #refresh-btn {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 11px;
+      letter-spacing: 0.2em; color: var(--tan-light); text-transform: uppercase;
+      background: none; border: 1px solid rgba(200,169,110,0.35); border-radius: 3px;
+      padding: 6px 12px; cursor: pointer; transition: all .25s; white-space: nowrap;
+      min-height: 34px;
+    }
+    #refresh-btn:hover { background: rgba(200,169,110,0.1); border-color: var(--tan-light); }
+
+    /* ── LEGEND ── */
+    .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .legend-item {
+      display: flex; align-items: center; gap: 5px;
+      font-family: 'Raleway', sans-serif; font-size: 10px; font-weight: 300;
+      letter-spacing: 0.08em; color: rgba(253,248,238,0.38); text-transform: uppercase;
+    }
+    .legend-pip { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── STATS BAR ── */
+    #stats-bar {
+      display: flex; gap: 16px; flex-wrap: nowrap;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      margin-bottom: 22px; padding: 12px 16px;
+      background: rgba(253,248,238,0.03);
+      border: 1px solid rgba(200,169,110,0.12); border-radius: 4px;
+      scrollbar-width: none;
+    }
+    #stats-bar::-webkit-scrollbar { display: none; }
+    .stat-item { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+    .stat-value {
+      font-family: 'Playfair Display', serif; font-size: clamp(16px,4vw,20px);
+      font-weight: 700; color: var(--tan-light); line-height: 1;
+    }
+    .stat-label {
+      font-family: 'Raleway', sans-serif; font-size: 9px; font-weight: 300;
+      letter-spacing: 0.2em; text-transform: uppercase; color: rgba(253,248,238,0.3);
+      white-space: nowrap;
+    }
+    .stat-div { width: 1px; background: rgba(200,169,110,0.15); align-self: stretch; flex-shrink: 0; }
+
+    /* ── LOADING / ERROR ── */
+    #loading { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 80px 0; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 2px solid rgba(200,169,110,0.2);
+      border-top-color: var(--tan);
+      border-radius: 50%; animation: spin .9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading p {
+      font-family: 'Raleway', sans-serif; font-weight: 200; font-size: 11px;
+      letter-spacing: 0.3em; color: rgba(253,248,238,0.4); text-transform: uppercase;
+    }
+    #loading small { font-size: 10px; color: rgba(253,248,238,0.2); letter-spacing: 0.12em; }
+
+    #error { display: none; text-align: center; padding: 60px 0; }
+    #error p {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 13px;
+      letter-spacing: 0.06em; color: rgba(253,248,238,0.5); margin-bottom: 6px; line-height: 1.9;
+    }
+    #error .err-detail { font-size: 11px; color: rgba(253,248,238,0.22); letter-spacing: 0.1em; margin-bottom: 24px; }
+    #retry-btn {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 11px;
+      letter-spacing: 0.25em; color: var(--tan-light); text-transform: uppercase;
+      background: none; border: 1px solid rgba(200,169,110,0.4); border-radius: 3px; padding: 8px 22px; cursor: pointer;
+    }
+
+    /* ── PARK PANELS ── */
+    .park-panel { display: none; }
+    .park-panel.visible { display: block; }
+
+    /* ── LAND GROUPS ── */
+    .land-group { margin-bottom: 28px; animation: fadeIn .35s ease both; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .land-group:nth-child(1){animation-delay:.03s} .land-group:nth-child(2){animation-delay:.06s}
+    .land-group:nth-child(3){animation-delay:.09s} .land-group:nth-child(4){animation-delay:.12s}
+    .land-group:nth-child(5){animation-delay:.15s} .land-group:nth-child(6){animation-delay:.18s}
+    .land-group:nth-child(7){animation-delay:.21s} .land-group:nth-child(8){animation-delay:.24s}
+    .land-group:nth-child(9){animation-delay:.27s} .land-group:nth-child(10){animation-delay:.30s}
+
+    .land-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .land-title {
+      font-family: 'Raleway', sans-serif; font-weight: 400; font-size: clamp(10px,2.5vw,12px);
+      letter-spacing: 0.18em; color: var(--tan); text-transform: uppercase; white-space: nowrap;
+    }
+    .land-divider {
+      flex: 1; height: 1px;
+      background: linear-gradient(90deg, rgba(200,169,110,0.22) 0%, transparent 100%);
+    }
+
+    /* ── RIDE GRID ── */
+    .ride-grid { display: grid; grid-template-columns: 1fr; gap: 6px; }
+    @media (min-width: 480px) { .ride-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (min-width: 800px) { .ride-grid { grid-template-columns: repeat(3,1fr); } }
+
+    .ride-card {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 10px 12px;
+      background: rgba(253,248,238,0.03);
+      border-left: 3px solid rgba(253,248,238,0.1);
+      border-radius: 0 3px 3px 0;
+      transition: background .15s; min-height: 44px;
+    }
+    .ride-card:hover { background: rgba(253,248,238,0.06); }
+    .ride-card.open-low  { border-left-color: var(--green-ui); }
+    .ride-card.open-med  { border-left-color: var(--yellow-ui); }
+    .ride-card.open-high { border-left-color: var(--orange-ui); }
+    .ride-card.open-max  { border-left-color: var(--red-ui); }
+    .ride-card.closed    { border-left-color: var(--closed-col); opacity: .5; }
+
+    .ride-name {
+      font-family: 'Raleway', sans-serif; font-weight: 400;
+      font-size: clamp(11px,2.5vw,12px); line-height: 1.35;
+      color: rgba(253,248,238,0.82); flex: 1;
+    }
+    .wait-badge {
+      font-family: 'Playfair Display', serif; font-weight: 700;
+      font-size: clamp(12px,3vw,14px); white-space: nowrap;
+      min-width: 46px; text-align: right;
+    }
+    .open-low  .wait-badge { color: var(--green-ui); }
+    .open-med  .wait-badge { color: var(--yellow-ui); }
+    .open-high .wait-badge { color: var(--orange-ui); }
+    .open-max  .wait-badge { color: var(--red-ui); }
+    .closed    .wait-badge {
+      font-family: 'Raleway', sans-serif; font-size: 10px; font-weight: 300;
+      letter-spacing: 0.12em; color: rgba(253,248,238,0.28); text-transform: uppercase;
+    }
 
     /* ── FOOTER ── */
-    #footer {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-      transform: translateZ(0);
+    .ornament {
+      text-align: center; margin: 40px 0 8px;
+      color: rgba(200,169,110,0.2); font-size: 14px; letter-spacing: 0.5em;
     }
-
-    #footer-top-rule {
-      height: 1px;
-      background: linear-gradient(90deg, transparent 0%, var(--tan-dark) 20%, var(--tan-light) 50%, var(--tan-dark) 80%, transparent 100%);
-      opacity: 0.4;
+    .last-updated {
+      text-align: center; font-family: 'Raleway', sans-serif; font-weight: 200;
+      font-size: 10px; letter-spacing: 0.18em; color: rgba(253,248,238,0.18);
+      text-transform: uppercase; margin-bottom: 10px;
     }
-
-    #footer-inner {
-      background: var(--green-deep);
-      padding: 10px 24px 12px;
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; position: relative;
+    .attribution {
+      text-align: center; font-family: 'Raleway', sans-serif; font-weight: 300;
+      font-size: 10px; letter-spacing: 0.15em; color: rgba(253,248,238,0.22); margin-bottom: 40px;
     }
-
-    #footer-bottom-rule {
-      height: 3px;
-      background: linear-gradient(90deg,
-        var(--tan-dark) 0%, var(--tan-light) 30%,
-        var(--tan-pale) 50%, var(--tan-light) 70%, var(--tan-dark) 100%
-      );
-    }
-
-    #footer-left { display: flex; flex-direction: column; gap: 3px; }
-    #footer-tagline {
-      font-family: 'Cormorant Garamond', serif; font-style: italic;
-      font-size: clamp(11px, 2.5vw, 14px);
-      color: var(--warm-white); letter-spacing: 0.03em; opacity: 0.9;
-    }
-    #footer-resort {
-      font-family: 'Raleway', sans-serif; font-weight: 200;
-      font-size: clamp(7px, 1.5vw, 9px);
-      letter-spacing: 0.32em; text-transform: uppercase;
-      color: var(--green-pale); opacity: 0.65;
-    }
-
-    #footer-nav { display: flex; align-items: center; gap: 6px; }
-
-    .nav-btn {
-      display: flex; flex-direction: column; align-items: center; gap: 3px;
-      background: none; border: 1px solid rgba(200,169,110,0.28);
-      border-radius: 4px; padding: 6px 16px;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .nav-btn:hover { background: rgba(200,169,110,0.12); border-color: rgba(200,169,110,0.55); }
-    .nav-btn-label {
-      font-family: 'Raleway', sans-serif; font-weight: 300;
-      font-size: clamp(9px, 2vw, 11px);
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--tan-light); white-space: nowrap;
-    }
-    .nav-btn-sub {
-      font-family: 'Raleway', sans-serif; font-weight: 200;
-      font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase;
-      color: rgba(200,169,110,0.4);
-    }
-    @media (max-width: 520px) { .nav-btn-sub { display: none; } }
-
-    .nav-divider {
-      width: 1px; height: 32px;
-      background: linear-gradient(180deg, transparent, rgba(200,169,110,0.2), transparent);
-      flex-shrink: 0;
-    }
-
-    #music-btn {
-      position: absolute; top: 0; left: 50%;
-      transform: translate(-50%, -100%);
-      background: var(--green-deep);
-      border: 1px solid rgba(200,169,110,0.35); border-bottom: none;
-      border-radius: 10px 10px 0 0;
-      padding: 4px 16px 5px;
-      color: var(--tan-light);
-      font-family: 'Raleway', sans-serif; font-size: 9px; font-weight: 300;
-      letter-spacing: 0.28em; text-transform: uppercase;
-      cursor: pointer; white-space: nowrap; transition: background 0.2s;
-    }
-    #music-btn:hover { background: rgba(200,169,110,0.1); }
-
-    #gear-btn {
-      position: fixed;
-      bottom: calc(70px + env(safe-area-inset-bottom, 0px));
-      right: 16px; z-index: 102;
-      width: 34px; height: 34px;
-      background: var(--green-deep);
-      border: 1px solid rgba(200,169,110,0.3); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: all 0.3s;
-    }
-    #gear-btn:hover { background: rgba(200,169,110,0.12); border-color: rgba(200,169,110,0.65); transform: rotate(30deg); }
-    #gear-btn svg { width: 16px; height: 16px; fill: rgba(200,169,110,0.7); transition: fill 0.2s; }
-    #gear-btn:hover svg { fill: var(--tan-light); }
-
-    /* ── MODAL ── */
-    #modal-overlay {
-      position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
-      display: none; align-items: center; justify-content: center; padding: 20px;
-    }
-    #modal-overlay.open { display: flex; }
-    #settings-modal {
-      background: linear-gradient(160deg, rgba(33,64,28,0.98) 0%, rgba(16,32,14,0.99) 100%);
-      border: 1px solid rgba(200,169,110,0.3); border-radius: 6px;
-      width: 100%; max-width: 400px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.7); overflow: hidden;
-    }
-    #modal-top-rule {
-      height: 3px;
-      background: linear-gradient(90deg, var(--tan-dark) 0%, var(--tan-light) 30%, var(--tan-pale) 50%, var(--tan-light) 70%, var(--tan-dark) 100%);
-    }
-    #modal-header {
-      padding: 20px 24px 14px; border-bottom: 1px solid rgba(200,169,110,0.15);
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    #modal-title {
-      font-family: 'Playfair Display', serif; font-weight: 700;
-      font-size: 16px; letter-spacing: 0.04em; color: var(--warm-white);
-    }
-    #modal-subtitle {
-      font-family: 'Raleway', sans-serif; font-weight: 200;
-      font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
-      color: var(--green-pale); opacity: 0.65; margin-top: 3px;
-    }
-    #modal-close {
-      width: 28px; height: 28px;
-      background: rgba(245,239,224,0.05); border: 1px solid rgba(245,239,224,0.12);
-      border-radius: 50%; color: rgba(245,239,224,0.4); font-size: 14px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s; flex-shrink: 0;
-    }
-    #modal-close:hover { background: rgba(245,239,224,0.1); color: var(--warm-white); }
-    #modal-body { padding: 22px 24px; display: flex; flex-direction: column; gap: 20px; }
-    .field-group { display: flex; flex-direction: column; gap: 7px; }
-    .field-label {
-      font-family: 'Raleway', sans-serif; font-weight: 300;
-      font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--tan-light);
-    }
-    .field-hint {
-      font-family: 'Raleway', sans-serif; font-weight: 200;
-      font-size: 9px; letter-spacing: 0.12em; color: rgba(245,239,224,0.3); margin-top: -3px;
-    }
-    .modal-input {
-      width: 100%; background: rgba(245,239,224,0.05);
-      border: 1px solid rgba(200,169,110,0.25); border-radius: 3px;
-      padding: 10px 12px; color: var(--warm-white);
-      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 14px;
-      letter-spacing: 0.04em; outline: none;
-      transition: border-color 0.2s, background 0.2s;
-    }
-    .modal-input:focus { border-color: rgba(200,169,110,0.6); background: rgba(245,239,224,0.08); }
-    .modal-input::placeholder { color: rgba(245,239,224,0.2); }
-    .modal-input[type="date"]::-webkit-calendar-picker-indicator {
-      filter: invert(0.7) sepia(1) saturate(1.5) hue-rotate(10deg); cursor: pointer;
-    }
-    .modal-divider { height: 1px; background: rgba(200,169,110,0.1); }
-    .field-clear {
-      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 9px;
-      letter-spacing: 0.2em; color: rgba(245,239,224,0.25); text-transform: uppercase;
-      background: none; border: none; cursor: pointer; padding: 0;
-      text-decoration: underline; text-underline-offset: 3px;
-      transition: color 0.2s; align-self: flex-start;
-    }
-    .field-clear:hover { color: rgba(245,239,224,0.5); }
-    #modal-footer { padding: 0 24px 22px; display: flex; flex-direction: column; gap: 10px; }
-    #save-btn {
-      width: 100%;
-      background: linear-gradient(135deg, rgba(200,169,110,0.9) 0%, rgba(168,133,74,0.9) 100%);
-      border: none; border-radius: 3px; padding: 12px;
-      color: rgba(16,32,14,0.95);
-      font-family: 'Playfair Display', serif; font-weight: 700;
-      font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;
-      cursor: pointer; transition: all 0.2s;
-    }
-    #save-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
-    #save-btn:active { transform: translateY(0); }
-    #bookmark-hint {
-      font-family: 'Raleway', sans-serif; font-weight: 200; font-size: 9px;
-      letter-spacing: 0.16em; color: rgba(245,239,224,0.22);
-      text-align: center; text-transform: uppercase; line-height: 1.7;
-    }
-    #bookmark-hint strong { color: rgba(200,169,110,0.5); font-weight: 400; }
-
-    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-    body { animation: fadeIn 1.8s ease-out; }
+    .attribution a { color: rgba(200,169,110,0.5); text-decoration: none; }
+    .attribution a:hover { color: var(--tan-light); }
   </style>
 </head>
 <body>
 
-<div id="bg">
-  <div id="bg-fallback"></div>
-  <video id="bg-video" src="wdwbg1.mp4" autoplay loop muted playsinline preload="auto"
-    oncanplay="document.getElementById('bg-fallback').style.opacity='0'"></video>
-</div>
-
 <div id="header">
   <div id="header-top-rule"></div>
-
+  <div id="room-badge">BoardWalk Resort · Walt Disney World</div>
   <div id="header-inner">
     <div id="header-left">
+      <button id="back-btn" onclick="goHome()">Home</button>
       <div id="wordmark">
         <div class="bw-script">Disney's</div>
         <div class="bw-logo">BoardWalk TV</div>
         <div class="bw-sub">Walt Disney World Resort</div>
       </div>
-      <div id="welcome-band">
-        <div id="greeting-line">Good Evening</div>
-        <div id="welcome-name">Welcome</div>
-        <div id="countdown-strip">
-          <span id="countdown-text">Trip in</span>
-          <span id="countdown-number"></span>
-          <span id="countdown-unit"></span>
-          <span id="countdown-label"></span>
-        </div>
-      </div>
     </div>
     <div id="header-right">
-      <div id="weather-row">
-        <span id="weather-icon">☀️</span>
-        <span id="weather-temp">--°</span>
-        <span id="weather-desc"></span>
-      </div>
-      <div id="time-display">--:-- --</div>
-      <div id="date-display">Loading…</div>
+      <div id="page-title">Wait Times</div>
+      <div id="page-subtitle">Live Resort Data</div>
     </div>
   </div>
   <div id="header-bottom-rule"></div>
 </div>
 
-<div id="main"></div>
-
-<div id="footer">
-  <div id="footer-top-rule"></div>
-  <div id="footer-inner">
-    <button id="music-btn" onclick="handleMusicBtn()">♪ Play Music</button>
-    <div id="footer-left">
-      <div id="footer-tagline">Where the magic never ends</div>
-      <div id="footer-resort">Walt Disney World · Orlando, Florida</div>
-    </div>
-    <div id="footer-nav">
-      <button class="nav-btn" onclick="window.location.href='wdwwait.html'">
-        <div class="nav-btn-label">Wait Times</div>
-        <div class="nav-btn-sub">Live Data</div>
-      </button>
-      <div class="nav-divider"></div>
-      <button class="nav-btn" onclick="window.open('https://disneyworld.disney.go.com/maps/', '_blank')">
-        <div class="nav-btn-label">Resort Map</div>
-        <div class="nav-btn-sub">Navigate</div>
-      </button>
-      <div class="nav-divider"></div>
-      <button class="nav-btn" onclick="window.open('https://disneyworld.disney.go.com/dining/', '_blank')">
-        <div class="nav-btn-label">Dining</div>
-        <div class="nav-btn-sub">Reservations</div>
-      </button>
+<div id="main">
+  <div id="toolbar">
+    <div id="status-text">Loading…</div>
+    <div class="toolbar-right">
+      <div class="park-tabs">
+        <button class="park-tab active" data-park="mk"  onclick="switchPark('mk')">Magic Kingdom</button>
+        <button class="park-tab"        data-park="ep"  onclick="switchPark('ep')">EPCOT</button>
+        <button class="park-tab"        data-park="hs"  onclick="switchPark('hs')">Hollywood Studios</button>
+        <button class="park-tab"        data-park="ak"  onclick="switchPark('ak')">Animal Kingdom</button>
+      </div>
+      <button id="refresh-btn" onclick="fetchAll()">↻ Refresh</button>
     </div>
   </div>
-  <div id="footer-bottom-rule"></div>
-</div>
 
-<button id="gear-btn" onclick="openModal()" title="Personalize">
-  <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-</button>
-
-<div id="modal-overlay" onclick="handleOverlayClick(event)">
-  <div id="settings-modal">
-    <div id="modal-top-rule"></div>
-    <div id="modal-header">
-      <div>
-        <div id="modal-title">Personalize</div>
-        <div id="modal-subtitle">Your settings · Saved locally</div>
-      </div>
-      <button id="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div id="modal-body">
-      <div class="field-group">
-        <label class="field-label" for="input-name">Name</label>
-        <div class="field-hint">Displays as "[Name] Family" in the welcome banner</div>
-        <input class="modal-input" type="text" id="input-name" placeholder="Your Family Name" maxlength="40" autocomplete="off" spellcheck="false" />
-      </div>
-      <div class="modal-divider"></div>
-      <div class="field-group">
-        <label class="field-label" for="input-trip">Next Trip Date</label>
-        <div class="field-hint">Shows a countdown in the welcome banner</div>
-        <input class="modal-input" type="date" id="input-trip" />
-        <button class="field-clear" onclick="clearTrip()">Clear trip date</button>
-      </div>
-    </div>
-    <div id="modal-footer">
-      <button id="save-btn" onclick="saveSettings()">Save Settings</button>
-      <div id="bookmark-hint">Settings are <strong>saved in your browser</strong> and persist across visits.</div>
-    </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-pip" style="background:var(--green-ui)"></div>&lt;20 min</div>
+    <div class="legend-item"><div class="legend-pip" style="background:var(--yellow-ui)"></div>20–39 min</div>
+    <div class="legend-item"><div class="legend-pip" style="background:var(--orange-ui)"></div>40–59 min</div>
+    <div class="legend-item"><div class="legend-pip" style="background:var(--red-ui)"></div>60+ min</div>
+    <div class="legend-item"><div class="legend-pip" style="background:var(--closed-col)"></div>Closed</div>
   </div>
-</div>
 
-<iframe id="sc-player" src="about:blank"
-  style="position:absolute;top:-9999px;left:-9999px;width:1px;height:1px;" allow="autoplay"></iframe>
+  <div id="stats-bar">
+    <div class="stat-item"><div class="stat-value" id="stat-open">–</div><div class="stat-label">Open Rides</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-value" id="stat-avg">–</div><div class="stat-label">Avg Wait</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-value" id="stat-max">–</div><div class="stat-label">Longest</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-value" id="stat-short">–</div><div class="stat-label">Shortest</div></div>
+  </div>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Fetching live wait times…</p>
+    <small>Via Queue-Times.com</small>
+  </div>
+  <div id="error">
+    <p>Unable to load wait times right now.</p>
+    <p class="err-detail" id="err-detail"></p>
+    <button id="retry-btn" onclick="fetchAll()">Try Again</button>
+  </div>
+
+  <div id="park-mk" class="park-panel visible"></div>
+  <div id="park-ep" class="park-panel"></div>
+  <div id="park-hs" class="park-panel"></div>
+  <div id="park-ak" class="park-panel"></div>
+
+  <div class="ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+  <div class="last-updated" id="last-updated"></div>
+  <div class="attribution">Powered by <a href="https://queue-times.com/en-US" target="_blank" rel="noopener">Queue-Times.com</a></div>
+</div>
 
 <script>
-const LS_KEY = 'wdw_tv_settings';
-function loadSettings() { try { const r = localStorage.getItem(LS_KEY); if (r) return JSON.parse(r); } catch(e) {} return { name: '', trip: '' }; }
-function persistSettings(n, t) { try { localStorage.setItem(LS_KEY, JSON.stringify({ name: n, trip: t })); } catch(e) {} }
+/* Queue-Times park IDs for Walt Disney World */
+const PARKS = {
+  mk: { id: 6,  name: 'Magic Kingdom',       panelId: 'park-mk' },
+  ep: { id: 7,  name: 'EPCOT',               panelId: 'park-ep' },
+  hs: { id: 8,  name: 'Hollywood Studios',   panelId: 'park-hs' },
+  ak: { id: 9,  name: 'Animal Kingdom',      panelId: 'park-ak' }
+};
 
-const stored = loadSettings();
-const params = { name: stored.name || '', trip: stored.trip || '' };
-document.getElementById('welcome-name').textContent = params.name ? params.name + ' Family' : 'Welcome';
+const PARK_KEYS = ['mk','ep','hs','ak'];
 
-function updateCountdown() {
-  const strip = document.getElementById('countdown-strip');
-  if (!params.trip) { strip.classList.remove('visible'); return; }
-  const parts = params.trip.split('-');
-  if (parts.length !== 3) { strip.classList.remove('visible'); return; }
-  const tripDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-  const now = new Date(); now.setHours(0,0,0,0);
-  const diff = Math.round((tripDate - now) / 86400000);
-  if (diff < 0) { strip.classList.remove('visible'); return; }
-  strip.classList.add('visible');
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  if (diff === 0) { document.getElementById('countdown-number').textContent = 'Today is the day!'; document.getElementById('countdown-text').textContent = ''; document.getElementById('countdown-unit').textContent = ''; document.getElementById('countdown-label').textContent = '🎡'; }
-  else if (diff === 1) { document.getElementById('countdown-text').textContent = 'Trip is'; document.getElementById('countdown-number').textContent = 'Tomorrow'; document.getElementById('countdown-unit').textContent = ''; document.getElementById('countdown-label').textContent = ''; }
-  else { document.getElementById('countdown-text').textContent = 'Trip in'; document.getElementById('countdown-number').textContent = diff; document.getElementById('countdown-unit').textContent = 'days'; document.getElementById('countdown-label').textContent = '· ' + months[tripDate.getMonth()] + ' ' + tripDate.getDate(); }
+const PROXY_FNS = [
+  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+];
+const QT_URL = id => `https://queue-times.com/parks/${id}/queue_times.json`;
+
+let rideData = { mk: null, ep: null, hs: null, ak: null };
+let activeTab = 'mk';
+let refreshTimer;
+
+async function fetchJSON(url) {
+  let lastErr;
+  for (const proxyFn of PROXY_FNS) {
+    try {
+      const res = await fetch(proxyFn(url), { signal: AbortSignal.timeout(9000) });
+      if (!res.ok) { lastErr = `HTTP ${res.status}`; continue; }
+      const payload = await res.json();
+      if (payload && typeof payload.contents === 'string') return JSON.parse(payload.contents);
+      if (payload && typeof payload === 'object') return payload;
+    } catch(e) { lastErr = e.message; }
+  }
+  throw new Error(lastErr || 'All proxies failed');
 }
-updateCountdown();
 
-function updateClock() {
-  const now = new Date(), h = now.getHours(), m = now.getMinutes();
-  document.getElementById('time-display').textContent = (h%12||12) + ':' + String(m).padStart(2,'0') + ' ' + (h>=12?'PM':'AM');
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  document.getElementById('date-display').textContent = window.innerWidth < 420
-    ? days[now.getDay()].slice(0,3).toUpperCase() + ' ' + mons[now.getMonth()] + ' ' + now.getDate()
-    : days[now.getDay()].toUpperCase() + ', ' + mons[now.getMonth()].toUpperCase() + ' ' + now.getDate();
-  document.getElementById('greeting-line').textContent =
-    h >= 5 && h < 12 ? 'Good Morning' : h >= 12 && h < 17 ? 'Good Afternoon' : h >= 17 && h < 21 ? 'Good Evening' : 'Good Night';
+function showLoading(on) { document.getElementById('loading').style.display = on ? 'flex' : 'none'; }
+function showError(msg) { document.getElementById('error').style.display = 'block'; document.getElementById('err-detail').textContent = msg; }
+function hideError() { document.getElementById('error').style.display = 'none'; }
+
+function switchPark(key) {
+  activeTab = key;
+  document.querySelectorAll('.park-tab').forEach(t => t.classList.toggle('active', t.dataset.park === key));
+  PARK_KEYS.forEach(k => {
+    document.getElementById(PARKS[k].panelId).style.display = k === key ? 'block' : 'none';
+  });
+  updateStats();
 }
-updateClock(); setInterval(updateClock, 30000); window.addEventListener('resize', updateClock);
 
-(function fetchWeather() {
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=28.3772&longitude=-81.5707&current_weather=true&temperature_unit=fahrenheit')
-    .then(r => r.json()).then(data => {
-      const cw = data.current_weather, code = cw.weathercode;
-      let icon = '☀️', desc = 'Clear';
-      if (code >= 1 && code <= 3)   { icon = '⛅'; desc = 'Partly Cloudy'; }
-      if (code >= 45 && code <= 48) { icon = '🌫️'; desc = 'Foggy'; }
-      if (code >= 51 && code <= 67) { icon = '🌧️'; desc = 'Rain'; }
-      if (code >= 71 && code <= 77) { icon = '❄️'; desc = 'Snow'; }
-      if (code >= 80 && code <= 82) { icon = '🌦️'; desc = 'Showers'; }
-      if (code >= 95)               { icon = '⛈️'; desc = 'Thunderstorm'; }
-      document.getElementById('weather-temp').textContent = Math.round(cw.temperature) + '°F';
-      document.getElementById('weather-icon').textContent = icon;
-      document.getElementById('weather-desc').textContent = desc;
-    }).catch(() => { document.getElementById('weather-temp').textContent = ''; });
-})();
-
-function openModal() { document.getElementById('input-name').value = params.name||''; document.getElementById('input-trip').value = params.trip||''; document.getElementById('modal-overlay').classList.add('open'); setTimeout(()=>document.getElementById('input-name').focus(),200); }
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
-function handleOverlayClick(e) { if (e.target===document.getElementById('modal-overlay')) closeModal(); }
-function clearTrip() { document.getElementById('input-trip').value=''; }
-function saveSettings() {
-  const name=document.getElementById('input-name').value.trim(), trip=document.getElementById('input-trip').value;
-  persistSettings(name,trip); params.name=name; params.trip=trip;
-  document.getElementById('welcome-name').textContent=name?name+' Family':'Welcome';
-  updateCountdown();
-  const btn=document.getElementById('save-btn');
-  btn.textContent='✓ Saved!'; btn.style.background='linear-gradient(135deg,rgba(74,138,64,0.9) 0%,rgba(50,110,42,0.9) 100%)';
-  setTimeout(()=>{ btn.textContent='Save Settings'; btn.style.background=''; closeModal(); },2000);
+function updateStats() {
+  const data = rideData[activeTab];
+  if (!data) return;
+  const all = (data.lands || []).flatMap(l => l.rides || []).concat(data.rides || []);
+  const open = all.filter(r => r.is_open);
+  const waits = open.map(r => r.wait_time).filter(w => w > 0);
+  document.getElementById('stat-open').textContent = `${open.length}/${all.length}`;
+  document.getElementById('stat-avg').textContent = waits.length ? Math.round(waits.reduce((a,b) => a+b, 0) / waits.length) + 'm' : '–';
+  document.getElementById('stat-max').textContent = waits.length ? Math.max(...waits) + 'm' : '–';
+  document.getElementById('stat-short').textContent = waits.length ? Math.min(...waits) + 'm' : '–';
 }
-document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); if(e.key==='Enter'&&document.getElementById('modal-overlay').classList.contains('open')) saveSettings(); });
 
-let scWidget=null, scReady=false, scPlaying=false;
-function handleMusicBtn() {
-  const btn=document.getElementById('music-btn'), iframe=document.getElementById('sc-player');
-  if (iframe.src==='about:blank') {
-    /* TODO: swap URL for a WDW / BoardWalk ambient track */
-    iframe.src='https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/dreamfields-870226399/new-disneyland-resort-esplanade-area-music-loop&auto_play=true&hide_related=true&show_comments=false&show_user=false&visual=false';
-    const s=document.createElement('script'); s.src='https://w.soundcloud.com/player/api.js'; document.head.appendChild(s);
-    s.onload=function(){ scWidget=SC.Widget(iframe); scWidget.bind(SC.Widget.Events.READY,function(){ scReady=true; scWidget.setVolume(40); scWidget.play(); scPlaying=true; btn.textContent='♪ Pause Music'; }); scWidget.bind(SC.Widget.Events.PLAY,function(){ scPlaying=true; btn.textContent='♪ Pause Music'; }); scWidget.bind(SC.Widget.Events.PAUSE,function(){ scPlaying=false; btn.textContent='♪ Play Music'; }); };
+function renderPark(key, data) {
+  const panel = document.getElementById(PARKS[key].panelId);
+  const lands = [...(data.lands || [])];
+  if ((data.rides || []).length) lands.push({ name: 'Other Attractions', rides: data.rides });
+  if (!lands.length) {
+    panel.innerHTML = '<p style="text-align:center;padding:40px 0;font-family:Cormorant Garamond,serif;font-style:italic;color:rgba(253,248,238,0.3)">No ride data available.</p>';
     return;
   }
-  if (!scReady) return;
-  scPlaying ? scWidget.pause() : scWidget.play();
+  let html = '';
+  for (const land of lands) {
+    if (!land.rides || !land.rides.length) continue;
+    const sorted = [...land.rides].sort((a,b) => {
+      if (a.is_open && !b.is_open) return -1;
+      if (!a.is_open && b.is_open) return 1;
+      return b.wait_time - a.wait_time;
+    });
+    html += `<div class="land-group"><div class="land-header"><div class="land-title">${x(land.name)}</div><div class="land-divider"></div></div><div class="ride-grid">`;
+    for (const ride of sorted) {
+      const cls = !ride.is_open ? 'closed'
+        : ride.wait_time < 20  ? 'open-low'
+        : ride.wait_time < 40  ? 'open-med'
+        : ride.wait_time < 60  ? 'open-high'
+        : 'open-max';
+      const badge = !ride.is_open ? 'Closed'
+        : (ride.wait_time || 0) === 0 ? '0 min'
+        : ride.wait_time + ' min';
+      html += `<div class="ride-card ${cls}"><div class="ride-name">${x(ride.name)}</div><div class="wait-badge">${badge}</div></div>`;
+    }
+    html += `</div></div>`;
+  }
+  panel.innerHTML = html;
 }
+
+async function fetchPark(key) {
+  try {
+    const data = await fetchJSON(QT_URL(PARKS[key].id));
+    rideData[key] = data;
+    renderPark(key, data);
+  } catch(err) {
+    rideData[key] = null;
+    document.getElementById(PARKS[key].panelId).innerHTML = `
+      <div style="text-align:center;padding:40px 0">
+        <p style="font-family:Raleway,sans-serif;font-weight:300;font-size:13px;color:rgba(253,248,238,0.5);margin-bottom:10px">
+          Could not load ${PARKS[key].name} wait times.</p>
+        <p style="font-size:10px;color:rgba(253,248,238,0.22);letter-spacing:.1em;margin-bottom:20px">${x(err.message)}</p>
+        <button onclick="fetchAll()" style="font-family:Raleway,sans-serif;font-weight:300;font-size:11px;letter-spacing:.25em;color:var(--tan-light);text-transform:uppercase;background:none;border:1px solid rgba(200,169,110,0.4);border-radius:3px;padding:8px 22px;cursor:pointer">Try Again</button>
+      </div>`;
+  }
+}
+
+async function fetchAll() {
+  showLoading(true); hideError();
+  PARK_KEYS.forEach(k => { document.getElementById(PARKS[k].panelId).style.display = 'none'; });
+  document.getElementById('status-text').textContent = 'Refreshing…';
+  await Promise.all(PARK_KEYS.map(k => fetchPark(k)));
+  showLoading(false);
+  PARK_KEYS.forEach(k => {
+    document.getElementById(PARKS[k].panelId).style.display = k === activeTab ? 'block' : 'none';
+  });
+  const anyLoaded = PARK_KEYS.some(k => rideData[k]);
+  document.getElementById('status-text').textContent = anyLoaded ? 'Live data' : 'Data unavailable';
+  document.getElementById('last-updated').textContent =
+    `Updated ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · Auto-refreshes every 5 min`;
+  updateStats();
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(fetchAll, 5 * 60 * 1000);
+}
+
+function x(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function goHome() {
+  window.location.href = 'wdw.html';
+}
+
+fetchAll();
 </script>
 </body>
 </html>
