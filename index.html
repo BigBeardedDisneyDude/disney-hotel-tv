@@ -393,129 +393,163 @@ max-width: 180px;
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 body { animation: fadeIn 1.5s ease-out; }
 
-/* ── TODAY IN PARKS WIDGET — floating left card ── */
+/* ── TODAY IN PARKS WIDGET ── */
 #today-widget {
   position: fixed;
-  left: 14px;
-  /* vertically centred in the open space between header and menu bar */
+  left: 0;
   top: 50%;
   transform: translateY(-50%);
   z-index: 100;
-  width: 200px;
+  width: 240px;
   pointer-events: auto;
+  /* slide in/out by translating left */
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+/* collapsed: slide box off-screen, leave only the tab visible */
+#today-widget.collapsed {
+  transform: translateY(-50%) translateX(calc(-240px + 18px));
 }
 
 #today-box {
-  background: linear-gradient(160deg, rgba(14,38,52,0.96) 0%, rgba(10,28,40,0.98) 100%);
+  background: linear-gradient(160deg, rgba(14,38,52,0.97) 0%, rgba(10,26,38,0.99) 100%);
   border: 1px solid rgba(201,168,76,0.35);
-  border-radius: 6px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(201,168,76,0.08);
-  overflow: hidden;
+  border-radius: 0 8px 8px 0;
+  box-shadow: 4px 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.07);
+  overflow: visible;
+  position: relative;
 }
 
-/* top label bar */
+/* pull tab on right edge */
+#today-toggle {
+  position: absolute;
+  right: -18px; top: 50%;
+  transform: translateY(-50%);
+  width: 18px; height: 40px;
+  background: linear-gradient(160deg, rgba(14,38,52,0.97), rgba(10,26,38,0.99));
+  border: 1px solid rgba(201,168,76,0.35);
+  border-left: none;
+  border-radius: 0 5px 5px 0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+#today-toggle-icon {
+  font-size: 9px; color: var(--gold);
+  transition: transform 0.4s;
+  user-select: none;
+}
+#today-widget.collapsed #today-toggle-icon {
+  transform: scaleX(-1);
+}
+#today-toggle:hover { background: rgba(201,168,76,0.12); }
+
+/* header */
 #today-box-header {
-  display: flex; align-items: center; gap: 7px;
-  padding: 8px 12px 7px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px 9px;
   border-bottom: 1px solid rgba(201,168,76,0.15);
-  background: rgba(201,168,76,0.06);
+  background: rgba(201,168,76,0.05);
+  border-radius: 0 8px 0 0;
 }
 #today-label-dot {
-  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
   background: #7fd88a;
-  box-shadow: 0 0 6px rgba(127,216,138,0.8);
+  box-shadow: 0 0 7px rgba(127,216,138,0.85);
   animation: pulse-dot 2s ease-in-out infinite;
 }
 @keyframes pulse-dot {
   0%,100% { opacity:1; transform:scale(1); }
-  50%      { opacity:0.4; transform:scale(0.65); }
+  50%      { opacity:0.35; transform:scale(0.6); }
 }
 #today-label-text {
   font-family: 'Cinzel', serif; font-weight: 600;
-  font-size: 8px; letter-spacing: 0.32em; text-transform: uppercase;
+  font-size: 9px; letter-spacing: 0.30em; text-transform: uppercase;
   color: var(--gold); flex: 1;
 }
 #today-card-counter {
   font-family: 'Raleway', sans-serif; font-weight: 200;
-  font-size: 8px; letter-spacing: 0.1em;
-  color: rgba(201,168,76,0.4);
+  font-size: 8px; letter-spacing: 0.12em;
+  color: rgba(201,168,76,0.38);
 }
 
 /* card viewport */
-#today-scroll-outer {
-  overflow: hidden;
-  position: relative;
-}
+#today-scroll-outer { overflow: hidden; }
 #today-cards {
   display: flex;
   transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
 }
 .today-card {
   flex-shrink: 0;
-  width: 200px;
-  padding: 10px 12px 10px;
-  display: flex; flex-direction: column; gap: 5px;
+  width: 240px;
+  padding: 13px 14px 11px;
+  display: flex; flex-direction: column; gap: 6px;
 }
-.today-card-emoji {
-  font-size: 16px; line-height: 1;
-}
+.today-card-emoji { font-size: 20px; line-height: 1; }
 .today-card-name {
   font-family: 'Cinzel', serif; font-weight: 600;
-  font-size: 10px; letter-spacing: 0.08em;
-  color: var(--warm-white); line-height: 1.35;
+  font-size: 11px; letter-spacing: 0.07em;
+  color: var(--warm-white); line-height: 1.4;
 }
 .today-card-loc {
   font-family: 'Raleway', sans-serif; font-weight: 200;
-  font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+  font-size: 9px; letter-spacing: 0.13em; text-transform: uppercase;
   color: rgba(255,248,238,0.35);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.today-card-row {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-top: 2px;
+/* hours card variant */
+.today-card-hours-title {
+  font-family: 'Cinzel', serif; font-weight: 600;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 2px;
 }
-.today-time-pill {
+.today-card-hours-time {
   font-family: 'Cinzel', serif; font-weight: 400;
-  font-size: 10px; letter-spacing: 0.06em;
-  color: var(--gold-light);
-  background: rgba(201,168,76,0.12);
-  border: 1px solid rgba(201,168,76,0.25);
-  border-radius: 2px; padding: 2px 7px;
+  font-size: 18px; letter-spacing: 0.05em;
+  color: var(--warm-white); line-height: 1.1;
 }
-.today-time-pill.now {
-  background: rgba(127,216,138,0.15);
-  border-color: rgba(127,216,138,0.4);
-  color: #9be8a8;
-}
-.today-park-tag {
+.today-card-hours-sub {
   font-family: 'Raleway', sans-serif; font-weight: 200;
-  font-size: 7px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: rgba(201,168,76,0.38);
+  font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(255,248,238,0.35); margin-top: 1px;
 }
+.today-status-pill {
+  display: inline-block; margin-top: 4px;
+  font-family: 'Raleway', sans-serif; font-weight: 400;
+  font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 2px;
+}
+.pill-open   { background: rgba(80,160,100,0.2); color:#7fd88a; border:1px solid rgba(80,160,100,0.3); }
+.pill-closed { background: rgba(180,80,60,0.18); color:#e07060; border:1px solid rgba(180,80,60,0.25); }
+.pill-soon   { background: rgba(201,168,76,0.15); color:var(--gold-light); border:1px solid rgba(201,168,76,0.25); }
 
 /* progress bar */
 #today-progress {
-  height: 2px;
-  background: rgba(201,168,76,0.08);
-  position: relative;
+  height: 2px; background: rgba(201,168,76,0.07); position: relative;
 }
 #today-progress-fill {
-  position: absolute; top:0; left:0; height: 100%;
+  position: absolute; top:0; left:0; height:100%;
   background: linear-gradient(90deg, var(--gold), var(--gold-light));
   width: 0%;
 }
 
-/* dot nav */
+/* dots */
 #today-dots {
-  display: flex; justify-content: center; gap: 4px;
-  padding: 6px 0 7px;
+  display: flex; justify-content: center; gap: 5px;
+  padding: 7px 0 8px;
+  border-radius: 0 0 8px 0;
 }
 .t-dot {
-  width: 4px; height: 4px; border-radius: 50%;
-  background: rgba(201,168,76,0.2);
-  cursor: pointer; transition: all 0.3s;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(201,168,76,0.18); cursor: pointer; transition: all 0.3s;
 }
-.t-dot.active { background: var(--gold); width: 12px; border-radius: 2px; }
+.t-dot.active { background: var(--gold); width: 14px; border-radius: 3px; }
+
+/* mobile: slightly smaller, still left-anchored */
+@media (max-width: 480px) {
+  #today-widget { width: 210px; }
+  #today-widget.collapsed { transform: translateY(-50%) translateX(calc(-210px + 18px)); }
+  .today-card { width: 210px; }
+}
 </style>
 
 </head>
@@ -566,18 +600,22 @@ body { animation: fadeIn 1.5s ease-out; }
   <div id="today-box">
     <div id="today-box-header">
       <div id="today-label-dot"></div>
-      <div id="today-label-text">Today</div>
+      <div id="today-label-text">Today in the Parks</div>
       <div id="today-card-counter"></div>
     </div>
     <div id="today-scroll-outer">
       <div id="today-cards">
         <div class="today-card">
-          <div class="today-card-name" style="opacity:0.3;font-size:9px;">Loading schedule…</div>
+          <div class="today-card-name" style="opacity:0.28;font-size:9px;">Loading schedule…</div>
         </div>
       </div>
     </div>
     <div id="today-progress"><div id="today-progress-fill"></div></div>
     <div id="today-dots"></div>
+    <!-- pull tab -->
+    <div id="today-toggle" onclick="todayToggle()" title="Collapse">
+      <span id="today-toggle-icon">‹</span>
+    </div>
   </div>
 </div>
 
@@ -862,7 +900,8 @@ scScript.onload = function() { scWidget = SC.Widget(document.getElementById('sc-
 function handleMusicBtn() { const btn = document.getElementById('music-btn'); if (!scReady) return; if (scPlaying) { scWidget.pause(); btn.textContent = '♪ Play Music'; } else { scWidget.play(); btn.textContent = '♪ Pause Music'; } }
 
 // ── TODAY IN PARKS WIDGET ──
-// ThemeParks.wiki (free, no key needed) — only shows items active/starting in next 90 min.
+// Shows all entertainment scheduled today (no time filter).
+// If none found → falls back to cycling DL / DCA park hours.
 (function() {
   const PARK_IDS = {
     dl:  '7340550b-c14d-4def-80bb-acbe51cd9ab2',
@@ -871,13 +910,20 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
   const PARK_LABELS = { dl: 'Disneyland', dca: 'DCA' };
   const TYPE_EMOJI  = { show:'🎬', character:'🤝', parade:'🎺', fireworks:'✨', event:'🎟' };
   const ADVANCE_MS  = 15000;
-  const WINDOW_MIN  = 90; // show items starting within this many minutes
+  const CARD_W      = window.innerWidth <= 480 ? 210 : 240;
 
   let widgetCards = [];
   let widgetIdx   = 0;
   let widgetTimer = null;
-  let apiAttempted = false;
 
+  // ── collapse / expand ──
+  let collapsed = false;
+  window.todayToggle = function() {
+    collapsed = !collapsed;
+    document.getElementById('today-widget').classList.toggle('collapsed', collapsed);
+  };
+
+  // ── helpers ──
   function toMins(t) {
     if (!t) return null;
     try {
@@ -890,8 +936,8 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
     if (!t) return '';
     try {
       let h, m;
-      if (t.includes('T')) { const d = new Date(t); h = d.getHours(); m = d.getMinutes(); }
-      else { const p = t.split(':'); h = +p[0]; m = +p[1]; }
+      if (t.includes('T')) { const d = new Date(t); h=d.getHours(); m=d.getMinutes(); }
+      else { const p=t.split(':'); h=+p[0]; m=+p[1]; }
       return (h%12||12)+':'+String(m).padStart(2,'0')+' '+(h>=12?'PM':'AM');
     } catch { return ''; }
   }
@@ -910,148 +956,173 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
     if (n.includes('fantasmic'))       return 'Rivers of America';
     if (n.includes('world of color'))  return 'Paradise Bay';
     if (n.includes('frozen'))          return 'Hyperion Theater';
-    if (n.includes('parade'))          return park==='dl' ? 'Main Street U.S.A.' : 'Buena Vista St.';
+    if (n.includes('parade'))          return park==='dl'?'Main Street U.S.A.':'Buena Vista St.';
     if (n.includes('firework')||n.includes('remember')||n.includes('wondrous')) return 'Disneyland Skies';
-    if (n.includes('mickey')||n.includes('minnie')) return park==='dl' ? 'Town Square Theater' : 'Carthay Circle';
+    if (n.includes('mickey')||n.includes('minnie')) return park==='dl'?'Town Square Theater':'Carthay Circle';
     if (n.includes('princess'))        return 'Fantasy Faire';
     if (n.includes('avenger'))         return 'Avengers Campus';
     if (n.includes('lion king'))       return 'Fantasyland Theatre';
     return PARK_LABELS[park];
   }
 
-  async function fetchWithTimeout(url, ms=8000) {
-    const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), ms);
+  async function fetchT(url, ms=8000) {
+    const c = new AbortController();
+    const t = setTimeout(()=>c.abort(), ms);
     try {
-      const r = await fetch(url, { signal: ctrl.signal });
-      clearTimeout(tid);
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const r = await fetch(url, {signal:c.signal});
+      clearTimeout(t);
+      if (!r.ok) throw new Error('HTTP '+r.status);
       return await r.json();
-    } catch(e) { clearTimeout(tid); throw e; }
+    } catch(e) { clearTimeout(t); throw e; }
   }
 
+  // ── park hours fallback cards ──
+  async function buildHoursCards() {
+    const cards = [];
+    const parkDefs = [
+      {pk:'dl',  id:16,  label:'Disneyland',          sub:'The Original Magic Kingdom'},
+      {pk:'dca', id:17,  label:'California Adventure', sub:'Disney California Adventure Park'}
+    ];
+    for (const p of parkDefs) {
+      let openStr='—', closeStr='—', statusCls='', statusTxt='';
+      try {
+        const d = await fetchT('https://queue-times.com/parks/'+p.id+'/queue_times.json');
+        const open  = d.park?.opening_time || d.opening_time || null;
+        const close = d.park?.closing_time || d.closing_time || null;
+        if (open && close) {
+          openStr  = fmt12(open);
+          closeStr = fmt12(close);
+          const now = new Date(); const nowM = now.getHours()*60+now.getMinutes();
+          const om  = toMins(open); const cm = toMins(close);
+          if      (nowM < om)  { statusCls='pill-soon';   statusTxt='Opens Soon'; }
+          else if (nowM < cm)  { statusCls='pill-open';   statusTxt='● Open Now'; }
+          else                 { statusCls='pill-closed'; statusTxt='Closed'; }
+        }
+      } catch { /* leave dashes */ }
+      cards.push({
+        type: 'hours',
+        park: p.pk,
+        label: p.label,
+        sub: p.sub,
+        open: openStr,
+        close: closeStr,
+        statusCls, statusTxt
+      });
+    }
+    return cards;
+  }
+
+  // ── main load ──
   async function loadWidget() {
-    apiAttempted = true;
     const today = new Date().toISOString().split('T')[0];
-    const now   = new Date();
-    const nowM  = now.getHours()*60 + now.getMinutes();
-    const allItems = [];
+    const items = [];
 
     for (const pk of ['dl','dca']) {
       try {
-        const childData = await fetchWithTimeout(
-          'https://api.themeparks.wiki/v1/entity/'+PARK_IDS[pk]+'/children'
-        );
+        const childData = await fetchT('https://api.themeparks.wiki/v1/entity/'+PARK_IDS[pk]+'/children');
         const ents = (childData.children||[])
-          .filter(c => ['SHOW','CHARACTER','ENTERTAINMENT','PARADE'].includes(c.entityType))
-          .slice(0, 18);
+          .filter(c=>['SHOW','CHARACTER','ENTERTAINMENT','PARADE'].includes(c.entityType))
+          .slice(0,20);
 
         await Promise.allSettled(ents.map(async (ent) => {
           try {
-            const sd = await fetchWithTimeout(
-              'https://api.themeparks.wiki/v1/entity/'+ent.id+'/schedule'
-            );
-            const todaySlots = (sd.schedule||[]).filter(s => s.date===today && s.openingTime);
-            const times = todaySlots.map(s => ({
-              label:   fmt12(s.openingTime),
-              mins:    toMins(s.openingTime),
-              endMins: toMins(s.closingTime)
-            })).filter(t => t.mins!==null).sort((a,b) => a.mins-b.mins);
-
-            if (!times.length) return;
-
-            const active = times.filter(t => {
-              const end = t.endMins || (t.mins+30);
-              return (nowM>=t.mins && nowM<=end) || (t.mins>nowM && t.mins<=nowM+WINDOW_MIN);
-            });
-            if (!active.length) return;
-
-            const best  = active[0];
-            const isNow = nowM>=best.mins && nowM<=(best.endMins||best.mins+30);
-            allItems.push({
+            const sd = await fetchT('https://api.themeparks.wiki/v1/entity/'+ent.id+'/schedule');
+            // Check that this entity has ANY schedule entry for today
+            const hasToday = (sd.schedule||[]).some(s => s.date === today && s.openingTime);
+            if (!hasToday) return;
+            items.push({
+              type: 'ent',
               name: ent.name,
-              type: inferType(ent.name, ent.entityType),
+              kind: inferType(ent.name, ent.entityType),
               loc:  ent.location || inferLoc(ent.name, pk),
-              park: pk,
-              time: best.label,
-              isNow,
-              sortKey: best.mins
+              park: pk
             });
-          } catch { /* individual show fetch failed — skip */ }
+          } catch { /* skip */ }
         }));
-      } catch { /* whole park fetch failed — skip */ }
+      } catch { /* skip park */ }
     }
 
-    allItems.sort((a,b) => {
-      if (a.isNow && !b.isNow) return -1;
-      if (!a.isNow && b.isNow) return 1;
-      return a.sortKey - b.sortKey;
-    });
+    if (items.length > 0) {
+      widgetCards = items;
+    } else {
+      // No entertainment found — show hours cards instead
+      widgetCards = await buildHoursCards();
+    }
 
-    widgetCards = allItems;
     renderWidget();
   }
 
+  // ── render ──
   function renderWidget() {
     const track   = document.getElementById('today-cards');
     const dotsEl  = document.getElementById('today-dots');
     const counter = document.getElementById('today-card-counter');
+    const cw = window.innerWidth <= 480 ? 210 : 240;
 
     if (!widgetCards.length) {
       track.innerHTML = '<div class="today-card">'
-        + '<div class="today-card-name" style="opacity:0.3;font-size:9px;">Nothing in next 90 min</div>'
-        + '</div>';
-      dotsEl.innerHTML = '';
-      if (counter) counter.textContent = '';
-      return;
+        +'<div class="today-card-name" style="opacity:0.28;font-size:9px;">Nothing found for today</div>'
+        +'</div>';
+      dotsEl.innerHTML=''; if(counter) counter.textContent=''; return;
     }
 
-    track.innerHTML = widgetCards.map(item =>
-      '<div class="today-card">'
-      + '<div class="today-card-emoji">'+( TYPE_EMOJI[item.type]||'🎭' )+'</div>'
-      + '<div class="today-card-name">'+item.name+'</div>'
-      + '<div class="today-card-loc">'+item.loc+'</div>'
-      + '<div class="today-card-row">'
-      + '<span class="today-time-pill'+(item.isNow?' now':'')+'">'+( item.isNow?'● Now':item.time )+'</span>'
-      + '<span class="today-park-tag">'+PARK_LABELS[item.park]+'</span>'
-      + '</div></div>'
-    ).join('');
+    track.innerHTML = widgetCards.map(item => {
+      if (item.type === 'hours') {
+        const status = item.statusCls
+          ? '<span class="today-status-pill '+item.statusCls+'">'+item.statusTxt+'</span>' : '';
+        return '<div class="today-card">'
+          +'<div class="today-card-hours-title">'+item.label+'</div>'
+          +'<div style="display:flex;gap:16px;align-items:baseline;margin-top:2px;">'
+          +  '<div><div class="today-card-hours-sub">Opens</div><div class="today-card-hours-time">'+item.open+'</div></div>'
+          +  '<div><div class="today-card-hours-sub">Closes</div><div class="today-card-hours-time">'+item.close+'</div></div>'
+          +'</div>'
+          + status
+          +'</div>';
+      }
+      return '<div class="today-card">'
+        +'<div class="today-card-emoji">'+(TYPE_EMOJI[item.kind]||'🎭')+'</div>'
+        +'<div class="today-card-name">'+item.name+'</div>'
+        +'<div class="today-card-loc">'+item.loc+'</div>'
+        +'<div style="font-family:Raleway,sans-serif;font-weight:200;font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(201,168,76,0.38);margin-top:2px;">'+PARK_LABELS[item.park]+'</div>'
+        +'</div>';
+    }).join('');
 
-    dotsEl.innerHTML = widgetCards.map((_,i) =>
+    dotsEl.innerHTML = widgetCards.map((_,i)=>
       '<div class="t-dot'+(i===0?' active':'')+'" onclick="todayGoTo('+i+')"></div>'
     ).join('');
 
-    widgetIdx = 0;
-    updateWidgetPos();
-    startWidgetAuto();
+    widgetIdx=0; updateWidgetPos(); startWidgetAuto();
   }
 
   function updateWidgetPos() {
-    // card width is fixed 200px to match widget width
-    document.getElementById('today-cards').style.transform = 'translateX(-'+(widgetIdx*200)+'px)';
-    document.querySelectorAll('.t-dot').forEach((d,i) => d.classList.toggle('active', i===widgetIdx));
+    const cw = window.innerWidth<=480 ? 210 : 240;
+    document.getElementById('today-cards').style.transform = 'translateX(-'+(widgetIdx*cw)+'px)';
+    document.querySelectorAll('.t-dot').forEach((d,i)=>d.classList.toggle('active',i===widgetIdx));
     const counter = document.getElementById('today-card-counter');
-    if (counter && widgetCards.length) counter.textContent = (widgetIdx+1)+'/'+widgetCards.length;
+    if (counter && widgetCards.length) counter.textContent=(widgetIdx+1)+'/'+widgetCards.length;
   }
 
   function startWidgetAuto() {
     if (widgetTimer) clearInterval(widgetTimer);
     const fill = document.getElementById('today-progress-fill');
-    fill.style.transition = 'none'; fill.style.width = '0%';
-    setTimeout(() => { fill.style.transition = 'width '+ADVANCE_MS+'ms linear'; fill.style.width = '100%'; }, 40);
-    widgetTimer = setInterval(() => {
+    fill.style.transition='none'; fill.style.width='0%';
+    setTimeout(()=>{ fill.style.transition='width '+ADVANCE_MS+'ms linear'; fill.style.width='100%'; }, 40);
+    widgetTimer = setInterval(()=>{
       if (!widgetCards.length) return;
-      widgetIdx = (widgetIdx+1) % widgetCards.length;
+      widgetIdx=(widgetIdx+1)%widgetCards.length;
       updateWidgetPos();
-      fill.style.transition = 'none'; fill.style.width = '0%';
-      setTimeout(() => { fill.style.transition = 'width '+ADVANCE_MS+'ms linear'; fill.style.width = '100%'; }, 40);
+      fill.style.transition='none'; fill.style.width='0%';
+      setTimeout(()=>{ fill.style.transition='width '+ADVANCE_MS+'ms linear'; fill.style.width='100%'; }, 40);
     }, ADVANCE_MS);
   }
 
-  window.todayGoTo = function(i) { widgetIdx = i; updateWidgetPos(); };
+  window.todayGoTo = function(i){ widgetIdx=i; updateWidgetPos(); };
+  window.addEventListener('resize', updateWidgetPos);
 
-  loadWidget(); // fire immediately — no delay
+  loadWidget();
   setInterval(loadWidget, 10*60*1000);
 })();
-</script></body>
+</script>
+
+</body>
 </html>
