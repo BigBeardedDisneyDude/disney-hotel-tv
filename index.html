@@ -393,139 +393,129 @@ max-width: 180px;
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 body { animation: fadeIn 1.5s ease-out; }
 
-/* ── TODAY IN PARKS WIDGET ── */
+/* ── TODAY IN PARKS WIDGET — floating left card ── */
 #today-widget {
   position: fixed;
-  /* sits just below the header, above the menu bar */
-  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-  left: 0; right: 0;
+  left: 14px;
+  /* vertically centred in the open space between header and menu bar */
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 100;
+  width: 200px;
   pointer-events: auto;
 }
 
-#today-track {
-  display: flex;
-  align-items: stretch;
-  height: 46px;
-  background: linear-gradient(90deg,
-    rgba(12,32,44,0.97) 0%,
-    rgba(18,44,60,0.97) 50%,
-    rgba(12,32,44,0.97) 100%
-  );
-  border-top: 1px solid rgba(201,168,76,0.22);
-  border-bottom: 1px solid rgba(201,168,76,0.12);
+#today-box {
+  background: linear-gradient(160deg, rgba(14,38,52,0.96) 0%, rgba(10,28,40,0.98) 100%);
+  border: 1px solid rgba(201,168,76,0.35);
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(201,168,76,0.08);
   overflow: hidden;
-  position: relative;
 }
 
-/* Left label pill */
-#today-label {
-  flex-shrink: 0;
-  display: flex; align-items: center;
-  padding: 0 12px 0 14px;
-  border-right: 1px solid rgba(201,168,76,0.18);
-  gap: 6px;
+/* top label bar */
+#today-box-header {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 12px 7px;
+  border-bottom: 1px solid rgba(201,168,76,0.15);
+  background: rgba(201,168,76,0.06);
+}
+#today-label-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  background: #7fd88a;
+  box-shadow: 0 0 6px rgba(127,216,138,0.8);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:0.4; transform:scale(0.65); }
 }
 #today-label-text {
   font-family: 'Cinzel', serif; font-weight: 600;
-  font-size: 8px; letter-spacing: 0.32em;
-  color: var(--gold); text-transform: uppercase;
-  white-space: nowrap;
+  font-size: 8px; letter-spacing: 0.32em; text-transform: uppercase;
+  color: var(--gold); flex: 1;
 }
-#today-label-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: #7fd88a;
-  box-shadow: 0 0 5px rgba(127,216,138,0.7);
-  animation: pulse-dot 2s ease-in-out infinite;
-  flex-shrink: 0;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.5; transform: scale(0.7); }
+#today-card-counter {
+  font-family: 'Raleway', sans-serif; font-weight: 200;
+  font-size: 8px; letter-spacing: 0.1em;
+  color: rgba(201,168,76,0.4);
 }
 
-/* Scrolling content area */
+/* card viewport */
 #today-scroll-outer {
-  flex: 1; overflow: hidden; position: relative;
+  overflow: hidden;
+  position: relative;
 }
 #today-cards {
-  display: flex; align-items: stretch;
-  height: 100%;
-  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
 }
 .today-card {
   flex-shrink: 0;
-  width: 100%;
-  display: flex; align-items: center;
-  padding: 0 14px 0 14px;
-  gap: 10px;
-  cursor: default;
+  width: 200px;
+  padding: 10px 12px 10px;
+  display: flex; flex-direction: column; gap: 5px;
 }
-.today-card-type {
-  flex-shrink: 0;
-  font-size: 14px; line-height: 1;
-}
-.today-card-body {
-  flex: 1; min-width: 0;
-  display: flex; flex-direction: column; gap: 1px;
+.today-card-emoji {
+  font-size: 16px; line-height: 1;
 }
 .today-card-name {
   font-family: 'Cinzel', serif; font-weight: 600;
-  font-size: clamp(9px, 2vw, 11px); letter-spacing: 0.09em;
-  color: var(--warm-white); white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
+  font-size: 10px; letter-spacing: 0.08em;
+  color: var(--warm-white); line-height: 1.35;
 }
-.today-card-meta {
+.today-card-loc {
   font-family: 'Raleway', sans-serif; font-weight: 200;
-  font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase;
-  color: rgba(255,248,238,0.38); white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
+  font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,248,238,0.35);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.today-card-time {
-  flex-shrink: 0;
-  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+.today-card-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 2px;
 }
 .today-time-pill {
   font-family: 'Cinzel', serif; font-weight: 400;
-  font-size: clamp(9px, 2vw, 11px); letter-spacing: 0.06em;
+  font-size: 10px; letter-spacing: 0.06em;
   color: var(--gold-light);
   background: rgba(201,168,76,0.12);
-  border: 1px solid rgba(201,168,76,0.22);
+  border: 1px solid rgba(201,168,76,0.25);
   border-radius: 2px; padding: 2px 7px;
-  white-space: nowrap;
 }
 .today-time-pill.now {
   background: rgba(127,216,138,0.15);
-  border-color: rgba(127,216,138,0.35);
+  border-color: rgba(127,216,138,0.4);
   color: #9be8a8;
 }
 .today-park-tag {
   font-family: 'Raleway', sans-serif; font-weight: 200;
-  font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase;
-  color: rgba(201,168,76,0.4);
+  font-size: 7px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(201,168,76,0.38);
 }
 
-/* Progress bar */
+/* progress bar */
 #today-progress {
-  position: absolute; bottom: 0; left: 0;
-  height: 1.5px;
+  height: 2px;
+  background: rgba(201,168,76,0.08);
+  position: relative;
+}
+#today-progress-fill {
+  position: absolute; top:0; left:0; height: 100%;
   background: linear-gradient(90deg, var(--gold), var(--gold-light));
   width: 0%;
 }
 
-/* Dot indicators */
+/* dot nav */
 #today-dots {
-  display: flex; align-items: center; gap: 4px;
-  padding: 0 10px; flex-shrink: 0;
-  border-left: 1px solid rgba(201,168,76,0.12);
+  display: flex; justify-content: center; gap: 4px;
+  padding: 6px 0 7px;
 }
 .t-dot {
   width: 4px; height: 4px; border-radius: 50%;
   background: rgba(201,168,76,0.2);
-  transition: all 0.3s;
-  cursor: pointer;
+  cursor: pointer; transition: all 0.3s;
 }
-.t-dot.active { background: var(--gold); width: 10px; border-radius: 2px; }
+.t-dot.active { background: var(--gold); width: 12px; border-radius: 2px; }
 </style>
 
 </head>
@@ -573,22 +563,20 @@ body { animation: fadeIn 1.5s ease-out; }
 
 <!-- TODAY IN PARKS WIDGET -->
 <div id="today-widget">
-  <div id="today-track">
-    <div id="today-label">
+  <div id="today-box">
+    <div id="today-box-header">
       <div id="today-label-dot"></div>
       <div id="today-label-text">Today</div>
+      <div id="today-card-counter"></div>
     </div>
     <div id="today-scroll-outer">
       <div id="today-cards">
-        <!-- filled by JS -->
         <div class="today-card">
-          <div class="today-card-body">
-            <div class="today-card-meta" style="color:rgba(255,248,238,0.25);">Loading today's schedule…</div>
-          </div>
+          <div class="today-card-name" style="opacity:0.3;font-size:9px;">Loading schedule…</div>
         </div>
       </div>
-      <div id="today-progress"></div>
     </div>
+    <div id="today-progress"><div id="today-progress-fill"></div></div>
     <div id="today-dots"></div>
   </div>
 </div>
@@ -1005,26 +993,26 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
   }
 
   function renderWidget() {
-    const track  = document.getElementById('today-cards');
-    const dotsEl = document.getElementById('today-dots');
+    const track   = document.getElementById('today-cards');
+    const dotsEl  = document.getElementById('today-dots');
+    const counter = document.getElementById('today-card-counter');
 
     if (!widgetCards.length) {
-      track.innerHTML = '<div class="today-card"><div class="today-card-body">'
-        + '<div class="today-card-name" style="font-size:10px;opacity:0.4;">Nothing scheduled in the next 90 min</div>'
-        + '</div></div>';
+      track.innerHTML = '<div class="today-card">'
+        + '<div class="today-card-name" style="opacity:0.3;font-size:9px;">Nothing in next 90 min</div>'
+        + '</div>';
       dotsEl.innerHTML = '';
+      if (counter) counter.textContent = '';
       return;
     }
 
     track.innerHTML = widgetCards.map(item =>
       '<div class="today-card">'
-      + '<div class="today-card-type">'+( TYPE_EMOJI[item.type]||'🎭' )+'</div>'
-      + '<div class="today-card-body">'
+      + '<div class="today-card-emoji">'+( TYPE_EMOJI[item.type]||'🎭' )+'</div>'
       + '<div class="today-card-name">'+item.name+'</div>'
-      + '<div class="today-card-meta">📍 '+item.loc+'</div>'
-      + '</div>'
-      + '<div class="today-card-time">'
-      + '<span class="today-time-pill'+(item.isNow?' now':'')+'">'+( item.isNow?'Now':item.time )+'</span>'
+      + '<div class="today-card-loc">'+item.loc+'</div>'
+      + '<div class="today-card-row">'
+      + '<span class="today-time-pill'+(item.isNow?' now':'')+'">'+( item.isNow?'● Now':item.time )+'</span>'
       + '<span class="today-park-tag">'+PARK_LABELS[item.park]+'</span>'
       + '</div></div>'
     ).join('');
@@ -1039,21 +1027,24 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
   }
 
   function updateWidgetPos() {
-    document.getElementById('today-cards').style.transform = 'translateX(-'+(widgetIdx*100)+'%)';
+    // card width is fixed 200px to match widget width
+    document.getElementById('today-cards').style.transform = 'translateX(-'+(widgetIdx*200)+'px)';
     document.querySelectorAll('.t-dot').forEach((d,i) => d.classList.toggle('active', i===widgetIdx));
+    const counter = document.getElementById('today-card-counter');
+    if (counter && widgetCards.length) counter.textContent = (widgetIdx+1)+'/'+widgetCards.length;
   }
 
   function startWidgetAuto() {
     if (widgetTimer) clearInterval(widgetTimer);
-    const bar = document.getElementById('today-progress');
-    bar.style.transition = 'none'; bar.style.width = '0%';
-    setTimeout(() => { bar.style.transition = 'width '+ADVANCE_MS+'ms linear'; bar.style.width = '100%'; }, 40);
+    const fill = document.getElementById('today-progress-fill');
+    fill.style.transition = 'none'; fill.style.width = '0%';
+    setTimeout(() => { fill.style.transition = 'width '+ADVANCE_MS+'ms linear'; fill.style.width = '100%'; }, 40);
     widgetTimer = setInterval(() => {
       if (!widgetCards.length) return;
       widgetIdx = (widgetIdx+1) % widgetCards.length;
       updateWidgetPos();
-      bar.style.transition = 'none'; bar.style.width = '0%';
-      setTimeout(() => { bar.style.transition = 'width '+ADVANCE_MS+'ms linear'; bar.style.width = '100%'; }, 40);
+      fill.style.transition = 'none'; fill.style.width = '0%';
+      setTimeout(() => { fill.style.transition = 'width '+ADVANCE_MS+'ms linear'; fill.style.width = '100%'; }, 40);
     }, ADVANCE_MS);
   }
 
