@@ -1050,53 +1050,46 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
   }
 
   // ── main load ──
+  // The park /schedule endpoint returns the full day's entertainment schedule directly —
+  // showTimes entries have a name, type, and array of startTime values.
   async function loadWidget() {
     const _now = new Date();
     const today = _now.getFullYear()+'-'+String(_now.getMonth()+1).padStart(2,'0')+'-'+String(_now.getDate()).padStart(2,'0');
     const items = [];
-    const debugEl = document.getElementById('today-card-counter');
 
     for (const pk of ['dl','dca']) {
       try {
-        if (debugEl) debugEl.textContent = 'fetching '+pk+'…';
-        const childData = await fetchT('https://api.themeparks.wiki/v1/entity/'+PARK_IDS[pk]+'/children');
-        const allChildren = childData.children||[];
-        const entityTypes = [...new Set(allChildren.map(e=>e.entityType))];
-        console.log('[Widget] '+pk+' children:', allChildren.length, 'types:', entityTypes);
+        const data = await fetchT('https://api.themeparks.wiki/v1/entity/'+PARK_IDS[pk]+'/schedule');
+        const schedule = data.schedule || [];
 
-        // Accept all non-ride entity types
-        const ents = allChildren.filter(e=>
-          e.entityType && e.entityType !== 'RIDE' && e.entityType !== 'RESTAURANT' && e.entityType !== 'SHOP'
-        ).slice(0,30);
-        console.log('[Widget] '+pk+' ents after filter:', ents.length, ents.map(e=>e.entityType+':'+e.name));
+        // The schedule array has entries for each day. Find today's entry.
+        const todayEntry = schedule.find(s => s.date === today);
+        console.log('[Widget] '+pk+' todayEntry:', todayEntry);
 
-        await Promise.allSettled(ents.map(async (ent) => {
-          try {
-            const sd = await fetchT('https://api.themeparks.wiki/v1/entity/'+ent.id+'/schedule');
-            const todaySlots = (sd.schedule||[]).filter(s => s.date === today && s.openingTime);
-            if (!todaySlots.length) return;
+        // showTimes is an array of entertainment performances on that day
+        const showTimes = todayEntry?.showTimes || [];
+        console.log('[Widget] '+pk+' showTimes:', showTimes.length, showTimes);
 
-            const times = todaySlots.map(s => fmt12(s.openingTime)).filter(Boolean);
-            const kind = inferType(ent.name, ent.entityType);
-            console.log('[Widget] adding:', ent.name, kind, times);
-
-            items.push({
-              type: 'ent',
-              name: ent.name,
-              kind,
-              loc:  ent.location || inferLoc(ent.name, pk),
-              park: pk,
-              times,
-              isNighttime: kind === 'fireworks'
-            });
-          } catch(e) { console.warn('[Widget] schedule fetch failed for', ent.name, e.message); }
-        }));
-      } catch(e) { console.warn('[Widget] children fetch failed for', pk, e.message); }
+        for (const show of showTimes) {
+          if (!show.name) continue;
+          const times = (show.startTime || []).map(t => fmt12(t)).filter(Boolean);
+          const kind = inferType(show.name, show.type || '');
+          items.push({
+            type: 'ent',
+            name: show.name,
+            kind,
+            loc: inferLoc(show.name, pk),
+            park: pk,
+            times,
+            isNighttime: kind === 'fireworks'
+          });
+        }
+      } catch(e) { console.warn('[Widget] schedule fetch failed for', pk, e.message); }
     }
-    console.log('[Widget] total items found:', items.length);
+
+    console.log('[Widget] total items:', items.length);
 
     if (items.length > 0) {
-      // Sort: fireworks/nighttime first, then alphabetical within park
       items.sort((a,b) => {
         if (a.isNighttime && !b.isNighttime) return -1;
         if (!a.isNighttime && b.isNighttime) return 1;
