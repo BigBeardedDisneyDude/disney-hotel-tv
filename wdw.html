@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BoardWalk TV — Walt Disney World Resort</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* ── Pulled directly from real BoardWalk in-room TV screen ── */
+      --green-deep:   #2b5425;   /* header / footer bg */
+      --green-mid:    #3a6e33;
+      --green-border: #4a8a40;
+      --green-pale:   #a8c9a0;   /* muted text on green */
+
+      --tan:          #c8a96e;   /* welcome banner fill */
+      --tan-dark:     #a8854a;
+      --tan-light:    #e0c898;
+      --tan-pale:     #f0e0c0;
+
+      --burgundy:     #7a3028;   /* accent badge */
+      --burgundy-mid: #9a4838;
+
+      --warm-white:   #fdf8ee;
+      --warm-off:     #e8dfc8;
+      --body-bg:      #121f10;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--body-bg);
+      font-family: 'Raleway', sans-serif;
+    }
+
+    #bg {
+      position: fixed; inset: 0; z-index: 0;
+    }
+    #bg-fallback {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 45%, #1e3d1a 0%, #0d1a0b 100%);
+      z-index: 0;
+    }
+    #bg::after {
+      content: ''; position: absolute; inset: 0; z-index: 2;
+      background: linear-gradient(180deg,
+        rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.00) 18%,
+        rgba(0,0,0,0.00) 55%, rgba(0,0,0,0.45) 82%,
+        rgba(0,0,0,0.88) 100%
+      );
+    }
+
+    /* ── HEADER ── */
+    #header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--green-deep);
+      box-shadow: 0 3px 20px rgba(0,0,0,0.6);
+      padding-top: env(safe-area-inset-top, 0px);
+      transform: translateZ(0);
+    }
+
+    #header-top-rule {
+      height: 3px;
+      background: linear-gradient(90deg,
+        var(--tan-dark) 0%, var(--tan-light) 30%,
+        var(--tan-pale) 50%, var(--tan-light) 70%, var(--tan-dark) 100%
+      );
+    }
+
+    /* "BOARDWALK RESORT" pill — centered, drops from top rule */
+    #room-badge {
+      position: absolute; top: 3px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--burgundy);
+      padding: 0 18px;
+      border-radius: 0 0 6px 6px;
+      font-family: 'Raleway', sans-serif; font-weight: 300;
+      font-size: 9px; letter-spacing: 0.34em; text-transform: uppercase;
+      color: var(--tan-pale); line-height: 22px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      white-space: nowrap; z-index: 1;
+    }
+
+    #header-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 24px 12px; gap: 12px;
+    }
+
+    #header-left { display: flex; flex-direction: column; gap: 5px; }
+
+    #wordmark { display: flex; flex-direction: column; gap: 1px; }
+    .bw-script {
+      font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 300;
+      font-size: clamp(11px, 2.5vw, 14px);
+      letter-spacing: 0.06em; color: var(--tan-light); line-height: 1;
+    }
+    .bw-logo {
+      font-family: 'Playfair Display', serif; font-weight: 700; font-style: italic;
+      font-size: clamp(18px, 4.5vw, 28px);
+      letter-spacing: 0.04em; color: var(--warm-white); line-height: 1;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+    }
+    .bw-sub {
+      font-family: 'Raleway', sans-serif; font-weight: 200;
+      font-size: clamp(7px, 1.5vw, 9px);
+      letter-spacing: 0.38em; text-transform: uppercase;
+      color: var(--green-pale); opacity: 0.8;
+    }
+
+    /* tan welcome band — mimics the real screen's name banner */
+    #welcome-band {
+      display: inline-flex; flex-direction: column; gap: 1px;
+      background: var(--tan);
+      border-radius: 3px; padding: 5px 14px 6px;
+      border-left: 3px solid var(--tan-dark);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 1px 6px rgba(0,0,0,0.3);
+      margin-top: 3px; align-self: flex-start;
+    }
+    #greeting-line {
+      font-family: 'Raleway', sans-serif; font-weight: 300;
+      font-size: clamp(8px, 1.8vw, 10px);
+      letter-spacing: 0.28em; text-transform: uppercase;
+      color: rgba(26,16,8,0.6);
+    }
+    #welcome-name {
+      font-family: 'Playfair Display', serif; font-weight: 700;
+      font-size: clamp(17px, 4.2vw, 26px);
+      letter-spacing: 0.03em; color: #1a1008; line-height: 1.0;
+    }
+    #countdown-strip {
+      display: none; align-items: center; gap: 5px; margin-top: 2px;
+    }
+    #countdown-strip.visible { display: flex; }
+    #countdown-text {
+      font-family: 'Raleway', sans-serif; font-weight: 200;
+      font-size: clamp(8px, 1.8vw, 10px);
+      letter-spacing: 0.22em; color: rgba(26,16,8,0.55); text-transform: uppercase;
+    }
+    #countdown-number {
+      font-family: 'Playfair Display', serif; font-weight: 700;
+      font-size: clamp(10px, 2.2vw, 13px); color: var(--burgundy);
+    }
+    #countdown-unit {
+      font-family: 'Raleway', sans-serif; font-weight: 200;
+      font-size: clamp(8px, 1.6vw, 10px);
+      letter-spacing: 0.2em; color: rgba(26,16,8,0.5); text-transform: uppercase;
+    }
+    #countdown-label {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: clamp(9px, 2vw, 11px); color: rgba(122,48,40,0.7);
+    }
+
+    #header-right {
+      display: flex; flex-direction: column; align-items: flex-end;
+      gap: 4px; flex-shrink: 0;
+    }
+    #weather-row {
+      display: flex; align-items: center; gap: 7px; font-family: 'Raleway', sans-serif;
+    }
+    #weather-icon { font-size: clamp(16px, 4vw, 20px); line-height: 1; }
+    #weather-temp {
+      font-family: 'Playfair Display', serif; font-weight: 400;
+      font-size: clamp(18px, 4.5vw, 26px);
+      color: var(--warm-white); letter-spacing: 0.02em; line-height: 1;
+    }
+    #weather-desc {
+      font-size: clamp(9px, 2vw, 11px); font-weight: 200;
+      color: var(--green-pale); letter-spacing: 0.1em;
+      text-transform: uppercase; align-self: flex-end; margin-bottom: 2px;
+    }
+    #time-display {
+      font-family: 'Playfair Display', serif; font-weight: 700;
+      font-size: clamp(22px, 5.5vw, 34px);
+      color: var(--warm-white); letter-spacing: 0.04em; line-height: 1.0;
+    }
+    #date-display {
+      font-family: 'Raleway', sans-serif; font-weight: 200;
+      font-size: clamp(8px, 1.8vw, 10px);
+      letter-spacing: 0.25em; color: var(--tan-light);
+      text-transform: uppercase; opacity: 0.9; margin-top: 1px; white-space: nowrap;
+    }
+    @media (max-width: 420px) {
+      #weather-desc { display: none; }
+      #header-inner { padding: 12px 16px 10px; }
+    }
+
+    #header-bottom-rule {
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--tan-dark) 20%, var(--tan-light) 50%, var(--tan-dark) 80%, transparent 100%);
+      opacity: 0.5;
+    }
+
+    #main { position: fixed; inset: 0; z-index: 1; }
+
+    /* ── FOOTER ── */
+    #footer {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      transform: translateZ(0);
+    }
+
+    #footer-top-rule {
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--tan-dark) 20%, var(--tan-light) 50%, var(--tan-dark) 80%, transparent 100%);
+      opacity: 0.4;
+    }
+
+    #footer-inner {
+      background: var(--green-deep);
+      padding: 10px 24px 12px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; position: relative;
+    }
+
+    #footer-bottom-rule {
+      height: 3px;
+      background: linear-gradient(90deg,
+        var(--tan-dark) 0%, var(--tan-light) 30%,
+        var(--tan-pale) 50%, var(--tan-light) 70%, var(--tan-dark) 100%
+      );
+    }
+
+    #footer-left { display: flex; flex-direction: column; gap: 3px; }
+    #footer-tagline {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: clamp(11px, 2.5vw, 14px);
+      color: var(--warm-white); letter-spacing: 0.03em; opacity: 0.9;
+    }
+    #footer-resort {
+      font-family: 'Raleway', sans-serif; font-weight: 200;
+      font-size: clamp(7px, 1.5vw, 9px);
+      letter-spacing: 0.32em; text-transform: uppercase;
+      color: var(--green-pale); opacity: 0.65;
+    }
+
+    #footer-nav { display: flex; align-items: center; gap: 6px; }
+
+    .nav-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      background: none; border: 1px solid rgba(200,169,110,0.28);
+      border-radius: 4px; padding: 6px 16px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .nav-btn:hover { background: rgba(200,169,110,0.12); border-color: rgba(200,169,110,0.55); }
+    .nav-btn-label {
+      font-family: 'Raleway', sans-serif; font-weight: 300;
+      font-size: clamp(9px, 2vw, 11px);
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--tan-light); white-space: nowrap;
+    }
+    .nav-btn-sub {
+      font-family: 'Raleway', sans-serif; font-weight: 200;
+      font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(200,169,110,0.4);
+    }
+    @media (max-width: 520px) { .nav-btn-sub { display: none; } }
+
+    .nav-divider {
+      width: 1px; height: 32px;
+      background: linear-gradient(180deg, transparent, rgba(200,169,110,0.2), transparent);
+      flex-shrink: 0;
+    }
+
+    #music-btn {
+      position: absolute; top: 0; left: 50%;
+      transform: translate(-50%, -100%);
+      background: var(--green-deep);
+      border: 1px solid rgba(200,169,110,0.35); border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      padding: 4px 16px 5px;
+      color: var(--tan-light);
+      font-family: 'Raleway', sans-serif; font-size: 9px; font-weight: 300;
+      letter-spacing: 0.28em; text-transform: uppercase;
+      cursor: pointer; white-space: nowrap; transition: background 0.2s;
+    }
+    #music-btn:hover { background: rgba(200,169,110,0.1); }
+
+    #gear-btn {
+      position: fixed;
+      bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+      right: 16px; z-index: 102;
+      width: 34px; height: 34px;
+      background: var(--green-deep);
+      border: 1px solid rgba(200,169,110,0.3); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.3s;
+    }
+    #gear-btn:hover { background: rgba(200,169,110,0.12); border-color: rgba(200,169,110,0.65); transform: rotate(30deg); }
+    #gear-btn svg { width: 16px; height: 16px; fill: rgba(200,169,110,0.7); transition: fill 0.2s; }
+    #gear-btn:hover svg { fill: var(--tan-light); }
+
+    /* ── MODAL ── */
+    #modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    #modal-overlay.open { display: flex; }
+    #settings-modal {
+      background: linear-gradient(160deg, rgba(33,64,28,0.98) 0%, rgba(16,32,14,0.99) 100%);
+      border: 1px solid rgba(200,169,110,0.3); border-radius: 6px;
+      width: 100%; max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7); overflow: hidden;
+    }
+    #modal-top-rule {
+      height: 3px;
+      background: linear-gradient(90deg, var(--tan-dark) 0%, var(--tan-light) 30%, var(--tan-pale) 50%, var(--tan-light) 70%, var(--tan-dark) 100%);
+    }
+    #modal-header {
+      padding: 20px 24px 14px; border-bottom: 1px solid rgba(200,169,110,0.15);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    #modal-title {
+      font-family: 'Playfair Display', serif; font-weight: 700;
+      font-size: 16px; letter-spacing: 0.04em; color: var(--warm-white);
+    }
+    #modal-subtitle {
+      font-family: 'Raleway', sans-serif; font-weight: 200;
+      font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
+      color: var(--green-pale); opacity: 0.65; margin-top: 3px;
+    }
+    #modal-close {
+      width: 28px; height: 28px;
+      background: rgba(245,239,224,0.05); border: 1px solid rgba(245,239,224,0.12);
+      border-radius: 50%; color: rgba(245,239,224,0.4); font-size: 14px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; flex-shrink: 0;
+    }
+    #modal-close:hover { background: rgba(245,239,224,0.1); color: var(--warm-white); }
+    #modal-body { padding: 22px 24px; display: flex; flex-direction: column; gap: 20px; }
+    .field-group { display: flex; flex-direction: column; gap: 7px; }
+    .field-label {
+      font-family: 'Raleway', sans-serif; font-weight: 300;
+      font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--tan-light);
+    }
+    .field-hint {
+      font-family: 'Raleway', sans-serif; font-weight: 200;
+      font-size: 9px; letter-spacing: 0.12em; color: rgba(245,239,224,0.3); margin-top: -3px;
+    }
+    .modal-input {
+      width: 100%; background: rgba(245,239,224,0.05);
+      border: 1px solid rgba(200,169,110,0.25); border-radius: 3px;
+      padding: 10px 12px; color: var(--warm-white);
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 14px;
+      letter-spacing: 0.04em; outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .modal-input:focus { border-color: rgba(200,169,110,0.6); background: rgba(245,239,224,0.08); }
+    .modal-input::placeholder { color: rgba(245,239,224,0.2); }
+    .modal-input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.7) sepia(1) saturate(1.5) hue-rotate(10deg); cursor: pointer;
+    }
+    .modal-divider { height: 1px; background: rgba(200,169,110,0.1); }
+    .field-clear {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 9px;
+      letter-spacing: 0.2em; color: rgba(245,239,224,0.25); text-transform: uppercase;
+      background: none; border: none; cursor: pointer; padding: 0;
+      text-decoration: underline; text-underline-offset: 3px;
+      transition: color 0.2s; align-self: flex-start;
+    }
+    .field-clear:hover { color: rgba(245,239,224,0.5); }
+    #modal-footer { padding: 0 24px 22px; display: flex; flex-direction: column; gap: 10px; }
+    #save-btn {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(200,169,110,0.9) 0%, rgba(168,133,74,0.9) 100%);
+      border: none; border-radius: 3px; padding: 12px;
+      color: rgba(16,32,14,0.95);
+      font-family: 'Playfair Display', serif; font-weight: 700;
+      font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s;
+    }
+    #save-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    #save-btn:active { transform: translateY(0); }
+    #bookmark-hint {
+      font-family: 'Raleway', sans-serif; font-weight: 200; font-size: 9px;
+      letter-spacing: 0.16em; color: rgba(245,239,224,0.22);
+      text-align: center; text-transform: uppercase; line-height: 1.7;
+    }
+    #bookmark-hint strong { color: rgba(200,169,110,0.5); font-weight: 400; }
+
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    body { animation: fadeIn 1.8s ease-out; }
+  </style>
+</head>
+<body>
+
+<div id="bg">
+  <div id="bg-fallback"></div>
+  <!-- <video id="bg-video" src="wdw-bg.mp4" autoplay loop muted playsinline preload="auto"
+    oncanplay="document.getElementById('bg-fallback').style.opacity='0'"></video> -->
+</div>
+
+<div id="header">
+  <div id="header-top-rule"></div>
+  <div id="room-badge">BoardWalk Resort · Walt Disney World</div>
+  <div id="header-inner">
+    <div id="header-left">
+      <div id="wordmark">
+        <div class="bw-script">Disney's</div>
+        <div class="bw-logo">BoardWalk TV</div>
+        <div class="bw-sub">Walt Disney World Resort</div>
+      </div>
+      <div id="welcome-band">
+        <div id="greeting-line">Good Evening</div>
+        <div id="welcome-name">Welcome</div>
+        <div id="countdown-strip">
+          <span id="countdown-text">Trip in</span>
+          <span id="countdown-number"></span>
+          <span id="countdown-unit"></span>
+          <span id="countdown-label"></span>
+        </div>
+      </div>
+    </div>
+    <div id="header-right">
+      <div id="weather-row">
+        <span id="weather-icon">☀️</span>
+        <span id="weather-temp">--°</span>
+        <span id="weather-desc"></span>
+      </div>
+      <div id="time-display">--:-- --</div>
+      <div id="date-display">Loading…</div>
+    </div>
+  </div>
+  <div id="header-bottom-rule"></div>
+</div>
+
+<div id="main"></div>
+
+<div id="footer">
+  <div id="footer-top-rule"></div>
+  <div id="footer-inner">
+    <button id="music-btn" onclick="handleMusicBtn()">♪ Play Music</button>
+    <div id="footer-left">
+      <div id="footer-tagline">Where the magic never ends</div>
+      <div id="footer-resort">Walt Disney World · Orlando, Florida</div>
+    </div>
+    <div id="footer-nav">
+      <button class="nav-btn" onclick="window.location.href='wdwwait.html'">
+        <div class="nav-btn-label">Wait Times</div>
+        <div class="nav-btn-sub">Live Data</div>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="nav-btn" onclick="window.open('https://disneyworld.disney.go.com/maps/', '_blank')">
+        <div class="nav-btn-label">Resort Map</div>
+        <div class="nav-btn-sub">Navigate</div>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="nav-btn" onclick="window.open('https://disneyworld.disney.go.com/dining/', '_blank')">
+        <div class="nav-btn-label">Dining</div>
+        <div class="nav-btn-sub">Reservations</div>
+      </button>
+    </div>
+  </div>
+  <div id="footer-bottom-rule"></div>
+</div>
+
+<button id="gear-btn" onclick="openModal()" title="Personalize">
+  <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+</button>
+
+<div id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div id="settings-modal">
+    <div id="modal-top-rule"></div>
+    <div id="modal-header">
+      <div>
+        <div id="modal-title">Personalize</div>
+        <div id="modal-subtitle">Your settings · Saved locally</div>
+      </div>
+      <button id="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body">
+      <div class="field-group">
+        <label class="field-label" for="input-name">Name</label>
+        <div class="field-hint">Displays as "[Name] Family" in the welcome banner</div>
+        <input class="modal-input" type="text" id="input-name" placeholder="Your Family Name" maxlength="40" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="modal-divider"></div>
+      <div class="field-group">
+        <label class="field-label" for="input-trip">Next Trip Date</label>
+        <div class="field-hint">Shows a countdown in the welcome banner</div>
+        <input class="modal-input" type="date" id="input-trip" />
+        <button class="field-clear" onclick="clearTrip()">Clear trip date</button>
+      </div>
+    </div>
+    <div id="modal-footer">
+      <button id="save-btn" onclick="saveSettings()">Save Settings</button>
+      <div id="bookmark-hint">Settings are <strong>saved in your browser</strong> and persist across visits.</div>
+    </div>
+  </div>
+</div>
+
+<iframe id="sc-player" src="about:blank"
+  style="position:absolute;top:-9999px;left:-9999px;width:1px;height:1px;" allow="autoplay"></iframe>
+
+<script>
+const LS_KEY = 'wdw_tv_settings';
+function loadSettings() { try { const r = localStorage.getItem(LS_KEY); if (r) return JSON.parse(r); } catch(e) {} return { name: '', trip: '' }; }
+function persistSettings(n, t) { try { localStorage.setItem(LS_KEY, JSON.stringify({ name: n, trip: t })); } catch(e) {} }
+
+const stored = loadSettings();
+const params = { name: stored.name || '', trip: stored.trip || '' };
+document.getElementById('welcome-name').textContent = params.name ? params.name + ' Family' : 'Welcome';
+
+function updateCountdown() {
+  const strip = document.getElementById('countdown-strip');
+  if (!params.trip) { strip.classList.remove('visible'); return; }
+  const parts = params.trip.split('-');
+  if (parts.length !== 3) { strip.classList.remove('visible'); return; }
+  const tripDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+  const now = new Date(); now.setHours(0,0,0,0);
+  const diff = Math.round((tripDate - now) / 86400000);
+  if (diff < 0) { strip.classList.remove('visible'); return; }
+  strip.classList.add('visible');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if (diff === 0) { document.getElementById('countdown-number').textContent = 'Today is the day!'; document.getElementById('countdown-text').textContent = ''; document.getElementById('countdown-unit').textContent = ''; document.getElementById('countdown-label').textContent = '🎡'; }
+  else if (diff === 1) { document.getElementById('countdown-text').textContent = 'Trip is'; document.getElementById('countdown-number').textContent = 'Tomorrow'; document.getElementById('countdown-unit').textContent = ''; document.getElementById('countdown-label').textContent = ''; }
+  else { document.getElementById('countdown-text').textContent = 'Trip in'; document.getElementById('countdown-number').textContent = diff; document.getElementById('countdown-unit').textContent = 'days'; document.getElementById('countdown-label').textContent = '· ' + months[tripDate.getMonth()] + ' ' + tripDate.getDate(); }
+}
+updateCountdown();
+
+function updateClock() {
+  const now = new Date(), h = now.getHours(), m = now.getMinutes();
+  document.getElementById('time-display').textContent = (h%12||12) + ':' + String(m).padStart(2,'0') + ' ' + (h>=12?'PM':'AM');
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('date-display').textContent = window.innerWidth < 420
+    ? days[now.getDay()].slice(0,3).toUpperCase() + ' ' + mons[now.getMonth()] + ' ' + now.getDate()
+    : days[now.getDay()].toUpperCase() + ', ' + mons[now.getMonth()].toUpperCase() + ' ' + now.getDate();
+  document.getElementById('greeting-line').textContent =
+    h >= 5 && h < 12 ? 'Good Morning' : h >= 12 && h < 17 ? 'Good Afternoon' : h >= 17 && h < 21 ? 'Good Evening' : 'Good Night';
+}
+updateClock(); setInterval(updateClock, 30000); window.addEventListener('resize', updateClock);
+
+(function fetchWeather() {
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=28.3772&longitude=-81.5707&current_weather=true&temperature_unit=fahrenheit')
+    .then(r => r.json()).then(data => {
+      const cw = data.current_weather, code = cw.weathercode;
+      let icon = '☀️', desc = 'Clear';
+      if (code >= 1 && code <= 3)   { icon = '⛅'; desc = 'Partly Cloudy'; }
+      if (code >= 45 && code <= 48) { icon = '🌫️'; desc = 'Foggy'; }
+      if (code >= 51 && code <= 67) { icon = '🌧️'; desc = 'Rain'; }
+      if (code >= 71 && code <= 77) { icon = '❄️'; desc = 'Snow'; }
+      if (code >= 80 && code <= 82) { icon = '🌦️'; desc = 'Showers'; }
+      if (code >= 95)               { icon = '⛈️'; desc = 'Thunderstorm'; }
+      document.getElementById('weather-temp').textContent = Math.round(cw.temperature) + '°F';
+      document.getElementById('weather-icon').textContent = icon;
+      document.getElementById('weather-desc').textContent = desc;
+    }).catch(() => { document.getElementById('weather-temp').textContent = ''; });
+})();
+
+function openModal() { document.getElementById('input-name').value = params.name||''; document.getElementById('input-trip').value = params.trip||''; document.getElementById('modal-overlay').classList.add('open'); setTimeout(()=>document.getElementById('input-name').focus(),200); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function handleOverlayClick(e) { if (e.target===document.getElementById('modal-overlay')) closeModal(); }
+function clearTrip() { document.getElementById('input-trip').value=''; }
+function saveSettings() {
+  const name=document.getElementById('input-name').value.trim(), trip=document.getElementById('input-trip').value;
+  persistSettings(name,trip); params.name=name; params.trip=trip;
+  document.getElementById('welcome-name').textContent=name?name+' Family':'Welcome';
+  updateCountdown();
+  const btn=document.getElementById('save-btn');
+  btn.textContent='✓ Saved!'; btn.style.background='linear-gradient(135deg,rgba(74,138,64,0.9) 0%,rgba(50,110,42,0.9) 100%)';
+  setTimeout(()=>{ btn.textContent='Save Settings'; btn.style.background=''; closeModal(); },2000);
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); if(e.key==='Enter'&&document.getElementById('modal-overlay').classList.contains('open')) saveSettings(); });
+
+let scWidget=null, scReady=false, scPlaying=false;
+function handleMusicBtn() {
+  const btn=document.getElementById('music-btn'), iframe=document.getElementById('sc-player');
+  if (iframe.src==='about:blank') {
+    /* TODO: swap URL for a WDW / BoardWalk ambient track */
+    iframe.src='https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/dreamfields-870226399/new-disneyland-resort-esplanade-area-music-loop&auto_play=true&hide_related=true&show_comments=false&show_user=false&visual=false';
+    const s=document.createElement('script'); s.src='https://w.soundcloud.com/player/api.js'; document.head.appendChild(s);
+    s.onload=function(){ scWidget=SC.Widget(iframe); scWidget.bind(SC.Widget.Events.READY,function(){ scReady=true; scWidget.setVolume(40); scWidget.play(); scPlaying=true; btn.textContent='♪ Pause Music'; }); scWidget.bind(SC.Widget.Events.PLAY,function(){ scPlaying=true; btn.textContent='♪ Pause Music'; }); scWidget.bind(SC.Widget.Events.PAUSE,function(){ scPlaying=false; btn.textContent='♪ Play Music'; }); };
+    return;
+  }
+  if (!scReady) return;
+  scPlaying ? scWidget.pause() : scWidget.play();
+}
+</script>
+</body>
+</html>

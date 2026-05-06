@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wait Times — BoardWalk TV</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-deep:   #2b5425;
+      --green-mid:    #3a6e33;
+      --green-border: #4a8a40;
+      --green-pale:   #a8c9a0;
+
+      --tan:          #c8a96e;
+      --tan-dark:     #a8854a;
+      --tan-light:    #e0c898;
+      --tan-pale:     #f0e0c0;
+
+      --burgundy:     #7a3028;
+      --burgundy-mid: #9a4838;
+
+      --warm-white:   #fdf8ee;
+      --warm-off:     #e8dfc8;
+      --body-bg:      #121f10;
+
+      --green-ui:     #5cb87a;
+      --yellow-ui:    #e8c84a;
+      --orange-ui:    #e8944a;
+      --red-ui:       #e85c4a;
+      --closed-col:   rgba(253,248,238,0.18);
+    }
+
+    html, body {
+      width: 100%; min-height: 100%;
+      background: var(--body-bg);
+      color: var(--warm-white);
+      font-family: 'Raleway', sans-serif;
+    }
+
+    /* ── HEADER ── */
+    #header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--green-deep);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.55);
+      padding-top: env(safe-area-inset-top, 0px);
+      transform: translateZ(0);
+    }
+
+    #header-top-rule {
+      height: 3px;
+      background: linear-gradient(90deg,
+        var(--tan-dark) 0%, var(--tan-light) 30%,
+        var(--tan-pale) 50%, var(--tan-light) 70%, var(--tan-dark) 100%
+      );
+    }
+
+    #room-badge {
+      position: absolute; top: 3px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--burgundy);
+      padding: 0 18px;
+      border-radius: 0 0 6px 6px;
+      font-family: 'Raleway', sans-serif; font-weight: 300;
+      font-size: 9px; letter-spacing: 0.34em; text-transform: uppercase;
+      color: var(--tan-pale); line-height: 22px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      white-space: nowrap; z-index: 1;
+    }
+
+    #header-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 24px 10px; gap: 12px; flex-wrap: wrap;
+    }
+
+    #header-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex-shrink: 1; }
+
+    #back-btn {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 10px;
+      letter-spacing: 0.22em; color: var(--tan-light); text-transform: uppercase;
+      background: none; border: 1px solid rgba(200,169,110,0.35); border-radius: 3px;
+      padding: 5px 10px; cursor: pointer; transition: all .25s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    #back-btn:hover { background: rgba(200,169,110,0.12); border-color: var(--tan-light); }
+    #back-btn::before { content: '\2190 '; }
+
+    #wordmark { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .bw-script {
+      font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 300;
+      font-size: clamp(10px, 2.2vw, 13px);
+      letter-spacing: 0.06em; color: var(--tan-light); line-height: 1;
+    }
+    .bw-logo {
+      font-family: 'Playfair Display', serif; font-weight: 700; font-style: italic;
+      font-size: clamp(14px, 3.5vw, 20px);
+      letter-spacing: 0.04em; color: var(--warm-white); line-height: 1;
+      white-space: nowrap;
+    }
+    .bw-sub {
+      font-family: 'Raleway', sans-serif; font-weight: 200;
+      font-size: clamp(7px, 1.4vw, 8px);
+      letter-spacing: 0.35em; text-transform: uppercase;
+      color: var(--green-pale); opacity: 0.8;
+    }
+
+    #header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0; }
+    #page-title {
+      font-family: 'Playfair Display', serif; font-weight: 700; font-style: italic;
+      font-size: clamp(15px, 3.8vw, 22px);
+      letter-spacing: 0.04em; color: var(--warm-white);
+    }
+    #page-subtitle {
+      font-family: 'Raleway', sans-serif; font-weight: 200;
+      font-size: clamp(8px, 1.8vw, 10px);
+      letter-spacing: 0.22em; color: var(--tan-light); text-transform: uppercase; opacity: 0.85;
+    }
+
+    #header-bottom-rule {
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--tan-dark) 20%, var(--tan-light) 50%, var(--tan-dark) 80%, transparent 100%);
+      opacity: 0.5;
+    }
+
+    @media (max-width: 420px) {
+      #header-inner { flex-direction: column; align-items: flex-start; padding: 10px 16px 8px; }
+      #header-right { align-items: flex-start; width: 100%; border-top: 1px solid rgba(200,169,110,0.15); padding-top: 6px; margin-top: 2px; }
+      #page-subtitle { display: none; }
+      #main { padding-top: 116px; }
+    }
+
+    /* ── MAIN ── */
+    #main { padding: 82px 12px 30px; max-width: 980px; margin: 0 auto; }
+    @media (min-width: 600px) { #main { padding: 92px 40px 40px; } }
+
+    /* ── TOOLBAR ── */
+    #toolbar {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 18px; padding-bottom: 14px;
+      border-bottom: 1px solid rgba(200,169,110,0.18);
+      gap: 10px; flex-wrap: wrap;
+    }
+    #status-text {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 11px;
+      letter-spacing: 0.2em; color: rgba(253,248,238,0.38); text-transform: uppercase;
+      padding-top: 8px;
+    }
+    .toolbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    /* park tabs — 4 parks */
+    .park-tabs { display: flex; flex-wrap: wrap; gap: 0; }
+    .park-tab {
+      font-family: 'Raleway', sans-serif; font-size: clamp(9px, 2vw, 11px); font-weight: 300;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(200,169,110,0.5); background: none;
+      border: 1px solid rgba(200,169,110,0.25); padding: 6px 11px;
+      cursor: pointer; transition: all .2s; white-space: nowrap;
+    }
+    .park-tab:first-child { border-radius: 3px 0 0 3px; }
+    .park-tab:last-child  { border-radius: 0 3px 3px 0; }
+    .park-tab:not(:first-child) { border-left: none; }
+    .park-tab.active { color: var(--body-bg); background: var(--tan); border-color: var(--tan); font-weight: 400; }
+    .park-tab:not(.active):hover { background: rgba(200,169,110,0.1); border-color: rgba(200,169,110,0.5); color: var(--tan-light); }
+
+    #refresh-btn {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 11px;
+      letter-spacing: 0.2em; color: var(--tan-light); text-transform: uppercase;
+      background: none; border: 1px solid rgba(200,169,110,0.35); border-radius: 3px;
+      padding: 6px 12px; cursor: pointer; transition: all .25s; white-space: nowrap;
+      min-height: 34px;
+    }
+    #refresh-btn:hover { background: rgba(200,169,110,0.1); border-color: var(--tan-light); }
+
+    /* ── LEGEND ── */
+    .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .legend-item {
+      display: flex; align-items: center; gap: 5px;
+      font-family: 'Raleway', sans-serif; font-size: 10px; font-weight: 300;
+      letter-spacing: 0.08em; color: rgba(253,248,238,0.38); text-transform: uppercase;
+    }
+    .legend-pip { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── STATS BAR ── */
+    #stats-bar {
+      display: flex; gap: 16px; flex-wrap: nowrap;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      margin-bottom: 22px; padding: 12px 16px;
+      background: rgba(253,248,238,0.03);
+      border: 1px solid rgba(200,169,110,0.12); border-radius: 4px;
+      scrollbar-width: none;
+    }
+    #stats-bar::-webkit-scrollbar { display: none; }
+    .stat-item { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+    .stat-value {
+      font-family: 'Playfair Display', serif; font-size: clamp(16px,4vw,20px);
+      font-weight: 700; color: var(--tan-light); line-height: 1;
+    }
+    .stat-label {
+      font-family: 'Raleway', sans-serif; font-size: 9px; font-weight: 300;
+      letter-spacing: 0.2em; text-transform: uppercase; color: rgba(253,248,238,0.3);
+      white-space: nowrap;
+    }
+    .stat-div { width: 1px; background: rgba(200,169,110,0.15); align-self: stretch; flex-shrink: 0; }
+
+    /* ── LOADING / ERROR ── */
+    #loading { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 80px 0; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 2px solid rgba(200,169,110,0.2);
+      border-top-color: var(--tan);
+      border-radius: 50%; animation: spin .9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading p {
+      font-family: 'Raleway', sans-serif; font-weight: 200; font-size: 11px;
+      letter-spacing: 0.3em; color: rgba(253,248,238,0.4); text-transform: uppercase;
+    }
+    #loading small { font-size: 10px; color: rgba(253,248,238,0.2); letter-spacing: 0.12em; }
+
+    #error { display: none; text-align: center; padding: 60px 0; }
+    #error p {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 13px;
+      letter-spacing: 0.06em; color: rgba(253,248,238,0.5); margin-bottom: 6px; line-height: 1.9;
+    }
+    #error .err-detail { font-size: 11px; color: rgba(253,248,238,0.22); letter-spacing: 0.1em; margin-bottom: 24px; }
+    #retry-btn {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 11px;
+      letter-spacing: 0.25em; color: var(--tan-light); text-transform: uppercase;
+      background: none; border: 1px solid rgba(200,169,110,0.4); border-radius: 3px; padding: 8px 22px; cursor: pointer;
+    }
+
+    /* ── PARK PANELS ── */
+    .park-panel { display: none; }
+    .park-panel.visible { display: block; }
+
+    /* ── LAND GROUPS ── */
+    .land-group { margin-bottom: 28px; animation: fadeIn .35s ease both; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .land-group:nth-child(1){animation-delay:.03s} .land-group:nth-child(2){animation-delay:.06s}
+    .land-group:nth-child(3){animation-delay:.09s} .land-group:nth-child(4){animation-delay:.12s}
+    .land-group:nth-child(5){animation-delay:.15s} .land-group:nth-child(6){animation-delay:.18s}
+    .land-group:nth-child(7){animation-delay:.21s} .land-group:nth-child(8){animation-delay:.24s}
+    .land-group:nth-child(9){animation-delay:.27s} .land-group:nth-child(10){animation-delay:.30s}
+
+    .land-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .land-title {
+      font-family: 'Raleway', sans-serif; font-weight: 400; font-size: clamp(10px,2.5vw,12px);
+      letter-spacing: 0.18em; color: var(--tan); text-transform: uppercase; white-space: nowrap;
+    }
+    .land-divider {
+      flex: 1; height: 1px;
+      background: linear-gradient(90deg, rgba(200,169,110,0.22) 0%, transparent 100%);
+    }
+
+    /* ── RIDE GRID ── */
+    .ride-grid { display: grid; grid-template-columns: 1fr; gap: 6px; }
+    @media (min-width: 480px) { .ride-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (min-width: 800px) { .ride-grid { grid-template-columns: repeat(3,1fr); } }
+
+    .ride-card {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 10px 12px;
+      background: rgba(253,248,238,0.03);
+      border-left: 3px solid rgba(253,248,238,0.1);
+      border-radius: 0 3px 3px 0;
+      transition: background .15s; min-height: 44px;
+    }
+    .ride-card:hover { background: rgba(253,248,238,0.06); }
+    .ride-card.open-low  { border-left-color: var(--green-ui); }
+    .ride-card.open-med  { border-left-color: var(--yellow-ui); }
+    .ride-card.open-high { border-left-color: var(--orange-ui); }
+    .ride-card.open-max  { border-left-color: var(--red-ui); }
+    .ride-card.closed    { border-left-color: var(--closed-col); opacity: .5; }
+
+    .ride-name {
+      font-family: 'Raleway', sans-serif; font-weight: 400;
+      font-size: clamp(11px,2.5vw,12px); line-height: 1.35;
+      color: rgba(253,248,238,0.82); flex: 1;
+    }
+    .wait-badge {
+      font-family: 'Playfair Display', serif; font-weight: 700;
+      font-size: clamp(12px,3vw,14px); white-space: nowrap;
+      min-width: 46px; text-align: right;
+    }
+    .open-low  .wait-badge { color: var(--green-ui); }
+    .open-med  .wait-badge { color: var(--yellow-ui); }
+    .open-high .wait-badge { color: var(--orange-ui); }
+    .open-max  .wait-badge { color: var(--red-ui); }
+    .closed    .wait-badge {
+      font-family: 'Raleway', sans-serif; font-size: 10px; font-weight: 300;
+      letter-spacing: 0.12em; color: rgba(253,248,238,0.28); text-transform: uppercase;
+    }
+
+    /* ── FOOTER ── */
+    .ornament {
+      text-align: center; margin: 40px 0 8px;
+      color: rgba(200,169,110,0.2); font-size: 14px; letter-spacing: 0.5em;
+    }
+    .last-updated {
+      text-align: center; font-family: 'Raleway', sans-serif; font-weight: 200;
+      font-size: 10px; letter-spacing: 0.18em; color: rgba(253,248,238,0.18);
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .attribution {
+      text-align: center; font-family: 'Raleway', sans-serif; font-weight: 300;
+      font-size: 10px; letter-spacing: 0.15em; color: rgba(253,248,238,0.22); margin-bottom: 40px;
+    }
+    .attribution a { color: rgba(200,169,110,0.5); text-decoration: none; }
+    .attribution a:hover { color: var(--tan-light); }
+  </style>
+</head>
+<body>
+
+<div id="header">
+  <div id="header-top-rule"></div>
+  <div id="room-badge">BoardWalk Resort · Walt Disney World</div>
+  <div id="header-inner">
+    <div id="header-left">
+      <button id="back-btn" onclick="goHome()">Home</button>
+      <div id="wordmark">
+        <div class="bw-script">Disney's</div>
+        <div class="bw-logo">BoardWalk TV</div>
+        <div class="bw-sub">Walt Disney World Resort</div>
+      </div>
+    </div>
+    <div id="header-right">
+      <div id="page-title">Wait Times</div>
+      <div id="page-subtitle">Live Resort Data</div>
+    </div>
+  </div>
+  <div id="header-bottom-rule"></div>
+</div>
+
+<div id="main">
+  <div id="toolbar">
+    <div id="status-text">Loading…</div>
+    <div class="toolbar-right">
+      <div class="park-tabs">
+        <button class="park-tab active" data-park="mk"  onclick="switchPark('mk')">Magic Kingdom</button>
+        <button class="park-tab"        data-park="ep"  onclick="switchPark('ep')">EPCOT</button>
+        <button class="park-tab"        data-park="hs"  onclick="switchPark('hs')">Hollywood Studios</button>
+        <button class="park-tab"        data-park="ak"  onclick="switchPark('ak')">Animal Kingdom</button>
+      </div>
+      <button id="refresh-btn" onclick="fetchAll()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-pip" style="background:var(--green-ui)"></div>&lt;20 min</div>
+    <div class="legend-item"><div class="legend-pip" style="background:var(--yellow-ui)"></div>20–39 min</div>
+    <div class="legend-item"><div class="legend-pip" style="background:var(--orange-ui)"></div>40–59 min</div>
+    <div class="legend-item"><div class="legend-pip" style="background:var(--red-ui)"></div>60+ min</div>
+    <div class="legend-item"><div class="legend-pip" style="background:var(--closed-col)"></div>Closed</div>
+  </div>
+
+  <div id="stats-bar">
+    <div class="stat-item"><div class="stat-value" id="stat-open">–</div><div class="stat-label">Open Rides</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-value" id="stat-avg">–</div><div class="stat-label">Avg Wait</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-value" id="stat-max">–</div><div class="stat-label">Longest</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-value" id="stat-short">–</div><div class="stat-label">Shortest</div></div>
+  </div>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Fetching live wait times…</p>
+    <small>Via Queue-Times.com</small>
+  </div>
+  <div id="error">
+    <p>Unable to load wait times right now.</p>
+    <p class="err-detail" id="err-detail"></p>
+    <button id="retry-btn" onclick="fetchAll()">Try Again</button>
+  </div>
+
+  <div id="park-mk" class="park-panel visible"></div>
+  <div id="park-ep" class="park-panel"></div>
+  <div id="park-hs" class="park-panel"></div>
+  <div id="park-ak" class="park-panel"></div>
+
+  <div class="ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+  <div class="last-updated" id="last-updated"></div>
+  <div class="attribution">Powered by <a href="https://queue-times.com/en-US" target="_blank" rel="noopener">Queue-Times.com</a></div>
+</div>
+
+<script>
+/* Queue-Times park IDs for Walt Disney World */
+const PARKS = {
+  mk: { id: 6,  name: 'Magic Kingdom',       panelId: 'park-mk' },
+  ep: { id: 7,  name: 'EPCOT',               panelId: 'park-ep' },
+  hs: { id: 8,  name: 'Hollywood Studios',   panelId: 'park-hs' },
+  ak: { id: 9,  name: 'Animal Kingdom',      panelId: 'park-ak' }
+};
+
+const PARK_KEYS = ['mk','ep','hs','ak'];
+
+const PROXY_FNS = [
+  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+];
+const QT_URL = id => `https://queue-times.com/parks/${id}/queue_times.json`;
+
+let rideData = { mk: null, ep: null, hs: null, ak: null };
+let activeTab = 'mk';
+let refreshTimer;
+
+async function fetchJSON(url) {
+  let lastErr;
+  for (const proxyFn of PROXY_FNS) {
+    try {
+      const res = await fetch(proxyFn(url), { signal: AbortSignal.timeout(9000) });
+      if (!res.ok) { lastErr = `HTTP ${res.status}`; continue; }
+      const payload = await res.json();
+      if (payload && typeof payload.contents === 'string') return JSON.parse(payload.contents);
+      if (payload && typeof payload === 'object') return payload;
+    } catch(e) { lastErr = e.message; }
+  }
+  throw new Error(lastErr || 'All proxies failed');
+}
+
+function showLoading(on) { document.getElementById('loading').style.display = on ? 'flex' : 'none'; }
+function showError(msg) { document.getElementById('error').style.display = 'block'; document.getElementById('err-detail').textContent = msg; }
+function hideError() { document.getElementById('error').style.display = 'none'; }
+
+function switchPark(key) {
+  activeTab = key;
+  document.querySelectorAll('.park-tab').forEach(t => t.classList.toggle('active', t.dataset.park === key));
+  PARK_KEYS.forEach(k => {
+    document.getElementById(PARKS[k].panelId).style.display = k === key ? 'block' : 'none';
+  });
+  updateStats();
+}
+
+function updateStats() {
+  const data = rideData[activeTab];
+  if (!data) return;
+  const all = (data.lands || []).flatMap(l => l.rides || []).concat(data.rides || []);
+  const open = all.filter(r => r.is_open);
+  const waits = open.map(r => r.wait_time).filter(w => w > 0);
+  document.getElementById('stat-open').textContent = `${open.length}/${all.length}`;
+  document.getElementById('stat-avg').textContent = waits.length ? Math.round(waits.reduce((a,b) => a+b, 0) / waits.length) + 'm' : '–';
+  document.getElementById('stat-max').textContent = waits.length ? Math.max(...waits) + 'm' : '–';
+  document.getElementById('stat-short').textContent = waits.length ? Math.min(...waits) + 'm' : '–';
+}
+
+function renderPark(key, data) {
+  const panel = document.getElementById(PARKS[key].panelId);
+  const lands = [...(data.lands || [])];
+  if ((data.rides || []).length) lands.push({ name: 'Other Attractions', rides: data.rides });
+  if (!lands.length) {
+    panel.innerHTML = '<p style="text-align:center;padding:40px 0;font-family:Cormorant Garamond,serif;font-style:italic;color:rgba(253,248,238,0.3)">No ride data available.</p>';
+    return;
+  }
+  let html = '';
+  for (const land of lands) {
+    if (!land.rides || !land.rides.length) continue;
+    const sorted = [...land.rides].sort((a,b) => {
+      if (a.is_open && !b.is_open) return -1;
+      if (!a.is_open && b.is_open) return 1;
+      return b.wait_time - a.wait_time;
+    });
+    html += `<div class="land-group"><div class="land-header"><div class="land-title">${x(land.name)}</div><div class="land-divider"></div></div><div class="ride-grid">`;
+    for (const ride of sorted) {
+      const cls = !ride.is_open ? 'closed'
+        : ride.wait_time < 20  ? 'open-low'
+        : ride.wait_time < 40  ? 'open-med'
+        : ride.wait_time < 60  ? 'open-high'
+        : 'open-max';
+      const badge = !ride.is_open ? 'Closed'
+        : (ride.wait_time || 0) === 0 ? '0 min'
+        : ride.wait_time + ' min';
+      html += `<div class="ride-card ${cls}"><div class="ride-name">${x(ride.name)}</div><div class="wait-badge">${badge}</div></div>`;
+    }
+    html += `</div></div>`;
+  }
+  panel.innerHTML = html;
+}
+
+async function fetchPark(key) {
+  try {
+    const data = await fetchJSON(QT_URL(PARKS[key].id));
+    rideData[key] = data;
+    renderPark(key, data);
+  } catch(err) {
+    rideData[key] = null;
+    document.getElementById(PARKS[key].panelId).innerHTML = `
+      <div style="text-align:center;padding:40px 0">
+        <p style="font-family:Raleway,sans-serif;font-weight:300;font-size:13px;color:rgba(253,248,238,0.5);margin-bottom:10px">
+          Could not load ${PARKS[key].name} wait times.</p>
+        <p style="font-size:10px;color:rgba(253,248,238,0.22);letter-spacing:.1em;margin-bottom:20px">${x(err.message)}</p>
+        <button onclick="fetchAll()" style="font-family:Raleway,sans-serif;font-weight:300;font-size:11px;letter-spacing:.25em;color:var(--tan-light);text-transform:uppercase;background:none;border:1px solid rgba(200,169,110,0.4);border-radius:3px;padding:8px 22px;cursor:pointer">Try Again</button>
+      </div>`;
+  }
+}
+
+async function fetchAll() {
+  showLoading(true); hideError();
+  PARK_KEYS.forEach(k => { document.getElementById(PARKS[k].panelId).style.display = 'none'; });
+  document.getElementById('status-text').textContent = 'Refreshing…';
+  await Promise.all(PARK_KEYS.map(k => fetchPark(k)));
+  showLoading(false);
+  PARK_KEYS.forEach(k => {
+    document.getElementById(PARKS[k].panelId).style.display = k === activeTab ? 'block' : 'none';
+  });
+  const anyLoaded = PARK_KEYS.some(k => rideData[k]);
+  document.getElementById('status-text').textContent = anyLoaded ? 'Live data' : 'Data unavailable';
+  document.getElementById('last-updated').textContent =
+    `Updated ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · Auto-refreshes every 5 min`;
+  updateStats();
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(fetchAll, 5 * 60 * 1000);
+}
+
+function x(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function goHome() {
+  window.location.href = 'wdw.html';
+}
+
+fetchAll();
+</script>
+</body>
+</html>
