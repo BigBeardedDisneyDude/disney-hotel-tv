@@ -1092,30 +1092,55 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
       console.log('[Widget] Disney calendar fetch failed:', e.message, '— using curated schedule');
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // ⚠️  MAINTENANCE REQUIRED — update this list when the lineup changes
+    // ═════════════════════════════════════════════════════════════════
+    // ⚠️  MAINTENANCE REQUIRED
     //
-    // No free public API exists for Disneyland show schedules.
-    // Disney's own API (api.disneyland.disney.go.com) requires auth tokens.
-    // ThemeParks.wiki only tracks ride wait times, not entertainment.
+    // There is no free public API for Disneyland show/entertainment schedules.
+    // Investigated options (May 2026):
+    //   • Disney's own API requires rotating auth tokens — not viable for
+    //     a static GitHub Pages site without a backend.
+    //   • ThemeParks.wiki has park hours + ride waits only, no show data.
+    //   • ThemeParkIQ (themeparkiq.com/disneyland/entertainment/schedule)
+    //     has live show times but fetches them server-side — no public
+    //     API endpoint is exposed to the browser.
+    //   • MouseWait is a social app with no developer API at all.
+    //   • Best future path: a free Cloudflare Worker that proxies Disney's
+    //     API server-side and caches results — revisit if you ever want
+    //     to add a lightweight backend.
     //
-    // OPTIONS FOR LIVE DATA (for future investigation):
-    //   1. Mouse Waiting API (mousewait.net) — fan-built, has show times,
-    //      free tier available. Check: https://mousewait.net/developers
-    //   2. Scrape Disney's day calendar page via allorigins proxy — 
-    //      the page at disneyland.disney.go.com/calendars/day/ renders
-    //      show data in the HTML but parsing is fragile.
-    //   3. Check themeparks.wiki GitHub issues periodically — they may
-    //      add show schedule support in future API versions.
+    // FOR NOW: Keep this list manually up to date.
     //
     // LAST VERIFIED: May 2026
-    // CHECK AGAIN: When seasonal lineup changes (Halloween Time ~Aug,
-    //              Holiday Time ~Nov, Summer ~May, Spring ~Mar)
+    //
+    // ── NEXT UPDATE DUE ──────────────────────────────────────────────
+    // 🎃 Halloween Time:     ~late August 2026
+    //    Wondrous Journeys pauses → Halloween Screams fireworks
+    //    Fantasmic! continues
+    //    World of Color pauses → Oogie Boogie Bash (ticketed) some nights
+    //    Parade → check for Halloween overlay
+    //
+    // 🎄 Holiday Time:       ~mid November 2026
+    //    Wondrous Journeys pauses → remember... Dreams Come True w/ snow
+    //    World of Color pauses → World of Color: Season of Light
+    //    Fantasmic! pauses on some nights
+    //    Parade → A Christmas Fantasy Parade
+    //
+    // 🌸 Spring / Food & Wine: ~March 2027
+    // ☀️  Summer:             ~late May 2027
+    //    Wondrous Journeys resumes (or new summer show)
+    //    Check: disneyland.disney.go.com/calendars/day/
+    //
+    // ── PARADE PLACEHOLDER ───────────────────────────────────────────
+    // Add parade entry here once you have confirmed times:
+    // { type:'ent', park:'dl', kind:'parade', name:'[PARADE NAME]',
+    //   loc:'Main Street U.S.A.', times:['[TIME]','[TIME]'], isNighttime:false },
     // ─────────────────────────────────────────────────────────────────
     if (items.length === 0) {
       items = [
         { type:'ent', park:'dl',  kind:'fireworks', name:'Wondrous Journeys',  loc:'Disneyland Skies',  times:['9:30 PM'],           isNighttime:true  },
         { type:'ent', park:'dl',  kind:'show',      name:'Fantasmic!',         loc:'Rivers of America', times:['8:30 PM','10:00 PM'], isNighttime:false },
+        // 🎺 PARADE — uncomment and fill in times when confirmed:
+        // { type:'ent', park:'dl', kind:'parade', name:'Better Together: A Pixar Pals Celebration!', loc:'Main Street U.S.A.', times:['11:00 AM','3:00 PM'], isNighttime:false },
         { type:'ent', park:'dca', kind:'fireworks', name:'World of Color',     loc:'Paradise Bay',      times:['9:00 PM','10:15 PM'], isNighttime:true  },
       ];
     }
