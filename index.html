@@ -1051,7 +1051,6 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
 
   // ── main load ──
   async function loadWidget() {
-    // Use local date (not UTC) so it doesn't roll to tomorrow after 5pm Pacific
     const _now = new Date();
     const today = _now.getFullYear()+'-'+String(_now.getMonth()+1).padStart(2,'0')+'-'+String(_now.getDate()).padStart(2,'0');
     const items = [];
@@ -1059,22 +1058,32 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
     for (const pk of ['dl','dca']) {
       try {
         const childData = await fetchT('https://api.themeparks.wiki/v1/entity/'+PARK_IDS[pk]+'/children');
+        // Cast a wider net — include ATTRACTION type too since some fireworks show up there
         const ents = (childData.children||[])
-          .filter(c=>['SHOW','CHARACTER','ENTERTAINMENT','PARADE'].includes(c.entityType))
-          .slice(0,20);
+          .filter(e=>['SHOW','CHARACTER','ENTERTAINMENT','PARADE','ATTRACTION'].includes(e.entityType))
+          .slice(0,25);
 
         await Promise.allSettled(ents.map(async (ent) => {
           try {
             const sd = await fetchT('https://api.themeparks.wiki/v1/entity/'+ent.id+'/schedule');
-            // Check that this entity has ANY schedule entry for today
-            const hasToday = (sd.schedule||[]).some(s => s.date === today && s.openingTime);
-            if (!hasToday) return;
+            const todaySlots = (sd.schedule||[]).filter(s => s.date === today && s.openingTime);
+            if (!todaySlots.length) return;
+
+            // Collect all performance times for today
+            const times = todaySlots
+              .map(s => fmt12(s.openingTime))
+              .filter(Boolean);
+
+            const kind = inferType(ent.name, ent.entityType);
+
             items.push({
               type: 'ent',
               name: ent.name,
-              kind: inferType(ent.name, ent.entityType),
+              kind,
               loc:  ent.location || inferLoc(ent.name, pk),
-              park: pk
+              park: pk,
+              times, // array of formatted time strings
+              isNighttime: kind === 'fireworks' // float to top
             });
           } catch { /* skip */ }
         }));
@@ -1082,9 +1091,15 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
     }
 
     if (items.length > 0) {
+      // Sort: fireworks/nighttime first, then alphabetical within park
+      items.sort((a,b) => {
+        if (a.isNighttime && !b.isNighttime) return -1;
+        if (!a.isNighttime && b.isNighttime) return 1;
+        if (a.park !== b.park) return a.park === 'dl' ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      });
       widgetCards = items;
     } else {
-      // No entertainment found — show hours cards instead
       widgetCards = await buildHoursCards();
     }
 
@@ -1118,11 +1133,30 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
           + status
           +'</div>';
       }
+      // Build times row — show up to 4 times, rest shown as "+N more"
+      const maxTimes = 4;
+      const shownTimes = (item.times||[]).slice(0, maxTimes);
+      const extraCount = (item.times||[]).length - shownTimes.length;
+      const timePills = shownTimes.map(t =>
+        '<span style="display:inline-block;font-family:Cinzel,serif;font-size:9px;letter-spacing:0.05em;'
+        +'color:var(--gold-light);background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.22);'
+        +'border-radius:2px;padding:1px 6px;margin:1px 2px 1px 0;">'
+        +t+'</span>'
+      ).join('');
+      const extraPill = extraCount > 0
+        ? '<span style="font-family:Raleway,sans-serif;font-size:8px;color:rgba(201,168,76,0.4);margin-left:2px;">+'+extraCount+' more</span>'
+        : '';
+      const timesRow = shownTimes.length
+        ? '<div style="display:flex;flex-wrap:wrap;align-items:center;margin-top:5px;">'+timePills+extraPill+'</div>'
+        : '';
+      const parkTag = '<div style="font-family:Raleway,sans-serif;font-weight:200;font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(201,168,76,0.38);margin-top:4px;">'+PARK_LABELS[item.park]+'</div>';
+
       return '<div class="today-card">'
         +'<div class="today-card-emoji">'+(TYPE_EMOJI[item.kind]||'🎭')+'</div>'
         +'<div class="today-card-name">'+item.name+'</div>'
         +'<div class="today-card-loc">'+item.loc+'</div>'
-        +'<div style="font-family:Raleway,sans-serif;font-weight:200;font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(201,168,76,0.38);margin-top:2px;">'+PARK_LABELS[item.park]+'</div>'
+        + timesRow
+        + parkTag
         +'</div>';
     }).join('');
 
