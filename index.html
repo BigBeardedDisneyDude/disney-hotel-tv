@@ -976,24 +976,28 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
     } catch(e) { clearTimeout(t); throw e; }
   }
 
-  // ── park hours fallback cards ──
+  // ── park hours fallback cards — uses ThemeParks.wiki schedule endpoint ──
   async function buildHoursCards() {
     const cards = [];
     const parkDefs = [
-      {pk:'dl',  id:16,  label:'Disneyland',          sub:'The Original Magic Kingdom'},
-      {pk:'dca', id:17,  label:'California Adventure', sub:'Disney California Adventure Park'}
+      {pk:'dl',  id:PARK_IDS.dl,  label:'Disneyland',          sub:'The Original Magic Kingdom'},
+      {pk:'dca', id:PARK_IDS.dca, label:'California Adventure', sub:'Disney California Adventure Park'}
     ];
+    const today = new Date().toISOString().split('T')[0];
     for (const p of parkDefs) {
       let openStr='—', closeStr='—', statusCls='', statusTxt='';
       try {
-        const d = await fetchT('https://queue-times.com/parks/'+p.id+'/queue_times.json');
-        const open  = d.park?.opening_time || d.opening_time || null;
-        const close = d.park?.closing_time || d.closing_time || null;
-        if (open && close) {
-          openStr  = fmt12(open);
-          closeStr = fmt12(close);
+        const d = await fetchT('https://api.themeparks.wiki/v1/entity/'+p.id+'/schedule');
+        // Find today's "OPERATING" schedule entry at the park level
+        const todayEntry = (d.schedule||[]).find(s =>
+          s.date === today && s.type === 'OPERATING'
+        );
+        if (todayEntry && todayEntry.openingTime && todayEntry.closingTime) {
+          openStr  = fmt12(todayEntry.openingTime);
+          closeStr = fmt12(todayEntry.closingTime);
           const now = new Date(); const nowM = now.getHours()*60+now.getMinutes();
-          const om  = toMins(open); const cm = toMins(close);
+          const om  = toMins(todayEntry.openingTime);
+          const cm  = toMins(todayEntry.closingTime);
           if      (nowM < om)  { statusCls='pill-soon';   statusTxt='Opens Soon'; }
           else if (nowM < cm)  { statusCls='pill-open';   statusTxt='● Open Now'; }
           else                 { statusCls='pill-closed'; statusTxt='Closed'; }
