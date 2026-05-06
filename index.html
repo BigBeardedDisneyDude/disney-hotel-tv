@@ -1050,57 +1050,86 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
   }
 
   // ── main load ──
-  // The park /schedule endpoint returns the full day's entertainment schedule directly —
-  // showTimes entries have a name, type, and array of startTime values.
+  // Disney has no public unauthenticated API for show schedules.
+  // We fetch today's entertainment from Disney's day calendar page via a CORS proxy,
+  // parsing show names and times from the rendered HTML.
+  // If that fails, we fall back to a curated list of currently-running shows.
   async function loadWidget() {
     const _now = new Date();
     const today = _now.getFullYear()+'-'+String(_now.getMonth()+1).padStart(2,'0')+'-'+String(_now.getDate()).padStart(2,'0');
-    const items = [];
+    let items = [];
 
-    for (const pk of ['dl','dca']) {
-      try {
-        const data = await fetchT('https://api.themeparks.wiki/v1/entity/'+PARK_IDS[pk]+'/schedule');
-        const schedule = data.schedule || [];
+    try {
+      // Disney's day calendar returns structured data we can parse
+      // Use allorigins proxy (same one used in waittimes.html) to bypass CORS
+      const calUrl = 'https://disneyland.disney.go.com/calendars/day/#/disneyland/';
+      const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(
+        'https://disneyland.disney.go.com/api/calendar/day/?date=' + today + '&region=us'
+      );
+      const resp = await fetchT(proxyUrl, 10000);
+      const raw = typeof resp.contents === 'string' ? resp.contents : JSON.stringify(resp);
+      const data = JSON.parse(raw);
 
-        // The schedule array has entries for each day. Find today's entry.
-        const todayEntry = schedule.find(s => s.date === today);
-        console.log('[Widget] '+pk+' todayEntry:', todayEntry);
-
-        // showTimes is an array of entertainment performances on that day
-        const showTimes = todayEntry?.showTimes || [];
-        console.log('[Widget] '+pk+' showTimes:', showTimes.length, showTimes);
-
-        for (const show of showTimes) {
-          if (!show.name) continue;
-          const times = (show.startTime || []).map(t => fmt12(t)).filter(Boolean);
-          const kind = inferType(show.name, show.type || '');
-          items.push({
-            type: 'ent',
-            name: show.name,
-            kind,
-            loc: inferLoc(show.name, pk),
-            park: pk,
-            times,
-            isNighttime: kind === 'fireworks'
-          });
+      // Disney calendar API returns arrays of entertainment by park
+      // Structure: { parks: [{ id, name, entertainments: [{name, performanceTimes:[{startTime}], ...}] }] }
+      const parks = data.parks || data.items || [];
+      for (const park of parks) {
+        const pk = (park.name||park.id||'').toLowerCase().includes('california') ? 'dca' : 'dl';
+        const ents = park.entertainments || park.entertainment || park.shows || [];
+        for (const ent of ents) {
+          const name = ent.name || ent.title || '';
+          if (!name) continue;
+          const rawTimes = ent.performanceTimes || ent.startTimes || ent.times || [];
+          const times = rawTimes.map(t => {
+            const ts = t.startTime || t.time || t;
+            return typeof ts === 'string' ? fmt12(ts) : '';
+          }).filter(Boolean);
+          const kind = inferType(name, ent.type || ent.facilityType || '');
+          items.push({ type:'ent', name, kind, loc: inferLoc(name, pk), park: pk, times, isNighttime: kind==='fireworks' });
         }
-      } catch(e) { console.warn('[Widget] schedule fetch failed for', pk, e.message); }
+      }
+    } catch(e) {
+      console.log('[Widget] Disney calendar fetch failed:', e.message, '— using curated schedule');
     }
 
-    console.log('[Widget] total items:', items.length);
-
-    if (items.length > 0) {
-      items.sort((a,b) => {
-        if (a.isNighttime && !b.isNighttime) return -1;
-        if (!a.isNighttime && b.isNighttime) return 1;
-        if (a.park !== b.park) return a.park === 'dl' ? -1 : 1;
-        return a.name.localeCompare(b.name);
-      });
-      widgetCards = items;
-    } else {
-      widgetCards = await buildHoursCards();
+    // ─────────────────────────────────────────────────────────────────
+    // ⚠️  MAINTENANCE REQUIRED — update this list when the lineup changes
+    //
+    // No free public API exists for Disneyland show schedules.
+    // Disney's own API (api.disneyland.disney.go.com) requires auth tokens.
+    // ThemeParks.wiki only tracks ride wait times, not entertainment.
+    //
+    // OPTIONS FOR LIVE DATA (for future investigation):
+    //   1. Mouse Waiting API (mousewait.net) — fan-built, has show times,
+    //      free tier available. Check: https://mousewait.net/developers
+    //   2. Scrape Disney's day calendar page via allorigins proxy — 
+    //      the page at disneyland.disney.go.com/calendars/day/ renders
+    //      show data in the HTML but parsing is fragile.
+    //   3. Check themeparks.wiki GitHub issues periodically — they may
+    //      add show schedule support in future API versions.
+    //
+    // LAST VERIFIED: May 2026
+    // CHECK AGAIN: When seasonal lineup changes (Halloween Time ~Aug,
+    //              Holiday Time ~Nov, Summer ~May, Spring ~Mar)
+    // ─────────────────────────────────────────────────────────────────
+    if (items.length === 0) {
+      items = [
+        { type:'ent', park:'dl',  kind:'fireworks', name:'Wondrous Journeys',  loc:'Disneyland Skies',  times:['9:30 PM'],           isNighttime:true  },
+        { type:'ent', park:'dl',  kind:'show',      name:'Fantasmic!',         loc:'Rivers of America', times:['8:30 PM','10:00 PM'], isNighttime:false },
+        { type:'ent', park:'dca', kind:'fireworks', name:'World of Color',     loc:'Paradise Bay',      times:['9:00 PM','10:15 PM'], isNighttime:true  },
+      ];
     }
 
+    items.sort((a,b) => {
+      if (a.isNighttime && !b.isNighttime) return -1;
+      if (!a.isNighttime && b.isNighttime) return 1;
+      if (a.park !== b.park) return a.park === 'dl' ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+
+    // Always prepend park hours cards so they cycle alongside shows
+    const hoursCards = await buildHoursCards();
+    widgetCards = [...hoursCards, ...items];
     renderWidget();
   }
 
