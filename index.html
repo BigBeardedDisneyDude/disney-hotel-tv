@@ -942,22 +942,32 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
   };
 
   // ── helpers ──
-  function toMins(t) {
+  // Parse h and m directly from the LOCAL part of the ISO string (before any tz offset)
+  // e.g. "2026-05-05T22:00:00-07:00" → h=22, m=0  (Anaheim local time, no conversion)
+  // This avoids JS Date() converting to browser timezone and showing wrong hours.
+  function parseLocalHM(t) {
     if (!t) return null;
     try {
-      if (t.includes('T')) { const d = new Date(t); return d.getHours()*60+d.getMinutes(); }
-      const p = t.split(':'); return +p[0]*60 + +p[1];
+      if (t.includes('T')) {
+        const timePart = t.split('T')[1]; // "22:00:00-07:00" or "22:00:00Z"
+        const hm = timePart.split(/[:\-Z+]/); // split on : - Z +
+        return { h: +hm[0], m: +hm[1] };
+      }
+      const p = t.split(':');
+      return { h: +p[0], m: +p[1] };
     } catch { return null; }
   }
 
+  function toMins(t) {
+    const hm = parseLocalHM(t);
+    return hm ? hm.h*60 + hm.m : null;
+  }
+
   function fmt12(t) {
-    if (!t) return '';
-    try {
-      let h, m;
-      if (t.includes('T')) { const d = new Date(t); h=d.getHours(); m=d.getMinutes(); }
-      else { const p=t.split(':'); h=+p[0]; m=+p[1]; }
-      return (h%12||12)+':'+String(m).padStart(2,'0')+' '+(h>=12?'PM':'AM');
-    } catch { return ''; }
+    const hm = parseLocalHM(t);
+    if (!hm) return '';
+    const { h, m } = hm;
+    return (h%12||12)+':'+String(m).padStart(2,'0')+' '+(h>=12?'PM':'AM');
   }
 
   function inferType(name, entityType) {
