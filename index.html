@@ -948,13 +948,13 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
   function parseLocalHM(t) {
     if (!t) return null;
     try {
-      if (t.includes('T')) {
-        const timePart = t.split('T')[1]; // "22:00:00-07:00" or "22:00:00Z"
-        const hm = timePart.split(/[:\-Z+]/); // split on : - Z +
-        return { h: +hm[0], m: +hm[1] };
-      }
-      const p = t.split(':');
-      return { h: +p[0], m: +p[1] };
+      // Match HH:MM at the start of the time portion, ignoring any tz offset
+      // Works for: "2026-05-05T22:00:00-07:00", "2026-05-05T08:00:00Z", "08:00"
+      const m = t.match(/T(\d{2}):(\d{2})/);
+      if (m) return { h: +m[1], m: +m[2] };
+      const p = t.match(/^(\d{1,2}):(\d{2})/);
+      if (p) return { h: +p[1], m: +p[2] };
+      return null;
     } catch { return null; }
   }
 
@@ -1011,7 +1011,9 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
       {pk:'dl',  id:PARK_IDS.dl,  label:'Disneyland',          sub:'The Original Magic Kingdom'},
       {pk:'dca', id:PARK_IDS.dca, label:'California Adventure', sub:'Disney California Adventure Park'}
     ];
-    const today = new Date().toISOString().split('T')[0];
+    // Use local date (not UTC) so it doesn't roll to tomorrow after 5pm Pacific
+    const _now = new Date();
+    const today = _now.getFullYear()+'-'+String(_now.getMonth()+1).padStart(2,'0')+'-'+String(_now.getDate()).padStart(2,'0');
     for (const p of parkDefs) {
       let openStr='—', closeStr='—', statusCls='', statusTxt='';
       try {
@@ -1023,7 +1025,10 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
         if (todayEntry && todayEntry.openingTime && todayEntry.closingTime) {
           openStr  = fmt12(todayEntry.openingTime);
           closeStr = fmt12(todayEntry.closingTime);
-          const now = new Date(); const nowM = now.getHours()*60+now.getMinutes();
+          // Compare current Pacific time against park hours (park times are in Pacific)
+          const nowPacific = new Date().toLocaleString('en-US', {timeZone:'America/Los_Angeles'});
+          const nowPacificDate = new Date(nowPacific);
+          const nowM = nowPacificDate.getHours()*60+nowPacificDate.getMinutes();
           const om  = toMins(todayEntry.openingTime);
           const cm  = toMins(todayEntry.closingTime);
           if      (nowM < om)  { statusCls='pill-soon';   statusTxt='Opens Soon'; }
@@ -1046,7 +1051,9 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
 
   // ── main load ──
   async function loadWidget() {
-    const today = new Date().toISOString().split('T')[0];
+    // Use local date (not UTC) so it doesn't roll to tomorrow after 5pm Pacific
+    const _now = new Date();
+    const today = _now.getFullYear()+'-'+String(_now.getMonth()+1).padStart(2,'0')+'-'+String(_now.getDate()).padStart(2,'0');
     const items = [];
 
     for (const pk of ['dl','dca']) {
