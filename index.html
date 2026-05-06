@@ -1054,14 +1054,21 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
     const _now = new Date();
     const today = _now.getFullYear()+'-'+String(_now.getMonth()+1).padStart(2,'0')+'-'+String(_now.getDate()).padStart(2,'0');
     const items = [];
+    const debugEl = document.getElementById('today-card-counter');
 
     for (const pk of ['dl','dca']) {
       try {
+        if (debugEl) debugEl.textContent = 'fetching '+pk+'…';
         const childData = await fetchT('https://api.themeparks.wiki/v1/entity/'+PARK_IDS[pk]+'/children');
-        // Cast a wider net — include ATTRACTION type too since some fireworks show up there
-        const ents = (childData.children||[])
-          .filter(e=>['SHOW','CHARACTER','ENTERTAINMENT','PARADE','ATTRACTION'].includes(e.entityType))
-          .slice(0,25);
+        const allChildren = childData.children||[];
+        const entityTypes = [...new Set(allChildren.map(e=>e.entityType))];
+        console.log('[Widget] '+pk+' children:', allChildren.length, 'types:', entityTypes);
+
+        // Accept all non-ride entity types
+        const ents = allChildren.filter(e=>
+          e.entityType && e.entityType !== 'RIDE' && e.entityType !== 'RESTAURANT' && e.entityType !== 'SHOP'
+        ).slice(0,30);
+        console.log('[Widget] '+pk+' ents after filter:', ents.length, ents.map(e=>e.entityType+':'+e.name));
 
         await Promise.allSettled(ents.map(async (ent) => {
           try {
@@ -1069,12 +1076,9 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
             const todaySlots = (sd.schedule||[]).filter(s => s.date === today && s.openingTime);
             if (!todaySlots.length) return;
 
-            // Collect all performance times for today
-            const times = todaySlots
-              .map(s => fmt12(s.openingTime))
-              .filter(Boolean);
-
+            const times = todaySlots.map(s => fmt12(s.openingTime)).filter(Boolean);
             const kind = inferType(ent.name, ent.entityType);
+            console.log('[Widget] adding:', ent.name, kind, times);
 
             items.push({
               type: 'ent',
@@ -1082,13 +1086,14 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
               kind,
               loc:  ent.location || inferLoc(ent.name, pk),
               park: pk,
-              times, // array of formatted time strings
-              isNighttime: kind === 'fireworks' // float to top
+              times,
+              isNighttime: kind === 'fireworks'
             });
-          } catch { /* skip */ }
+          } catch(e) { console.warn('[Widget] schedule fetch failed for', ent.name, e.message); }
         }));
-      } catch { /* skip park */ }
+      } catch(e) { console.warn('[Widget] children fetch failed for', pk, e.message); }
     }
+    console.log('[Widget] total items found:', items.length);
 
     if (items.length > 0) {
       // Sort: fireworks/nighttime first, then alphabetical within park
