@@ -903,18 +903,36 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
 // Shows all entertainment scheduled today (no time filter).
 // If none found → falls back to cycling DL / DCA park hours.
 (function() {
-  const PARK_IDS = {
+  // Fallback IDs — overwritten at runtime by resolveParkIds()
+  let PARK_IDS = {
     dl:  '7340550b-c14d-4def-80bb-acbe51cd9ab2',
     dca: '832fcd51-ea19-4e77-85c7-75d5843b127c'
   };
   const PARK_LABELS = { dl: 'Disneyland', dca: 'DCA' };
   const TYPE_EMOJI  = { show:'🎬', character:'🤝', parade:'🎺', fireworks:'✨', event:'🎟' };
   const ADVANCE_MS  = 15000;
-  const CARD_W      = window.innerWidth <= 480 ? 210 : 240;
 
   let widgetCards = [];
   let widgetIdx   = 0;
   let widgetTimer = null;
+
+  // Resolve real entity IDs from the ThemeParks.wiki destinations list
+  async function resolveParkIds() {
+    try {
+      const d = await fetchT('https://api.themeparks.wiki/v1/destinations');
+      const destinations = d.destinations || [];
+      const dlResort = destinations.find(dest => {
+        const s = (dest.slug || dest.name || '').toLowerCase();
+        return s.includes('disneyland') && !s.includes('paris') && !s.includes('tokyo') && !s.includes('hong') && !s.includes('shanghai');
+      });
+      if (!dlResort || !dlResort.parks) return;
+      const parks = dlResort.parks;
+      const dl  = parks.find(p => (p.name||'').toLowerCase().includes('disneyland') && !(p.name||'').toLowerCase().includes('california'));
+      const dca = parks.find(p => (p.name||'').toLowerCase().includes('california'));
+      if (dl)  PARK_IDS.dl  = dl.id;
+      if (dca) PARK_IDS.dca = dca.id;
+    } catch(e) { /* keep fallback IDs */ }
+  }
 
   // ── collapse / expand ──
   let collapsed = false;
@@ -1123,8 +1141,11 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
   window.todayGoTo = function(i){ widgetIdx=i; updateWidgetPos(); };
   window.addEventListener('resize', updateWidgetPos);
 
-  loadWidget();
-  setInterval(loadWidget, 10*60*1000);
+  // Resolve real IDs first, then load
+  resolveParkIds().then(() => {
+    loadWidget();
+    setInterval(loadWidget, 10*60*1000);
+  });
 })();
 </script>
 
