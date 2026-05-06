@@ -397,12 +397,11 @@ body { animation: fadeIn 1.5s ease-out; }
 #today-widget {
   position: fixed;
   /* sits just below the header, above the menu bar */
-  bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   left: 0; right: 0;
   z-index: 100;
-  pointer-events: none; /* let taps pass through to bg when empty */
+  pointer-events: auto;
 }
-#today-widget.has-items { pointer-events: auto; }
 
 #today-track {
   display: flex;
@@ -875,8 +874,7 @@ scScript.onload = function() { scWidget = SC.Widget(document.getElementById('sc-
 function handleMusicBtn() { const btn = document.getElementById('music-btn'); if (!scReady) return; if (scPlaying) { scWidget.pause(); btn.textContent = '♪ Play Music'; } else { scWidget.play(); btn.textContent = '♪ Pause Music'; } }
 
 // ── TODAY IN PARKS WIDGET ──
-// Uses ThemeParks.wiki (free, no key) — shows only what's active/starting soon right now.
-// "Active" = has a performance in the next 90 minutes OR is currently happening.
+// ThemeParks.wiki (free, no key needed) — only shows items active/starting in next 90 min.
 (function() {
   const PARK_IDS = {
     dl:  '7340550b-c14d-4def-80bb-acbe51cd9ab2',
@@ -884,19 +882,18 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
   };
   const PARK_LABELS = { dl: 'Disneyland', dca: 'DCA' };
   const TYPE_EMOJI  = { show:'🎬', character:'🤝', parade:'🎺', fireworks:'✨', event:'🎟' };
+  const ADVANCE_MS  = 15000;
+  const WINDOW_MIN  = 90; // show items starting within this many minutes
 
   let widgetCards = [];
   let widgetIdx   = 0;
   let widgetTimer = null;
-  const ADVANCE_MS = 15000;
+  let apiAttempted = false;
 
-  // Convert "HH:MM" or ISO to today's minutes-since-midnight
   function toMins(t) {
     if (!t) return null;
     try {
-      if (t.includes('T')) {
-        const d = new Date(t); return d.getHours()*60 + d.getMinutes();
-      }
+      if (t.includes('T')) { const d = new Date(t); return d.getHours()*60+d.getMinutes(); }
       const p = t.split(':'); return +p[0]*60 + +p[1];
     } catch { return null; }
   }
@@ -907,13 +904,13 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
       let h, m;
       if (t.includes('T')) { const d = new Date(t); h = d.getHours(); m = d.getMinutes(); }
       else { const p = t.split(':'); h = +p[0]; m = +p[1]; }
-      return (h%12||12) + ':' + String(m).padStart(2,'0') + ' ' + (h>=12?'PM':'AM');
+      return (h%12||12)+':'+String(m).padStart(2,'0')+' '+(h>=12?'PM':'AM');
     } catch { return ''; }
   }
 
   function inferType(name, entityType) {
     const n = (name||'').toLowerCase();
-    if (entityType === 'CHARACTER') return 'character';
+    if (entityType==='CHARACTER') return 'character';
     if (n.includes('parade')||n.includes('cavalcade')) return 'parade';
     if (n.includes('firework')||n.includes('world of color')||n.includes('remember')||n.includes('wondrous')||n.includes('illuminate')) return 'fireworks';
     if (n.includes('meet')||n.includes('greeting')||n.includes('character')) return 'character';
@@ -934,71 +931,70 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
     return PARK_LABELS[park];
   }
 
+  async function fetchWithTimeout(url, ms=8000) {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), ms);
+    try {
+      const r = await fetch(url, { signal: ctrl.signal });
+      clearTimeout(tid);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return await r.json();
+    } catch(e) { clearTimeout(tid); throw e; }
+  }
+
   async function loadWidget() {
+    apiAttempted = true;
     const today = new Date().toISOString().split('T')[0];
     const now   = new Date();
     const nowM  = now.getHours()*60 + now.getMinutes();
-    const WINDOW_AHEAD = 90; // show things starting within 90 minutes
-
     const allItems = [];
 
     for (const pk of ['dl','dca']) {
       try {
-        const childRes = await fetch(`https://api.themeparks.wiki/v1/entity/${PARK_IDS[pk]}/children`);
-        const childData = await childRes.json();
-
-        const ents = (childData.children || []).filter(c =>
-          ['SHOW','CHARACTER','ENTERTAINMENT','PARADE'].includes(c.entityType)
-        ).slice(0, 18); // cap for perf
+        const childData = await fetchWithTimeout(
+          'https://api.themeparks.wiki/v1/entity/'+PARK_IDS[pk]+'/children'
+        );
+        const ents = (childData.children||[])
+          .filter(c => ['SHOW','CHARACTER','ENTERTAINMENT','PARADE'].includes(c.entityType))
+          .slice(0, 18);
 
         await Promise.allSettled(ents.map(async (ent) => {
           try {
-            const sr = await fetch(`https://api.themeparks.wiki/v1/entity/${ent.id}/schedule`);
-            const sd = await sr.json();
-            const todaySlots = (sd.schedule || []).filter(s => s.date === today && s.openingTime);
-
-            // Collect today's performance times
+            const sd = await fetchWithTimeout(
+              'https://api.themeparks.wiki/v1/entity/'+ent.id+'/schedule'
+            );
+            const todaySlots = (sd.schedule||[]).filter(s => s.date===today && s.openingTime);
             const times = todaySlots.map(s => ({
-              label: fmt12(s.openingTime),
-              mins:  toMins(s.openingTime),
+              label:   fmt12(s.openingTime),
+              mins:    toMins(s.openingTime),
               endMins: toMins(s.closingTime)
-            })).filter(t => t.mins !== null).sort((a,b) => a.mins - b.mins);
+            })).filter(t => t.mins!==null).sort((a,b) => a.mins-b.mins);
 
             if (!times.length) return;
 
-            // Find if anything is happening now or soon
             const active = times.filter(t => {
-              const start = t.mins;
-              const end   = t.endMins || (start + 30); // assume 30min if no end time
-              const happeningNow  = nowM >= start && nowM <= end;
-              const startingSoon  = start > nowM && start <= nowM + WINDOW_AHEAD;
-              return happeningNow || startingSoon;
+              const end = t.endMins || (t.mins+30);
+              return (nowM>=t.mins && nowM<=end) || (t.mins>nowM && t.mins<=nowM+WINDOW_MIN);
             });
+            if (!active.length) return;
 
-            if (!active.length) return; // nothing active or upcoming soon — skip
-
-            // Best time to show: the most immediate one
-            const bestTime = active[0];
-            const isNow = bestTime.endMins
-              ? (nowM >= bestTime.mins && nowM <= bestTime.endMins)
-              : (nowM >= bestTime.mins && nowM <= bestTime.mins + 30);
-
+            const best  = active[0];
+            const isNow = nowM>=best.mins && nowM<=(best.endMins||best.mins+30);
             allItems.push({
-              name:    ent.name,
-              type:    inferType(ent.name, ent.entityType),
-              loc:     ent.location || inferLoc(ent.name, pk),
-              park:    pk,
-              time:    bestTime.label,
-              isNow:   isNow,
-              sortKey: bestTime.mins
+              name: ent.name,
+              type: inferType(ent.name, ent.entityType),
+              loc:  ent.location || inferLoc(ent.name, pk),
+              park: pk,
+              time: best.label,
+              isNow,
+              sortKey: best.mins
             });
-          } catch { /* skip individual failures */ }
+          } catch { /* individual show fetch failed — skip */ }
         }));
-      } catch { /* skip park */ }
+      } catch { /* whole park fetch failed — skip */ }
     }
 
-    // Sort: currently-happening first, then by start time
-    allItems.sort((a, b) => {
+    allItems.sort((a,b) => {
       if (a.isNow && !b.isNow) return -1;
       if (!a.isNow && b.isNow) return 1;
       return a.sortKey - b.sortKey;
@@ -1009,33 +1005,32 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
   }
 
   function renderWidget() {
-    const widget  = document.getElementById('today-widget');
-    const track   = document.getElementById('today-cards');
-    const dotsEl  = document.getElementById('today-dots');
+    const track  = document.getElementById('today-cards');
+    const dotsEl = document.getElementById('today-dots');
 
     if (!widgetCards.length) {
-      track.innerHTML = '<div class="today-card"><div class="today-card-body"><div class="today-card-meta" style="color:rgba(255,248,238,0.28);">Nothing scheduled in the next 90 min</div></div></div>';
+      track.innerHTML = '<div class="today-card"><div class="today-card-body">'
+        + '<div class="today-card-name" style="font-size:10px;opacity:0.4;">Nothing scheduled in the next 90 min</div>'
+        + '</div></div>';
       dotsEl.innerHTML = '';
       return;
     }
 
-    widget.classList.add('has-items');
-
-    track.innerHTML = widgetCards.map(item => `
-      <div class="today-card">
-        <div class="today-card-type">${TYPE_EMOJI[item.type]||'🎭'}</div>
-        <div class="today-card-body">
-          <div class="today-card-name">${item.name}</div>
-          <div class="today-card-meta">📍 ${item.loc}</div>
-        </div>
-        <div class="today-card-time">
-          <span class="today-time-pill${item.isNow?' now':''}">${item.isNow ? 'Now' : item.time}</span>
-          <span class="today-park-tag">${PARK_LABELS[item.park]}</span>
-        </div>
-      </div>`).join('');
+    track.innerHTML = widgetCards.map(item =>
+      '<div class="today-card">'
+      + '<div class="today-card-type">'+( TYPE_EMOJI[item.type]||'🎭' )+'</div>'
+      + '<div class="today-card-body">'
+      + '<div class="today-card-name">'+item.name+'</div>'
+      + '<div class="today-card-meta">📍 '+item.loc+'</div>'
+      + '</div>'
+      + '<div class="today-card-time">'
+      + '<span class="today-time-pill'+(item.isNow?' now':'')+'">'+( item.isNow?'Now':item.time )+'</span>'
+      + '<span class="today-park-tag">'+PARK_LABELS[item.park]+'</span>'
+      + '</div></div>'
+    ).join('');
 
     dotsEl.innerHTML = widgetCards.map((_,i) =>
-      `<div class="t-dot${i===0?' active':''}" onclick="todayGoTo(${i})"></div>`
+      '<div class="t-dot'+(i===0?' active':'')+'" onclick="todayGoTo('+i+')"></div>'
     ).join('');
 
     widgetIdx = 0;
@@ -1044,8 +1039,7 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
   }
 
   function updateWidgetPos() {
-    const track = document.getElementById('today-cards');
-    track.style.transform = `translateX(-${widgetIdx * 100}%)`;
+    document.getElementById('today-cards').style.transform = 'translateX(-'+(widgetIdx*100)+'%)';
     document.querySelectorAll('.t-dot').forEach((d,i) => d.classList.toggle('active', i===widgetIdx));
   }
 
@@ -1053,24 +1047,20 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
     if (widgetTimer) clearInterval(widgetTimer);
     const bar = document.getElementById('today-progress');
     bar.style.transition = 'none'; bar.style.width = '0%';
-    setTimeout(() => { bar.style.transition = `width ${ADVANCE_MS}ms linear`; bar.style.width = '100%'; }, 40);
+    setTimeout(() => { bar.style.transition = 'width '+ADVANCE_MS+'ms linear'; bar.style.width = '100%'; }, 40);
     widgetTimer = setInterval(() => {
       if (!widgetCards.length) return;
-      widgetIdx = (widgetIdx + 1) % widgetCards.length;
+      widgetIdx = (widgetIdx+1) % widgetCards.length;
       updateWidgetPos();
       bar.style.transition = 'none'; bar.style.width = '0%';
-      setTimeout(() => { bar.style.transition = `width ${ADVANCE_MS}ms linear`; bar.style.width = '100%'; }, 40);
+      setTimeout(() => { bar.style.transition = 'width '+ADVANCE_MS+'ms linear'; bar.style.width = '100%'; }, 40);
     }, ADVANCE_MS);
   }
 
   window.todayGoTo = function(i) { widgetIdx = i; updateWidgetPos(); };
 
-  // Kick off — slight delay so page load feels snappy first
-  setTimeout(loadWidget, 800);
-  // Refresh every 10 min so "now" status stays accurate
-  setInterval(loadWidget, 10 * 60 * 1000);
+  loadWidget(); // fire immediately — no delay
+  setInterval(loadWidget, 10*60*1000);
 })();
-</script>
-
-</body>
+</script></body>
 </html>
