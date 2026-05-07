@@ -608,7 +608,7 @@ function handleMusicBtn() {
     /* TODO: swap URL for a WDW / BoardWalk ambient track */
     iframe.src='https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/andrew-cooke-712519831/walt-disney-world-boardwalk&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false';
     const s=document.createElement('script'); s.src='https://w.soundcloud.com/player/api.js'; document.head.appendChild(s);
-    s.onload=function(){ scWidget=SC.Widget(iframe); scWidget.bind(SC.Widget.Events.READY,function(){ scReady=true; scWidget.setVolume(40); scWidget.play(); scPlaying=true; btn.textContent='♪ Pause Music'; }); scWidget.bind(SC.Widget.Events.PLAY,function(){ scPlaying=true; btn.textContent='♪ Pause Music'; }); scWidget.bind(SC.Widget.Events.PAUSE,function(){ scPlaying=false; btn.textContent='♪ Play Music'; }); };
+    s.onload=function(){ scWidget=SC.Widget(iframe); scWidget.bind(SC.Widget.Events.READY,function(){ scReady=true; scWidget.setVolume(40); scWidget.play(); scPlaying=true; btn.textContent='♪ Pause Music'; }); scWidget.bind(SC.Widget.Events.PLAY,function(){ scPlaying=true; btn.textContent='♪ Pause Music'; }); scWidget.bind(SC.Widget.Events.PAUSE,function(){ scPlaying=false; btn.textContent='♪ Play Music'; }); scWidget.bind(SC.Widget.Events.FINISH,function(){ scWidget.seekTo(0); scWidget.play(); }); };
     return;
   }
   if (!scReady) return;
