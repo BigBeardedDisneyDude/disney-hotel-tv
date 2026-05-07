@@ -896,7 +896,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 
 const scScript = document.createElement('script'); scScript.src = 'https://w.soundcloud.com/player/api.js'; document.head.appendChild(scScript);
 let scWidget = null, scReady = false, scPlaying = false;
-scScript.onload = function() { scWidget = SC.Widget(document.getElementById('sc-player')); scWidget.bind(SC.Widget.Events.READY, function() { scReady = true; scWidget.setVolume(40); }); scWidget.bind(SC.Widget.Events.PLAY, function() { scPlaying = true; }); scWidget.bind(SC.Widget.Events.PAUSE, function() { scPlaying = false; }); };
+scScript.onload = function() { scWidget = SC.Widget(document.getElementById('sc-player')); scWidget.bind(SC.Widget.Events.READY, function() { scReady = true; scWidget.setVolume(40); }); scWidget.bind(SC.Widget.Events.PLAY, function() { scPlaying = true; }); scWidget.bind(SC.Widget.Events.PAUSE, function() { scPlaying = false; }); scWidget.bind(SC.Widget.Events.FINISH, function() { scWidget.seekTo(0); scWidget.play(); }); };
 function handleMusicBtn() { const btn = document.getElementById('music-btn'); if (!scReady) return; if (scPlaying) { scWidget.pause(); btn.textContent = '♪ Play Music'; } else { scWidget.play(); btn.textContent = '♪ Pause Music'; } }
 
 // ── TODAY IN PARKS WIDGET ──
