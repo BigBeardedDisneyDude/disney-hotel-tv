@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WDW TV — Walt Disney World Resort</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -202,94 +202,83 @@
     }
 
     #footer-top-rule {
-      height: 1px;
-      background: linear-gradient(90deg, transparent 0%, var(--tan-dark) 20%, var(--tan-light) 50%, var(--tan-dark) 80%, transparent 100%);
-      opacity: 0.4;
+      height: 1.5px;
+      background: rgba(255,220,100,0.4);
     }
 
     #footer-inner {
-      background: var(--green-deep);
-      padding: 10px 24px 12px;
+      background: linear-gradient(180deg, #c8921e 0%, #a07820 100%);
+      padding: 8px 24px;
+      padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
       display: flex; align-items: center; justify-content: space-between;
       gap: 12px; position: relative;
     }
 
-    #footer-bottom-rule {
-      height: 3px;
-      background: linear-gradient(90deg,
-        var(--tan-dark) 0%, var(--tan-light) 30%,
-        var(--tan-pale) 50%, var(--tan-light) 70%, var(--tan-dark) 100%
-      );
-    }
+    #footer-bottom-rule { display: none; }
 
     #footer-left { display: flex; flex-direction: column; gap: 3px; }
     #footer-tagline {
       font-family: 'Cormorant Garamond', serif; font-style: italic;
       font-size: clamp(11px, 2.5vw, 14px);
-      color: var(--warm-white); letter-spacing: 0.03em; opacity: 0.9;
+      color: rgba(20,50,65,0.88); letter-spacing: 0.03em;
     }
     #footer-resort {
       font-family: 'Raleway', sans-serif; font-weight: 200;
       font-size: clamp(7px, 1.5vw, 9px);
       letter-spacing: 0.32em; text-transform: uppercase;
-      color: var(--green-pale); opacity: 0.65;
+      color: rgba(20,50,65,0.6);
     }
 
-    #footer-nav { display: flex; align-items: center; gap: 6px; }
+    #footer-nav { display: flex; align-items: center; flex: 1; justify-content: flex-end; }
 
-    .nav-btn {
-      display: flex; flex-direction: column; align-items: center; gap: 3px;
-      background: none; border: 1px solid rgba(200,169,110,0.28);
-      border-radius: 4px; padding: 6px 16px;
-      cursor: pointer; transition: all 0.2s;
+    .menu-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px; cursor: pointer;
+      transition: transform 0.3s ease, filter 0.3s;
+      flex: 1; min-width: 0;
+      padding: 6px 4px; border-radius: 4px;
+      position: relative;
     }
-    .nav-btn:hover { background: rgba(200,169,110,0.12); border-color: rgba(200,169,110,0.55); }
-    .nav-btn-label {
-      font-family: 'Raleway', sans-serif; font-weight: 300;
-      font-size: clamp(9px, 2vw, 11px);
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--tan-light); white-space: nowrap;
+    .menu-item::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(255,255,255,0.0); border-radius: 4px; transition: background 0.25s;
     }
-    .nav-btn-sub {
-      font-family: 'Raleway', sans-serif; font-weight: 200;
-      font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase;
-      color: rgba(200,169,110,0.4);
-    }
-    @media (max-width: 520px) { .nav-btn-sub { display: none; } }
-
-    .nav-divider {
-      width: 1px; height: 32px;
-      background: linear-gradient(180deg, transparent, rgba(200,169,110,0.2), transparent);
-      flex-shrink: 0;
-    }
+    .menu-item:hover { transform: translateY(-3px); filter: brightness(1.15); }
+    .menu-item:hover::after { background: rgba(255,255,255,0.08); }
+    .menu-icon { width: clamp(28px, 7vw, 40px); height: clamp(28px, 7vw, 40px); display: flex; align-items: center; justify-content: center; }
+    .menu-icon svg { width: 100%; height: 100%; fill: rgba(20,50,65,0.9); }
+    .menu-label { font-family: 'Cinzel', serif; font-weight: 600; font-size: clamp(8px, 2vw, 11px); letter-spacing: 0.12em; color: rgba(20,50,65,0.92); text-transform: uppercase; text-align: center; line-height: 1.2; }
+    .menu-sublabel { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: clamp(7px, 1.5vw, 9px); letter-spacing: 0.1em; color: rgba(20,50,65,0.6); text-transform: uppercase; text-align: center; }
+    @media (max-width: 520px) { .menu-sublabel { display: none; } }
+    .menu-divider { width: 1px; height: 48px; background: linear-gradient(180deg, transparent, rgba(20,50,65,0.2), transparent); flex-shrink: 0; }
 
     #music-btn {
       position: absolute; top: 0; left: 50%;
       transform: translate(-50%, -100%);
-      background: var(--green-deep);
-      border: 1px solid rgba(200,169,110,0.35); border-bottom: none;
-      border-radius: 10px 10px 0 0;
-      padding: 4px 16px 5px;
-      color: var(--tan-light);
+      background: #163444;
+      border: 1px solid rgba(201,168,76,0.4); border-bottom: none;
+      border-radius: 14px 14px 0 0;
+      padding: 4px 14px 5px;
+      color: #e8cc7a;
       font-family: 'Raleway', sans-serif; font-size: 9px; font-weight: 300;
       letter-spacing: 0.28em; text-transform: uppercase;
       cursor: pointer; white-space: nowrap; transition: background 0.2s;
     }
-    #music-btn:hover { background: rgba(200,169,110,0.1); }
+    #music-btn:hover { background: rgba(201,168,76,0.2); }
 
     #gear-btn {
       position: fixed;
       bottom: calc(70px + env(safe-area-inset-bottom, 0px));
       right: 16px; z-index: 102;
       width: 34px; height: 34px;
-      background: var(--green-deep);
-      border: 1px solid rgba(200,169,110,0.3); border-radius: 50%;
+      background: #163444;
+      border: 1px solid rgba(201,168,76,0.3); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; transition: all 0.3s;
     }
-    #gear-btn:hover { background: rgba(200,169,110,0.12); border-color: rgba(200,169,110,0.65); transform: rotate(30deg); }
-    #gear-btn svg { width: 16px; height: 16px; fill: rgba(200,169,110,0.7); transition: fill 0.2s; }
-    #gear-btn:hover svg { fill: var(--tan-light); }
+    #gear-btn:hover { background: rgba(201,168,76,0.15); border-color: rgba(201,168,76,0.7); transform: rotate(30deg); }
+    #gear-btn svg { width: 16px; height: 16px; fill: rgba(201,168,76,0.7); transition: fill 0.2s; }
+    #gear-btn:hover svg { fill: #e8cc7a; }
 
     /* ── MODAL ── */
     #modal-overlay {
@@ -436,20 +425,67 @@
       <div id="footer-resort">Walt Disney World · Orlando, Florida</div>
     </div>
     <div id="footer-nav">
-      <button class="nav-btn" onclick="window.location.href='wdwwait.html'">
-        <div class="nav-btn-label">Wait Times</div>
-        <div class="nav-btn-sub">Live Data</div>
-      </button>
-      <div class="nav-divider"></div>
-      <button class="nav-btn" onclick="window.open('https://disneyworld.disney.go.com/maps/', '_blank')">
-        <div class="nav-btn-label">Resort Map</div>
-        <div class="nav-btn-sub">Navigate</div>
-      </button>
-      <div class="nav-divider"></div>
-      <button class="nav-btn" onclick="window.open('https://disneyworld.disney.go.com/dining/', '_blank')">
-        <div class="nav-btn-label">Dining</div>
-        <div class="nav-btn-sub">Reservations</div>
-      </button>
+
+      <!-- Updates -->
+      <div class="menu-item" onclick="window.location.href='updates.html'">
+        <div class="menu-icon">
+          <svg viewBox="0 0 36 36"><circle cx="11" cy="9" r="6"/><circle cx="25" cy="9" r="6"/><circle cx="18" cy="22" r="11"/></svg>
+        </div>
+        <div class="menu-label">Disney<br>Updates</div>
+      </div>
+
+      <div class="menu-divider"></div>
+
+      <!-- Wait Times -->
+      <div class="menu-item" onclick="window.location.href='wdwwait.html'">
+        <div class="menu-icon">
+          <svg viewBox="0 0 36 36">
+            <rect x="13" y="18" width="10" height="14"/>
+            <rect x="9" y="22" width="6" height="10"/>
+            <rect x="21" y="22" width="6" height="10"/>
+            <rect x="10" y="18" width="4" height="6"/>
+            <rect x="22" y="18" width="4" height="6"/>
+            <polygon points="18,4 22,12 14,12"/>
+            <rect x="10" y="14" width="4" height="5"/>
+            <rect x="22" y="14" width="4" height="5"/>
+            <rect x="15" y="24" width="6" height="8"/>
+          </svg>
+        </div>
+        <div class="menu-label">Wait<br>Times</div>
+      </div>
+
+      <div class="menu-divider"></div>
+
+      <!-- Resort Map -->
+      <div class="menu-item" onclick="window.open('https://disneyworld.disney.go.com/maps/', '_blank')">
+        <div class="menu-icon">
+          <svg viewBox="0 0 36 36">
+            <polygon points="2,6 12,2 24,6 34,2 34,30 24,34 12,30 2,34" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5"/>
+            <polygon points="2,6 12,2 24,6 34,2 34,30 24,34 12,30 2,34"/>
+            <polyline points="12,2 12,30" stroke="rgba(180,138,42,0.7)" stroke-width="1.5" fill="none"/>
+            <polyline points="24,6 24,34" stroke="rgba(180,138,42,0.7)" stroke-width="1.5" fill="none"/>
+          </svg>
+        </div>
+        <div class="menu-label">Resort<br>Map</div>
+        <div class="menu-sublabel">Navigate</div>
+      </div>
+
+      <div class="menu-divider"></div>
+
+      <!-- Dining -->
+      <div class="menu-item" onclick="window.open('https://disneyworld.disney.go.com/dining/', '_blank')">
+        <div class="menu-icon">
+          <svg viewBox="0 0 36 36">
+            <rect x="6.5" y="2" width="2.5" height="32" rx="1.2"/>
+            <path d="M5,2 Q5,11 9,15 Q13,11 13,2Z"/>
+            <rect x="25" y="2" width="2.5" height="32" rx="1.2"/>
+            <path d="M22,2 Q22,10 27.5,14 Q27.5,2 27.5,2Z"/>
+          </svg>
+        </div>
+        <div class="menu-label">Dining</div>
+        <div class="menu-sublabel">Reservations</div>
+      </div>
+
     </div>
   </div>
   <div id="footer-bottom-rule"></div>
@@ -569,7 +605,7 @@ function handleMusicBtn() {
   const btn=document.getElementById('music-btn'), iframe=document.getElementById('sc-player');
   if (iframe.src==='about:blank') {
     /* TODO: swap URL for a WDW / BoardWalk ambient track */
-    iframe.src='https://soundcloud.com/andrew-cooke-712519831/walt-disney-world-boardwalk?si=b8b55ca2abf44b99999946ab7af83ffc&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing';
+    iframe.src='https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/andrew-cooke-712519831/walt-disney-world-boardwalk&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false';
     const s=document.createElement('script'); s.src='https://w.soundcloud.com/player/api.js'; document.head.appendChild(s);
     s.onload=function(){ scWidget=SC.Widget(iframe); scWidget.bind(SC.Widget.Events.READY,function(){ scReady=true; scWidget.setVolume(40); scWidget.play(); scPlaying=true; btn.textContent='♪ Pause Music'; }); scWidget.bind(SC.Widget.Events.PLAY,function(){ scPlaying=true; btn.textContent='♪ Pause Music'; }); scWidget.bind(SC.Widget.Events.PAUSE,function(){ scPlaying=false; btn.textContent='♪ Play Music'; }); };
     return;
