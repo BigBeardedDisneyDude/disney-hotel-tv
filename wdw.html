@@ -569,7 +569,7 @@ function handleMusicBtn() {
   const btn=document.getElementById('music-btn'), iframe=document.getElementById('sc-player');
   if (iframe.src==='about:blank') {
     /* TODO: swap URL for a WDW / BoardWalk ambient track */
-    iframe.src='https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/dreamfields-870226399/new-disneyland-resort-esplanade-area-music-loop&auto_play=true&hide_related=true&show_comments=false&show_user=false&visual=false';
+    iframe.src='https://soundcloud.com/andrew-cooke-712519831/walt-disney-world-boardwalk?si=b8b55ca2abf44b99999946ab7af83ffc&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing';
     const s=document.createElement('script'); s.src='https://w.soundcloud.com/player/api.js'; document.head.appendChild(s);
     s.onload=function(){ scWidget=SC.Widget(iframe); scWidget.bind(SC.Widget.Events.READY,function(){ scReady=true; scWidget.setVolume(40); scWidget.play(); scPlaying=true; btn.textContent='♪ Pause Music'; }); scWidget.bind(SC.Widget.Events.PLAY,function(){ scPlaying=true; btn.textContent='♪ Pause Music'; }); scWidget.bind(SC.Widget.Events.PAUSE,function(){ scPlaying=false; btn.textContent='♪ Play Music'; }); };
     return;
