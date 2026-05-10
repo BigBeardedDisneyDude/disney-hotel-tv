@@ -17,7 +17,7 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           node << 'EOF'
-          const PARKS = { dl: 16, dca: 17 };
+          const PARKS = { dl: 16, dca: 17, mk: 7 };
 
           // Derive context columns so queries stay fast and simple
           function getContext(date) {
@@ -77,7 +77,7 @@ jobs:
             }
 
             if (rows.length === 0) {
-              console.log('No rows to insert — both parks may have failed');
+              console.log('No rows to insert — all parks may have failed');
               return;
             }
 
