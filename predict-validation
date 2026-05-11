@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Prediction Accuracy – Magic Key TV</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal:#0a4a4a; --gold:#c9a84c; --gold-light:#e8c96d; --gold-dim:#8a6e2f;
+  --cream:#fdf6e3; --cream-dark:#f5e8c0; --card:#fff9ee;
+  --text:#1a1208; --muted:#5a4a2a;
+  --green:#2d6a2d; --green-bg:#e8f5e8;
+  --yellow:#8a7000; --yellow-bg:#fff8d6;
+  --red:#8a2020; --red-bg:#ffeaea;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;overflow-x:hidden}
+body{background:var(--cream);font-family:'Crimson Pro',Georgia,serif;color:var(--text);min-height:100%;display:flex;flex-direction:column;overflow-x:hidden}
+header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;position:sticky;top:0;z-index:50;gap:.6rem}
+.hdr-left{display:flex;align-items:center;gap:.65rem;min-width:0;flex:1;overflow:hidden}
+.home-btn{font-family:'Cinzel',serif;font-size:.6rem;color:var(--gold);text-decoration:none;letter-spacing:.07em;opacity:.75;transition:opacity .2s;white-space:nowrap;flex-shrink:0}
+.hdr-div{width:1px;height:16px;background:var(--gold-dim);opacity:.4;flex-shrink:0}
+.hdr-title{font-family:'Cinzel',serif;font-size:.78rem;font-weight:600;color:var(--gold-light);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-right{display:flex;align-items:center;gap:.55rem;flex-shrink:0}
+.badge{font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.09em;padding:.14rem .4rem;border-radius:999px;white-space:nowrap}
+.badge-loading{background:rgba(138,112,0,.18);color:var(--gold);border:1px solid rgba(201,168,76,.28)}
+.badge-ok{background:rgba(45,106,45,.22);color:#7ec87e;border:1px solid rgba(126,200,126,.28)}
+.badge-err{background:rgba(138,32,32,.18);color:#d47070;border:1px solid rgba(212,112,112,.28)}
+
+main{flex:1;padding:1rem 1rem 3rem;display:flex;flex-direction:column;gap:1.25rem}
+@media(min-width:600px){main{padding:1.35rem 1.75rem 3rem;gap:1.5rem}}
+
+/* Controls */
+.controls{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
+.tabs{display:flex;border:1.5px solid var(--gold-dim);border-radius:6px;overflow:hidden;width:fit-content}
+.tab{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.06em;padding:.4rem .9rem;border:none;cursor:pointer;background:transparent;color:var(--gold-dim);transition:all .2s;border-right:1px solid var(--gold-dim)}
+.tab:last-child{border-right:none}
+.tab.on{background:var(--teal);color:var(--gold-light)}
+.tab:not(.on):hover{background:var(--cream-dark);color:var(--teal)}
+select{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.05em;color:var(--teal);background:var(--card);border:1px solid var(--gold-dim);border-radius:5px;padding:.3rem .6rem;cursor:pointer;outline:none}
+
+/* Summary cards */
+.summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem}
+@media(min-width:480px){.summary-grid{grid-template-columns:repeat(4,1fr)}}
+.scard{background:var(--card);border:1px solid rgba(138,110,47,.2);border-radius:8px;padding:.7rem .9rem}
+.scard-lbl{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.09em;color:var(--muted);text-transform:uppercase;margin-bottom:.2rem}
+.scard-val{font-family:'Cinzel',serif;font-size:1.4rem;font-weight:600;color:var(--teal);line-height:1}
+.scard-sub{font-size:.62rem;color:var(--muted);font-style:italic;margin-top:.12rem}
+
+/* Section headers */
+.sec-hdr{font-family:'Cinzel',serif;font-size:.64rem;font-weight:600;color:var(--teal);letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--gold-dim);padding-bottom:.32rem;margin-bottom:.75rem;display:flex;align-items:center;gap:.6rem}
+.sec-badge{font-family:'Cinzel',serif;font-size:.46rem;letter-spacing:.08em;padding:.1rem .38rem;border-radius:999px;background:rgba(10,74,74,.08);color:var(--teal);border:1px solid rgba(10,74,74,.15)}
+
+/* Ride selector */
+.ride-pick-wrap{position:relative}
+.ride-pick-wrap select{width:100%;max-width:400px;font-size:.65rem;padding:.4rem .7rem}
+
+/* Chart area */
+.chart-section{background:var(--card);border:1px solid rgba(138,110,47,.18);border-radius:10px;padding:1rem 1rem .8rem}
+.chart-meta{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.65rem;flex-wrap:wrap}
+.chart-ride-name{font-family:'Cinzel',serif;font-size:.75rem;font-weight:600;color:var(--teal)}
+.chart-land{font-size:.68rem;color:var(--muted);font-style:italic}
+.chart-wrap{position:relative;width:100%;height:180px}
+@media(min-width:500px){.chart-wrap{height:210px}}
+canvas{width:100%!important;height:100%!important}
+
+.chart-legend{display:flex;gap:1rem;margin-top:.55rem;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:.3rem;font-size:.62rem;color:var(--muted);font-style:italic}
+.leg-dot{width:10px;height:3px;border-radius:2px;flex-shrink:0}
+
+/* Stats row */
+.chart-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:.75rem}
+.cstat{background:var(--cream-dark);border-radius:6px;padding:.45rem .6rem}
+.cstat-lbl{font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:.14rem}
+.cstat-val{font-family:'Cinzel',serif;font-size:.88rem;font-weight:600;color:var(--teal)}
+.cstat-sub{font-size:.58rem;color:var(--muted);font-style:italic;margin-top:.06rem}
+
+/* Drift pill */
+.drift-pill{display:inline-block;font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.06em;padding:.13rem .42rem;border-radius:999px}
+.drift-good{background:var(--green-bg);color:var(--green)}
+.drift-warn{background:var(--yellow-bg);color:var(--yellow)}
+.drift-bad{background:var(--red-bg);color:var(--red)}
+.drift-none{background:rgba(90,74,42,.1);color:var(--muted)}
+
+/* Leaderboard table */
+.ride-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.ride-table th{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;text-align:left;padding:.3rem .5rem;border-bottom:1px solid rgba(138,110,47,.2);white-space:nowrap}
+.ride-table th.right{text-align:right}
+.ride-table td{padding:.38rem .5rem;border-bottom:1px solid rgba(138,110,47,.1);vertical-align:middle;cursor:pointer}
+.ride-table tr:last-child td{border-bottom:none}
+.ride-table tr:hover td{background:rgba(201,168,76,.07)}
+.ride-table tr.selected td{background:rgba(10,74,74,.06)}
+.rname-cell{font-family:'Cinzel',serif;font-size:.63rem;color:var(--teal);line-height:1.3}
+.land-cell{font-size:.58rem;color:var(--muted);font-style:italic}
+.num-cell{text-align:right;font-family:'Cinzel',serif;font-size:.72rem;color:var(--teal);white-space:nowrap}
+
+/* Trend sparklines */
+.spark-wrap{display:flex;align-items:center;gap:3px;height:18px}
+.spark-bar{width:6px;border-radius:2px 2px 0 0;background:var(--teal);opacity:.6;align-self:flex-end;transition:opacity .2s}
+
+/* Hour-by-hour comparison bars */
+.hour-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;margin-top:.5rem}
+@media(min-width:500px){.hour-grid{grid-template-columns:repeat(18,1fr)}}
+.hour-col{display:flex;flex-direction:column;align-items:center;gap:2px}
+.hour-bar-wrap{height:60px;display:flex;align-items:flex-end;gap:1px;width:100%}
+.hbar{flex:1;border-radius:2px 2px 0 0;min-height:2px;transition:height .4s}
+.hbar-real{background:var(--teal)}
+.hbar-pred{background:var(--gold);opacity:.7}
+.hour-lbl{font-family:'Cinzel',serif;font-size:.38rem;color:var(--muted);letter-spacing:.03em;white-space:nowrap}
+.hour-note{font-size:.58rem;color:var(--muted);font-style:italic;margin-top:.4rem}
+
+/* Empty / loading */
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--gold-dim);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:.35rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{font-style:italic;color:var(--muted);font-size:.8rem;padding:1.5rem 0;text-align:center}
+
+/* Accuracy over time section */
+.timeline-wrap{overflow-x:auto;padding-bottom:.25rem}
+.timeline-canvas-wrap{position:relative;height:120px;min-width:300px}
+
+.note{font-size:.65rem;color:var(--muted);font-style:italic;line-height:1.5}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-left">
+    <a class="home-btn" href="index.html">← Home</a>
+    <div class="hdr-div"></div>
+    <div class="hdr-title">Prediction Accuracy Validator</div>
+  </div>
+  <div class="hdr-right">
+    <span class="badge badge-loading" id="badge"><span class="spinner"></span>Loading</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="tabs">
+      <button class="tab on" onclick="switchPark('dl',this)">Disneyland</button>
+      <button class="tab" onclick="switchPark('dca',this)">DCA</button>
+    </div>
+    <select id="day-sel" onchange="reload()">
+      <option value="">All day types</option>
+      <option value="0">Sunday</option>
+      <option value="1">Monday</option>
+      <option value="2">Tuesday</option>
+      <option value="3">Wednesday</option>
+      <option value="4">Thursday</option>
+      <option value="5">Friday</option>
+      <option value="6">Saturday</option>
+    </select>
+    <select id="season-sel" onchange="reload()">
+      <option value="">All seasons</option>
+      <option value="regular">Regular</option>
+      <option value="summer">Summer</option>
+      <option value="spring_break">Spring Break</option>
+      <option value="holiday">Holiday</option>
+    </select>
+  </div>
+
+  <!-- Summary stats -->
+  <div class="summary-grid">
+    <div class="scard">
+      <div class="scard-lbl">Avg Drift</div>
+      <div class="scard-val" id="s-drift">–</div>
+      <div class="scard-sub">predicted vs. actual (min)</div>
+    </div>
+    <div class="scard">
+      <div class="scard-lbl">Rides Validated</div>
+      <div class="scard-val" id="s-rides">–</div>
+      <div class="scard-sub">with ≥10 samples</div>
+    </div>
+    <div class="scard">
+      <div class="scard-lbl">Best Match</div>
+      <div class="scard-val" id="s-best" style="font-size:.85rem;line-height:1.2;margin-top:.1rem">–</div>
+      <div class="scard-sub" id="s-best-drift"></div>
+    </div>
+    <div class="scard">
+      <div class="scard-lbl">Worst Match</div>
+      <div class="scard-val" id="s-worst" style="font-size:.85rem;line-height:1.2;margin-top:.1rem">–</div>
+      <div class="scard-sub" id="s-worst-drift"></div>
+    </div>
+  </div>
+
+  <!-- Per-ride chart -->
+  <div>
+    <div class="sec-hdr">
+      Hour-by-Hour: Predicted vs. Actual
+      <span class="sec-badge">Click any ride below</span>
+    </div>
+    <div id="chart-area">
+      <div class="empty">Select a ride from the table below to see its chart</div>
+    </div>
+  </div>
+
+  <!-- Ride breakdown table -->
+  <div>
+    <div class="sec-hdr">All Rides — Drift Leaderboard</div>
+    <div style="overflow-x:auto">
+      <div id="table-wrap"><div class="empty"><span class="spinner"></span>Fetching from Supabase…</div></div>
+    </div>
+    <p class="note" style="margin-top:.6rem">
+      Drift = average |predicted − actual| across all qualifying hour slots (≥10 samples).
+      Green ≤ 8 min · Yellow ≤ 18 min · Red &gt; 18 min · Click a row to see its hour chart.
+    </p>
+  </div>
+
+</main>
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://qumvjdwimpvnaijjwght.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1bXZqZHdpbXB2bmFpamp3Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NzQ4ODcsImV4cCI6MjA5MzQ1MDg4N30.BjBeX8GSZkZoUnW3Ecy3MTPdHVV-6E2U1oJnVHiyr5I';
+const MIN_SAMPLES = 10;
+const HRS = ['6a','7a','8a','9a','10a','11a','12p','1p','2p','3p','4p','5p','6p','7p','8p','9p','10p','11p'];
+const HRS_FULL = ['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm','11pm'];
+
+// ── RIDE DATA ─────────────────────────────────────────────────────────────────
+const DL = [
+  {id:'indy',name:'Indiana Jones Adventure',land:'Adventureland',p:[10,10,20,40,60,75,80,75,70,65,60,60,65,70,65,55,45,30]},
+  {id:'jungle',name:'Jungle Cruise',land:'Adventureland',p:[5,5,10,20,30,40,45,45,40,35,30,35,40,45,40,30,20,10]},
+  {id:'potc',name:'Pirates of the Caribbean',land:'New Orleans Square',p:[5,5,5,10,20,30,35,40,35,30,25,30,35,40,35,25,20,10]},
+  {id:'hm',name:'Haunted Mansion',land:'New Orleans Square',p:[5,5,5,10,20,35,40,45,40,35,30,35,40,50,45,35,25,15]},
+  {id:'splash',name:"Tiana's Bayou Adventure",land:'Bayou Country',p:[5,5,10,25,45,65,70,65,60,55,50,55,65,70,60,45,30,15]},
+  {id:'pooh',name:"Winnie the Pooh",land:'Bayou Country',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'btmr',name:'Big Thunder Mountain',land:'Frontierland',p:[5,5,10,25,40,55,60,65,60,55,50,55,60,65,60,50,40,25]},
+  {id:'matterhorn',name:'Matterhorn Bobsleds',land:'Fantasyland',p:[5,5,10,20,35,55,65,70,65,60,55,50,55,65,60,50,40,30]},
+  {id:'peter',name:"Peter Pan's Flight",land:'Fantasyland',p:[10,10,20,35,50,65,70,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'pinoc',name:"Pinocchio's Daring Journey",land:'Fantasyland',p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,5,5]},
+  {id:'dumbo',name:'Dumbo',land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'alice',name:'Alice in Wonderland',land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'toad',name:"Mr. Toad's Wild Ride",land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'snow',name:"Snow White's Enchanted Wish",land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'carousel',name:'King Arthur Carrousel',land:'Fantasyland',p:[5,5,5,5,10,10,10,10,10,10,10,10,10,10,10,5,5,5]},
+  {id:'casey',name:'Casey Jr. Circus Train',land:'Fantasyland',p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'storybook',name:'Storybook Land Canal Boats',land:'Fantasyland',p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'smallworld',name:"it's a small world",land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
+  {id:'mmrr',name:"Mickey & Minnie's Runaway Railway",land:'Toontown',p:[10,15,25,40,55,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'roger',name:"Roger Rabbit's Car Toon Spin",land:'Toontown',p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'gadget',name:"Chip 'n' Dale's GADGETcoaster",land:'Toontown',p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'space',name:'Space Mountain',land:'Tomorrowland',p:[5,5,10,25,45,65,70,75,70,65,60,65,70,75,70,55,45,30]},
+  {id:'buzz',name:'Buzz Lightyear Astro Blasters',land:'Tomorrowland',p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'autopia',name:'Autopia',land:'Tomorrowland',p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'nemo',name:'Finding Nemo Submarine Voyage',land:'Tomorrowland',p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'astro',name:'Astro Orbitor',land:'Tomorrowland',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
+  {id:'startours',name:"Star Tours",land:'Tomorrowland',p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'rotr',name:"Rise of the Resistance",land:"Galaxy's Edge",p:[20,30,50,75,100,120,120,110,100,95,90,95,110,115,100,80,60,40]},
+  {id:'falcon',name:"Millennium Falcon: Smugglers Run",land:"Galaxy's Edge",p:[10,15,30,50,70,85,90,85,80,70,65,70,80,85,75,60,45,30]},
+];
+const DCA = [
+  {id:'rsr',name:'Radiator Springs Racers',land:'Cars Land',p:[20,30,55,80,100,115,110,105,95,90,85,90,100,110,100,80,60,40]},
+  {id:'luigi',name:"Luigi's Rollickin' Roadsters",land:'Cars Land',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,8,5]},
+  {id:'mater',name:"Mater's Junkyard Jamboree",land:'Cars Land',p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
+  {id:'gotg',name:'Guardians — Mission: BREAKOUT!',land:'Avengers Campus',p:[15,15,25,45,65,80,85,80,75,70,65,70,75,80,70,55,45,30]},
+  {id:'spidey',name:'WEB SLINGERS: Spider-Man',land:'Avengers Campus',p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'incred',name:'Incredicoaster',land:'Pixar Pier',p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'tsmm',name:'Toy Story Midway Mania!',land:'Pixar Pier',p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'insideout',name:'Inside Out Emotional Whirlwind',land:'Pixar Pier',p:[10,10,20,30,45,55,60,55,50,45,40,45,50,55,50,40,30,15]},
+  {id:'jessie',name:"Jessie's Critter Carousel",land:'Pixar Pier',p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'soarin',name:"Soarin' Around the World",land:'Grizzly Peak',p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'grizzly',name:'Grizzly River Run',land:'Grizzly Peak',p:[5,5,10,20,35,55,60,55,50,45,45,50,55,60,55,40,30,15]},
+  {id:'monsters',name:"Monsters, Inc.",land:'Hollywood Land',p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,8,5]},
+  {id:'mermaid',name:"Little Mermaid — Ariel's Adventure",land:'Paradise Gardens Park',p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,8,5]},
+  {id:'goofy',name:"Goofy's Sky School",land:'Paradise Gardens Park',p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let park = 'dl';
+let rideStats = [];
+let selectedRideId = null;
+let charts = {};
+
+function getRideList() { return park === 'dl' ? DL : DCA; }
+
+function switchPark(p, btn) {
+  park = p;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  selectedRideId = null;
+  reload();
+}
+
+function reload() {
+  document.getElementById('table-wrap').innerHTML = '<div class="empty"><span class="spinner"></span>Fetching from Supabase…</div>';
+  document.getElementById('chart-area').innerHTML = '<div class="empty">Select a ride from the table below to see its chart</div>';
+  setBadge('loading');
+  loadData();
+}
+
+function setBadge(state, text) {
+  const el = document.getElementById('badge');
+  el.className = 'badge badge-' + state;
+  if (state === 'loading') el.innerHTML = '<span class="spinner"></span>Loading';
+  else el.textContent = text || '● Ready';
+}
+
+// ── SUPABASE FETCH ─────────────────────────────────────────────────────────────
+async function loadData() {
+  const dayVal = document.getElementById('day-sel').value;
+  const seasonVal = document.getElementById('season-sel').value;
+
+  const params = new URLSearchParams({
+    select: 'ride_name,hour_of_day,wait_time',
+    park: `eq.${park}`,
+    is_open: 'eq.true',
+    wait_time: 'gte.1',
+    order: 'ride_name,hour_of_day',
+    limit: 100000
+  });
+  if (dayVal) params.set('day_of_week', `eq.${dayVal}`);
+  if (seasonVal) params.set('season', `eq.${seasonVal}`);
+
+  let rows;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times?${params}`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+      signal: AbortSignal.timeout(15000)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    rows = await res.json();
+  } catch(e) {
+    setBadge('err', '● Error');
+    document.getElementById('table-wrap').innerHTML = `<div class="empty">Could not reach Supabase: ${e.message}</div>`;
+    return;
+  }
+
+  setBadge('ok', `● ${rows.length.toLocaleString()} rows`);
+  processData(rows);
+}
+
+// ── DATA PROCESSING ────────────────────────────────────────────────────────────
+function processData(rows) {
+  const rideList = getRideList();
+
+  // Bucket: rideName → hourIdx → [waits]
+  const buckets = {};
+  for (const row of rows) {
+    const idx = row.hour_of_day - 6;
+    if (idx < 0 || idx > 17) continue;
+    if (!buckets[row.ride_name]) buckets[row.ride_name] = Array.from({length:18}, ()=>[]);
+    buckets[row.ride_name][idx].push(row.wait_time);
+  }
+
+  rideStats = rideList.map(ride => {
+    const rb = buckets[ride.name] || Array.from({length:18}, ()=>[]);
+    const hourAvgs = new Array(18).fill(null);
+    const hourCounts = new Array(18).fill(0);
+    let driftSum = 0, driftCount = 0, totalSamples = 0;
+
+    for (let i = 0; i < 18; i++) {
+      const bucket = rb[i] || [];
+      hourCounts[i] = bucket.length;
+      totalSamples += bucket.length;
+      if (bucket.length >= MIN_SAMPLES) {
+        const avg = bucket.reduce((a,b)=>a+b,0) / bucket.length;
+        hourAvgs[i] = Math.round(avg * 10) / 10;
+        driftSum += Math.abs(avg - ride.p[i]);
+        driftCount++;
+      }
+    }
+
+    const avgDrift = driftCount ? Math.round(driftSum / driftCount * 10) / 10 : null;
+    const slotsQualified = driftCount;
+    return { ...ride, hourAvgs, hourCounts, totalSamples, avgDrift, slotsQualified };
+  });
+
+  updateSummary();
+  renderTable();
+}
+
+// ── SUMMARY ───────────────────────────────────────────────────────────────────
+function updateSummary() {
+  const qualified = rideStats.filter(r => r.avgDrift !== null);
+  const avgDrift = qualified.length
+    ? Math.round(qualified.reduce((a,r)=>a+r.avgDrift,0)/qualified.length * 10)/10
+    : null;
+
+  document.getElementById('s-drift').textContent = avgDrift !== null ? `${avgDrift}` : '–';
+  document.getElementById('s-rides').textContent = qualified.length;
+
+  const sorted = [...qualified].sort((a,b)=>a.avgDrift-b.avgDrift);
+  if (sorted.length) {
+    const best = sorted[0];
+    const worst = sorted[sorted.length-1];
+    document.getElementById('s-best').textContent = shortName(best.name);
+    document.getElementById('s-best-drift').textContent = `±${best.avgDrift} min avg drift`;
+    document.getElementById('s-worst').textContent = shortName(worst.name);
+    document.getElementById('s-worst-drift').textContent = `±${worst.avgDrift} min avg drift`;
+  } else {
+    document.getElementById('s-best').textContent = '–';
+    document.getElementById('s-worst').textContent = '–';
+  }
+}
+
+function shortName(n) {
+  return n.length > 18 ? n.slice(0,17)+'…' : n;
+}
+
+// ── TABLE ──────────────────────────────────────────────────────────────────────
+function renderTable() {
+  const sorted = [...rideStats].sort((a,b) => {
+    if (a.avgDrift === null && b.avgDrift === null) return 0;
+    if (a.avgDrift === null) return 1;
+    if (b.avgDrift === null) return -1;
+    return a.avgDrift - b.avgDrift;
+  });
+
+  let html = `<table class="ride-table">
+    <thead><tr>
+      <th>Ride</th>
+      <th class="right">Samples</th>
+      <th class="right">Slots</th>
+      <th class="right">Avg Drift</th>
+      <th class="right">Peak Drift Hour</th>
+    </tr></thead><tbody>`;
+
+  for (const r of sorted) {
+    const dc = r.avgDrift === null ? 'drift-none'
+      : r.avgDrift <= 8 ? 'drift-good'
+      : r.avgDrift <= 18 ? 'drift-warn' : 'drift-bad';
+    const dl = r.avgDrift === null ? 'no data' : `±${r.avgDrift} min`;
+
+    // Find peak drift hour
+    let peakHour = null, peakDrift = 0;
+    for (let i = 0; i < 18; i++) {
+      if (r.hourAvgs[i] !== null) {
+        const d = Math.abs(r.hourAvgs[i] - r.p[i]);
+        if (d > peakDrift) { peakDrift = d; peakHour = i; }
+      }
+    }
+    const peakStr = peakHour !== null
+      ? `${HRS_FULL[peakHour]} (±${Math.round(peakDrift)}m)`
+      : '–';
+
+    const sel = selectedRideId === r.id ? ' selected' : '';
+    html += `<tr class="${sel}" onclick="selectRide('${r.id}')">
+      <td><div class="rname-cell">${r.name}</div><div class="land-cell">${r.land}</div></td>
+      <td class="num-cell">${r.totalSamples.toLocaleString()}</td>
+      <td class="num-cell">${r.slotsQualified}<span style="font-family:'Crimson Pro',serif;font-size:.62rem;color:var(--muted);font-weight:400"> / 18</span></td>
+      <td class="num-cell"><span class="drift-pill ${dc}">${dl}</span></td>
+      <td class="num-cell" style="font-size:.65rem;color:var(--muted);font-style:italic">${peakStr}</td>
+    </tr>`;
+  }
+
+  html += `</tbody></table>`;
+  document.getElementById('table-wrap').innerHTML = html;
+
+  // Auto-select first qualified ride
+  if (!selectedRideId) {
+    const first = sorted.find(r => r.avgDrift !== null);
+    if (first) selectRide(first.id, false);
+  } else {
+    renderChart(selectedRideId);
+  }
+}
+
+// ── CHART ──────────────────────────────────────────────────────────────────────
+function selectRide(id, scroll = true) {
+  selectedRideId = id;
+  // Update row highlights
+  document.querySelectorAll('.ride-table tr').forEach(tr => tr.classList.remove('selected'));
+  document.querySelectorAll('.ride-table tr').forEach(tr => {
+    if (tr.onclick && tr.onclick.toString().includes(`'${id}'`)) tr.classList.add('selected');
+  });
+  renderChart(id, scroll);
+}
+
+function renderChart(id, scroll = false) {
+  const ride = rideStats.find(r => r.id === id);
+  if (!ride) return;
+
+  const hasData = ride.hourAvgs.some(v => v !== null);
+
+  // Build predicted vs actual bars
+  const maxVal = Math.max(
+    ...ride.p,
+    ...ride.hourAvgs.filter(v => v !== null),
+    1
+  );
+
+  const hourCols = ride.p.map((pred, i) => {
+    const actual = ride.hourAvgs[i];
+    const predH = Math.round((pred / maxVal) * 60);
+    const actualH = actual !== null ? Math.round((actual / maxVal) * 60) : null;
+    const count = ride.hourCounts[i];
+
+    const driftVal = actual !== null ? Math.abs(actual - pred) : null;
+    const driftColor = driftVal === null ? 'var(--cream-dark)'
+      : driftVal <= 8 ? 'rgba(45,106,45,.25)'
+      : driftVal <= 18 ? 'rgba(138,112,0,.2)'
+      : 'rgba(138,32,32,.15)';
+
+    const tooltip = actual !== null
+      ? `title="${HRS_FULL[i]}: predicted ${pred}m · actual ${Math.round(actual)}m · ${count} samples"`
+      : `title="${HRS_FULL[i]}: predicted ${pred}m · no data"`;
+
+    return `<div class="hour-col" ${tooltip} style="cursor:default">
+      <div class="hour-bar-wrap" style="background:${driftColor};border-radius:3px 3px 0 0;padding:2px 1px 0">
+        ${actualH !== null ? `<div class="hbar hbar-real" style="height:${actualH}px" title="Actual: ${Math.round(actual)}m"></div>` : `<div style="flex:1"></div>`}
+        <div class="hbar hbar-pred" style="height:${predH}px" title="Predicted: ${pred}m"></div>
+      </div>
+      <div class="hour-lbl">${HRS[i]}</div>
+    </div>`;
+  }).join('');
+
+  // Stats
+  const drifts = ride.hourAvgs.map((a,i) => a !== null ? Math.abs(a - ride.p[i]) : null).filter(v=>v!==null);
+  const avgD = drifts.length ? Math.round(drifts.reduce((a,b)=>a+b,0)/drifts.length) : null;
+  const maxD = drifts.length ? Math.round(Math.max(...drifts)) : null;
+  const overPred = ride.hourAvgs.map((a,i)=>a!==null?(a-ride.p[i]):null).filter(v=>v!==null);
+  const bias = overPred.length ? Math.round(overPred.reduce((a,b)=>a+b,0)/overPred.length) : null;
+  const biasLabel = bias === null ? '–' : bias > 0 ? `+${bias}m` : `${bias}m`;
+  const biasNote = bias === null ? '' : bias > 2 ? 'reality runs hotter' : bias < -2 ? 'estimates run high' : 'well-calibrated';
+
+  const dc = avgD === null ? 'drift-none' : avgD <= 8 ? 'drift-good' : avgD <= 18 ? 'drift-warn' : 'drift-bad';
+
+  document.getElementById('chart-area').innerHTML = `
+    <div class="chart-section">
+      <div class="chart-meta">
+        <span class="chart-ride-name">${ride.name}</span>
+        <span class="chart-land">${ride.land}</span>
+        ${avgD !== null ? `<span class="drift-pill ${dc}" style="margin-left:auto">±${avgD} min avg drift</span>` : ''}
+      </div>
+
+      ${hasData ? `
+      <div class="hour-grid">${hourCols}</div>
+      <div class="hour-note" style="margin-top:.5rem">
+        Background shading: <span style="color:var(--green)">■ green</span> ≤8m drift ·
+        <span style="color:var(--yellow)">■ yellow</span> ≤18m · <span style="color:var(--red)">■ red</span> &gt;18m ·
+        <span style="opacity:.5">■ grey</span> no data
+      </div>
+
+      <div class="chart-stats">
+        <div class="cstat">
+          <div class="cstat-lbl">Avg Drift</div>
+          <div class="cstat-val">${avgD !== null ? avgD+'m' : '–'}</div>
+          <div class="cstat-sub">mean |pred−actual|</div>
+        </div>
+        <div class="cstat">
+          <div class="cstat-lbl">Peak Drift</div>
+          <div class="cstat-val">${maxD !== null ? maxD+'m' : '–'}</div>
+          <div class="cstat-sub">worst single hour</div>
+        </div>
+        <div class="cstat">
+          <div class="cstat-lbl">Bias</div>
+          <div class="cstat-val">${biasLabel}</div>
+          <div class="cstat-sub">${biasNote}</div>
+        </div>
+      </div>
+
+      <div class="chart-legend" style="margin-top:.75rem">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--teal);height:10px;width:10px;border-radius:2px"></div> Actual (Supabase avg)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--gold);height:10px;width:10px;border-radius:2px;opacity:.7"></div> Predicted (hardcoded p[])</div>
+        <div class="leg-item" style="margin-left:auto;font-size:.58rem">Min ${MIN_SAMPLES} samples per slot</div>
+      </div>
+      ` : `<div class="empty" style="padding:1.5rem 0">No qualifying data for this ride yet (need ≥${MIN_SAMPLES} samples per hour slot)</div>`}
+    </div>
+  `;
+
+  if (scroll) {
+    document.getElementById('chart-area').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
