@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -8,12 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
 :root {
-  --teal:#0a4a4a; --gold:#c9a84c; --gold-light:#e8c96d; --gold-dim:#8a6e2f;
-  --cream:#fdf6e3; --cream-dark:#f5e8c0; --card:#fff9ee;
-  --text:#1a1208; --muted:#5a4a2a;
-  --green:#2d6a2d; --green-bg:#e8f5e8;
-  --yellow:#8a7000; --yellow-bg:#fff8d6;
-  --red:#8a2020; --red-bg:#ffeaea;
+--teal:#0a4a4a; --gold:#c9a84c; --gold-light:#e8c96d; --gold-dim:#8a6e2f;
+--cream:#fdf6e3; --cream-dark:#f5e8c0; --card:#fff9ee;
+--text:#1a1208; --muted:#5a4a2a;
+--green:#2d6a2d; --green-bg:#e8f5e8;
+--yellow:#8a7000; --yellow-bg:#fff8d6;
+--red:#8a2020; --red-bg:#ffeaea;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{height:100%;overflow-x:hidden}
@@ -136,121 +135,109 @@ canvas.spark{margin-top:.42rem;height:22px;width:100%;display:block}
 </style>
 </head>
 <body>
-
 <header>
-  <div class="hdr-left">
-    <a class="home-btn" href="index.html">← Home</a>
-    <div class="hdr-div"></div>
-    <div class="hdr-title">Magic Key TV &middot; Ride Predictor</div>
-  </div>
-  <div class="hdr-right">
-    <span class="badge" id="badge">● LIVE</span>
-    <div id="clock">--:-- --</div>
-  </div>
-</header>
-
-<main>
-
-  <div class="ctx-bar">
-    <span class="ctx-lbl">Today</span>
-    <span class="ctx-pill" id="ctx-day">–</span>
-    <span class="ctx-pill" id="ctx-season">–</span>
-    <div class="crowd">
-      <span class="ctx-lbl">Crowd</span>
-      <div class="dots" id="dots">
-        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-        <div class="dot"></div><div class="dot"></div>
-      </div>
-      <span class="crowd-lbl" id="crowd-lbl">–</span>
-    </div>
-    <span id="updated"></span>
-    <span id="data-source" style="font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.08em;padding:.14rem .5rem;border-radius:999px;display:none"></span>
-  </div>
-
-  <div class="controls">
-    <div class="tabs">
-      <button class="tab on" onclick="switchPark('dl',this)">Disneyland</button>
-      <button class="tab" onclick="switchPark('dca',this)">California Adventure</button>
-    </div>
-    <div class="search-wrap">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="6.5" cy="6.5" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
-      </svg>
-      <input type="text" id="q" placeholder="Search rides or lands…" oninput="filter(this.value)">
-    </div>
-  </div>
-
-  <div class="loading-overlay" id="loading-overlay">
-    <div>
-      <div class="skeleton lo-label" style="margin-bottom:.72rem"></div>
-      <div class="lo-picks">
-        <div class="skeleton skel-card"></div>
-        <div class="skeleton skel-card"></div>
-        <div class="skeleton skel-card"></div>
-        <div class="skeleton skel-card"></div>
-      </div>
-    </div>
-    <div>
-      <div class="skeleton lo-label" style="margin-bottom:.72rem"></div>
-      <div class="lo-grid">
-        <div class="skeleton skel-row"></div>
-        <div class="skeleton skel-row"></div>
-        <div class="skeleton skel-row"></div>
-        <div class="skeleton skel-row"></div>
-        <div class="skeleton skel-row"></div>
-        <div class="skeleton skel-row"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="main-content" id="main-content">
-  <div class="fav-section" id="fav-section">
-    <div class="sec-hdr">
-      <span class="sec-title">&#9733; My Rides</span>
-      <span class="sec-sub">your saved rides at a glance</span>
-    </div>
-    <div class="picks" id="fav-picks"></div>
-  </div>
-
-  <div>
-    <div class="sec-hdr">
-      <span class="sec-title">Best Bets Right Now</span>
-      <span class="sec-sub" id="picks-sub">–</span>
-    </div>
-    <div class="picks" id="picks"></div>
-  </div>
-
-  <div>
-    <div class="sec-hdr">
-      <span class="sec-title">All Attractions</span>
-      <span class="sec-sub">predicted wait · live where available</span>
-    </div>
-    <div class="grid" id="grid"></div>
-  </div>
-  </div>
-
-  <div class="legend">
-    <div class="li"><div class="ld" style="background:var(--green)"></div>Go now (under 20 min)</div>
-    <div class="li"><div class="ld" style="background:#c9a000"></div>Moderate (20–40 min)</div>
-    <div class="li"><div class="ld" style="background:var(--red)"></div>Skip for now (over 40 min)</div>
-    <div class="li" style="margin-left:auto;font-size:.6rem;opacity:.7">LIVE = Queue-Times · EST = historical estimate</div>
-  </div>
-
-</main>
-
-<div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
-  <div class="modal" id="modal">
-    <div class="modal-handle"></div>
-    <button class="modal-close" onclick="closeModal()">✕ CLOSE</button>
-    <div class="modal-ride-name" id="modal-name"></div>
-    <div class="modal-land" id="modal-land"></div>
-    <div class="modal-chart-wrap">
-      <canvas id="modal-canvas" role="img" aria-label="Wait time prediction chart"></canvas>
-    </div>
-    <div class="modal-stats" id="modal-stats"></div>
-  </div>
+<div class="hdr-left">
+<a class="home-btn" href="index.html">← Home</a>
+<div class="hdr-div"></div>
+<div class="hdr-title">Magic Key TV · Ride Predictor</div>
 </div>
-
+<div class="hdr-right">
+<span class="badge" id="badge">● LIVE</span>
+<div id="clock">--:-- --</div>
+</div>
+</header>
+<main>
+<div class="ctx-bar">
+<span class="ctx-lbl">Today</span>
+<span class="ctx-pill" id="ctx-day">–</span>
+<span class="ctx-pill" id="ctx-season">–</span>
+<div class="crowd">
+<span class="ctx-lbl">Crowd</span>
+<div class="dots" id="dots">
+<div class="dot"></div><div class="dot"></div><div class="dot"></div>
+<div class="dot"></div><div class="dot"></div>
+</div>
+<span class="crowd-lbl" id="crowd-lbl">–</span>
+</div>
+<span id="updated"></span>
+<span id="data-source" style="font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.08em;padding:.14rem .5rem;border-radius:999px;display:none"></span>
+</div>
+<div class="controls">
+<div class="tabs">
+<button class="tab on" onclick="switchPark('dl',this)">Disneyland</button>
+<button class="tab" onclick="switchPark('dca',this)">California Adventure</button>
+</div>
+<div class="search-wrap">
+<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+<circle cx="6.5" cy="6.5" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
+</svg>
+<input type="text" id="q" placeholder="Search rides or lands…" oninput="filter(this.value)">
+</div>
+</div>
+<div class="loading-overlay" id="loading-overlay">
+<div>
+<div class="skeleton lo-label" style="margin-bottom:.72rem"></div>
+<div class="lo-picks">
+<div class="skeleton skel-card"></div>
+<div class="skeleton skel-card"></div>
+<div class="skeleton skel-card"></div>
+<div class="skeleton skel-card"></div>
+</div>
+</div>
+<div>
+<div class="skeleton lo-label" style="margin-bottom:.72rem"></div>
+<div class="lo-grid">
+<div class="skeleton skel-row"></div>
+<div class="skeleton skel-row"></div>
+<div class="skeleton skel-row"></div>
+<div class="skeleton skel-row"></div>
+<div class="skeleton skel-row"></div>
+<div class="skeleton skel-row"></div>
+</div>
+</div>
+</div>
+<div class="main-content" id="main-content">
+<div class="fav-section" id="fav-section">
+<div class="sec-hdr">
+<span class="sec-title">★ My Rides</span>
+<span class="sec-sub">your saved rides at a glance</span>
+</div>
+<div class="picks" id="fav-picks"></div>
+</div>
+<div>
+<div class="sec-hdr">
+<span class="sec-title">Best Bets Right Now</span>
+<span class="sec-sub" id="picks-sub">–</span>
+</div>
+<div class="picks" id="picks"></div>
+</div>
+<div>
+<div class="sec-hdr">
+<span class="sec-title">All Attractions</span>
+<span class="sec-sub">predicted wait · live where available</span>
+</div>
+<div class="grid" id="grid"></div>
+</div>
+</div>
+<div class="legend">
+<div class="li"><div class="ld" style="background:var(--green)"></div>Go now (under 20 min)</div>
+<div class="li"><div class="ld" style="background:#c9a000"></div>Moderate (20–40 min)</div>
+<div class="li"><div class="ld" style="background:var(--red)"></div>Skip for now (over 40 min)</div>
+<div class="li" style="margin-left:auto;font-size:.6rem;opacity:.7">LIVE = Queue-Times · EST = historical estimate</div>
+</div>
+</main>
+<div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
+<div class="modal" id="modal">
+<div class="modal-handle"></div>
+<button class="modal-close" onclick="closeModal()">✕ CLOSE</button>
+<div class="modal-ride-name" id="modal-name"></div>
+<div class="modal-land" id="modal-land"></div>
+<div class="modal-chart-wrap">
+<canvas id="modal-canvas" role="img" aria-label="Wait time prediction chart"></canvas>
+</div>
+<div class="modal-stats" id="modal-stats"></div>
+</div>
+</div>
 <script>
 // ── SUPABASE CONFIG ───────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://qumvjdwimpvnaijjwght.supabase.co';
@@ -264,16 +251,16 @@ let usingRealData = false;
 async function loadHistoricalProfiles() {
   if (SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
   const now = new Date();
-  const pt  = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
-  const dow    = pt.getDay();
+  const pt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+  const dow = pt.getDay();
   const season = getSeason(pt.getMonth() + 1);
   const params = new URLSearchParams({
-    select:      'park,ride_name,hour_of_day,wait_time',
+    select: 'park,ride_name,hour_of_day,wait_time',
     day_of_week: `eq.${dow}`,
-    season:      `eq.${season}`,
-    is_open:     'eq.true',
-    wait_time:   'gte.0',
-    order:       'ride_name,hour_of_day'
+    season: `eq.${season}`,
+    is_open: 'eq.true',
+    wait_time: 'gte.0',
+    order: 'ride_name,hour_of_day'
   });
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times?${params}`, {
@@ -283,8 +270,15 @@ async function loadHistoricalProfiles() {
     if (!res.ok) throw new Error(`Supabase ${res.status}`);
     const rows = await res.json();
     if (!rows.length) return;
+
+    // Alias map — normalize variant names to canonical ride names
+    const ALIASES = {
+      'Hyperspace Mountain': 'Space Mountain',
+    };
+
     const buckets = {};
     for (const row of rows) {
+      if (ALIASES[row.ride_name]) row.ride_name = ALIASES[row.ride_name];
       const key = `${row.park}|${row.ride_name}|${row.hour_of_day}`;
       if (!buckets[key]) buckets[key] = [];
       buckets[key].push(row.wait_time);
@@ -294,12 +288,12 @@ async function loadHistoricalProfiles() {
       if (waits.length < MIN_SAMPLES) continue;
       const [park, rideName, hourStr] = key.split('|');
       const hour = parseInt(hourStr);
-      const idx  = hour - 6;
+      const idx = hour - 6;
       if (idx < 0 || idx > 17) continue;
       if (!profiles[park][rideName]) profiles[park][rideName] = new Array(18).fill(null);
       profiles[park][rideName][idx] = Math.round(waits.reduce((a,b)=>a+b,0) / waits.length);
     }
-    const dlCoverage  = Object.keys(profiles.dl).length  / DL.length;
+    const dlCoverage = Object.keys(profiles.dl).length / DL.length;
     const dcaCoverage = Object.keys(profiles.dca).length / DCA.length;
     if (dlCoverage > 0.5 || dcaCoverage > 0.5) {
       historicalProfiles = profiles;
@@ -321,9 +315,9 @@ function getProfile(ride) {
 }
 
 function getSeason(month) {
-  if (month === 12 || month === 1)     return 'holiday';
-  if (month >= 6 && month <= 8)        return 'summer';
-  if (month === 3 || month === 4)      return 'spring_break';
+  if (month === 12 || month === 1) return 'holiday';
+  if (month >= 6 && month <= 8) return 'summer';
+  if (month === 3 || month === 4) return 'spring_break';
   return 'regular';
 }
 
@@ -356,25 +350,22 @@ async function loadLive(parkId) {
 }
 
 // ── PARK HOURS (ThemeParks.wiki) ─────────────────────────────────────────────
-// Entity IDs for Disneyland Resort parks
 const TW_IDS = {
-  dl:  '7340550b-c14d-4def-80bb-acbe51f931d1',
+  dl: '7340550b-c14d-4def-80bb-acbe51f931d1',
   dca: '832fcd51-ea19-4e77-85c7-75d5843b127d'
 };
-// Cached open/close times. Shape: { open: Date|null, close: Date|null }
 const parkHours = { dl: null, dca: null };
 
 async function loadParkHours(parkKey) {
-  const id  = TW_IDS[parkKey];
+  const id = TW_IDS[parkKey];
   const url = `https://api.themeparks.wiki/v1/entity/${id}/schedule`;
   const data = await fetchProxy(url);
   if (!data?.schedule) return;
-  // YYYY-MM-DD in PT
   const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
   const today = data.schedule.find(s => s.date === todayStr && s.type === 'OPERATING');
   if (!today) return;
   parkHours[parkKey] = {
-    open:  new Date(today.openingTime),
+    open: new Date(today.openingTime),
     close: new Date(today.closingTime)
   };
   console.log(`Park hours loaded for ${parkKey}: ${today.openingTime} – ${today.closingTime}`);
@@ -382,7 +373,6 @@ async function loadParkHours(parkKey) {
 
 function isParkOpen() {
   const hours = parkHours[park];
-  // Fail open — if hours haven't loaded yet, don't block anything
   if (!hours?.open || !hours?.close) return true;
   const now = new Date();
   return now >= hours.open && now < hours.close;
@@ -390,60 +380,59 @@ function isParkOpen() {
 
 // ── RIDE DATA ────────────────────────────────────────────────────────────────
 const DL = [
-  {id:'indy',      name:'Indiana Jones Adventure',                  land:'Adventureland',        qt:'indiana jones adventure',                      p:[10,10,20,40,60,75,80,75,70,65,60,60,65,70,65,55,45,30]},
-  {id:'jungle',    name:'Jungle Cruise',                            land:'Adventureland',        qt:'jungle cruise',                                p:[5,5,10,20,30,40,45,45,40,35,30,35,40,45,40,30,20,10]},
-  {id:'potc',      name:'Pirates of the Caribbean',                 land:'New Orleans Square',   qt:'pirates of the caribbean',                     p:[5,5,5,10,20,30,35,40,35,30,25,30,35,40,35,25,20,10]},
-  {id:'hm',        name:'Haunted Mansion',                          land:'New Orleans Square',   qt:'haunted mansion',                              p:[5,5,5,10,20,35,40,45,40,35,30,35,40,50,45,35,25,15]},
-  {id:'splash',    name:"Tiana's Bayou Adventure",                  land:'Bayou Country',        qt:"tiana's bayou adventure",                      p:[5,5,10,25,45,65,70,65,60,55,50,55,65,70,60,45,30,15]},
-  {id:'pooh',      name:"The Many Adventures of Winnie the Pooh",   land:'Bayou Country',        qt:"the many adventures of winnie the pooh",       p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
-  {id:'btmr',      name:'Big Thunder Mountain Railroad',            land:'Frontierland',         qt:'big thunder mountain railroad',                p:[5,5,10,25,40,55,60,65,60,55,50,55,60,65,60,50,40,25]},
-  {id:'matterhorn',name:'Matterhorn Bobsleds',                      land:'Fantasyland',          qt:'matterhorn bobsleds',                          p:[5,5,10,20,35,55,65,70,65,60,55,50,55,65,60,50,40,30]},
-  {id:'peter',     name:"Peter Pan's Flight",                       land:'Fantasyland',          qt:"peter pan's flight",                           p:[10,10,20,35,50,65,70,70,65,60,55,60,65,70,65,50,40,25]},
-  {id:'pinoc',     name:"Pinocchio's Daring Journey",               land:'Fantasyland',          qt:"pinocchio's daring journey",                   p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,5,5]},
-  {id:'dumbo',     name:'Dumbo the Flying Elephant',                land:'Fantasyland',          qt:'dumbo the flying elephant',                    p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
-  {id:'alice',     name:'Alice in Wonderland',                      land:'Fantasyland',          qt:'alice in wonderland',                          p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
-  {id:'toad',      name:"Mr. Toad's Wild Ride",                     land:'Fantasyland',          qt:"mr. toad's wild ride",                         p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
-  {id:'snow',      name:"Snow White's Enchanted Wish",              land:'Fantasyland',          qt:"snow white's enchanted wish",                  p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
-  {id:'carousel',  name:'King Arthur Carrousel',                    land:'Fantasyland',          qt:'king arthur carrousel',                        p:[5,5,5,5,10,10,10,10,10,10,10,10,10,10,10,5,5,5]},
-  {id:'casey',     name:'Casey Jr. Circus Train',                   land:'Fantasyland',          qt:'casey jr. circus train',                       p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
-  {id:'storybook', name:'Storybook Land Canal Boats',               land:'Fantasyland',          qt:'storybook land canal boats',                   p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
-  {id:'smallworld',name:"it's a small world",                       land:'Fantasyland',          qt:"it's a small world",                           p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
-  {id:'mmrr',      name:"Mickey & Minnie's Runaway Railway",        land:'Toontown',             qt:"mickey & minnie's runaway railway",             p:[10,15,25,40,55,65,70,65,60,55,50,55,60,65,60,45,35,20]},
-  {id:'roger',     name:"Roger Rabbit's Car Toon Spin",             land:'Toontown',             qt:"roger rabbit's car toon spin",                 p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
-  {id:'gadget',    name:"Chip 'n' Dale's GADGETcoaster",            land:'Toontown',             qt:"chip 'n' dale's gadgetcoaster",                p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
-  {id:'space',     name:'Space Mountain',                           land:'Tomorrowland',         qt:'space mountain',                               p:[5,5,10,25,45,65,70,75,70,65,60,65,70,75,70,55,45,30]},
-  {id:'buzz',      name:'Buzz Lightyear Astro Blasters',            land:'Tomorrowland',         qt:'buzz lightyear astro blasters',                p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
-  {id:'autopia',   name:'Autopia',                                  land:'Tomorrowland',         qt:'autopia',                                      p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
-  {id:'nemo',      name:'Finding Nemo Submarine Voyage',            land:'Tomorrowland',         qt:'finding nemo submarine voyage',                p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
-  {id:'astro',     name:'Astro Orbitor',                            land:'Tomorrowland',         qt:'astro orbitor',                                p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
-  {id:'startours', name:"Star Tours — The Adventures Continue",     land:'Tomorrowland',         qt:"star tours — the adventures continue",         p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
-  {id:'rotr',      name:"Star Wars: Rise of the Resistance",        land:"Galaxy's Edge",        qt:"star wars: rise of the resistance",            p:[20,30,50,75,100,120,120,110,100,95,90,95,110,115,100,80,60,40]},
-  {id:'falcon',    name:"Millennium Falcon: Smugglers Run",         land:"Galaxy's Edge",        qt:"millennium falcon: smugglers run",             p:[10,15,30,50,70,85,90,85,80,70,65,70,80,85,75,60,45,30]},
+  {id:'indy', name:'Indiana Jones\u2122 Adventure', land:'Adventureland', qt:'indiana jones adventure', p:[10,10,20,40,60,75,80,75,70,65,60,60,65,70,65,55,45,30]},
+  {id:'jungle', name:'Jungle Cruise', land:'Adventureland', qt:'jungle cruise', p:[5,5,10,20,30,40,45,45,40,35,30,35,40,45,40,30,20,10]},
+  {id:'potc', name:'Pirates of the Caribbean', land:'New Orleans Square', qt:'pirates of the caribbean', p:[5,5,5,10,20,30,35,40,35,30,25,30,35,40,35,25,20,10]},
+  {id:'hm', name:'Haunted Mansion', land:'New Orleans Square', qt:'haunted mansion', p:[5,5,5,10,20,35,40,45,40,35,30,35,40,50,45,35,25,15]},
+  {id:'splash', name:"Tiana's Bayou Adventure", land:'Bayou Country', qt:"tiana's bayou adventure", p:[5,5,10,25,45,65,70,65,60,55,50,55,65,70,60,45,30,15]},
+  {id:'pooh', name:'The Many Adventures of Winnie the Pooh', land:'Bayou Country', qt:'the many adventures of winnie the pooh', p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'btmr', name:'Big Thunder Mountain Railroad', land:'Frontierland', qt:'big thunder mountain railroad', p:[5,5,10,25,40,55,60,65,60,55,50,55,60,65,60,50,40,25]},
+  {id:'matterhorn', name:'Matterhorn Bobsleds', land:'Fantasyland', qt:'matterhorn bobsleds', p:[5,5,10,20,35,55,65,70,65,60,55,50,55,65,60,50,40,30]},
+  {id:'peter', name:"Peter Pan's Flight", land:'Fantasyland', qt:"peter pan's flight", p:[10,10,20,35,50,65,70,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'pinoc', name:"Pinocchio's Daring Journey", land:'Fantasyland', qt:"pinocchio's daring journey", p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,5,5]},
+  {id:'dumbo', name:'Dumbo the Flying Elephant', land:'Fantasyland', qt:'dumbo the flying elephant', p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'alice', name:'Alice in Wonderland', land:'Fantasyland', qt:'alice in wonderland', p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'toad', name:"Mr. Toad's Wild Ride", land:'Fantasyland', qt:"mr. toad's wild ride", p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'snow', name:"Snow White's Enchanted Wish", land:'Fantasyland', qt:"snow white's enchanted wish", p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'carousel', name:'King Arthur Carrousel', land:'Fantasyland', qt:'king arthur carrousel', p:[5,5,5,5,10,10,10,10,10,10,10,10,10,10,10,5,5,5]},
+  {id:'casey', name:'Casey Jr. Circus Train', land:'Fantasyland', qt:'casey jr. circus train', p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'storybook', name:'Storybook Land Canal Boats', land:'Fantasyland', qt:'storybook land canal boats', p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'smallworld', name:'\u201cit\u2019s a small world\u201d', land:'Fantasyland', qt:"it's a small world", p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
+  {id:'mmrr', name:"Mickey & Minnie's Runaway Railway", land:'Toontown', qt:"mickey & minnie's runaway railway", p:[10,15,25,40,55,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'roger', name:"Roger Rabbit's Car Toon Spin", land:'Toontown', qt:"roger rabbit's car toon spin", p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'gadget', name:"Chip 'n' Dale's GADGETcoaster", land:'Toontown', qt:"chip 'n' dale's gadgetcoaster", p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'space', name:'Space Mountain', land:'Tomorrowland', qt:'space mountain', p:[5,5,10,25,45,65,70,75,70,65,60,65,70,75,70,55,45,30]},
+  {id:'buzz', name:'Buzz Lightyear Astro Blasters', land:'Tomorrowland', qt:'buzz lightyear astro blasters', p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'autopia', name:'Autopia', land:'Tomorrowland', qt:'autopia', p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'nemo', name:'Finding Nemo Submarine Voyage', land:'Tomorrowland', qt:'finding nemo submarine voyage', p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'astro', name:'Astro Orbitor', land:'Tomorrowland', qt:'astro orbitor', p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
+  {id:'startours', name:'Star Tours - The Adventures Continue', land:'Tomorrowland', qt:'star tours - the adventures continue', p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'rotr', name:'Star Wars: Rise of the Resistance', land:"Galaxy's Edge", qt:'star wars: rise of the resistance', p:[20,30,50,75,100,120,120,110,100,95,90,95,110,115,100,80,60,40]},
+  {id:'falcon', name:'Millennium Falcon: Smugglers Run', land:"Galaxy's Edge", qt:'millennium falcon: smugglers run', p:[10,15,30,50,70,85,90,85,80,70,65,70,80,85,75,60,45,30]},
 ];
 
 const DCA = [
-  {id:'rsr',       name:'Radiator Springs Racers',                  land:'Cars Land',            qt:'radiator springs racers',                      p:[20,30,55,80,100,115,110,105,95,90,85,90,100,110,100,80,60,40]},
-  {id:'luigi',     name:"Luigi's Rollickin' Roadsters",             land:'Cars Land',            qt:"luigi's rollickin' roadsters",                 p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,8,5]},
-  {id:'mater',     name:"Mater's Junkyard Jamboree",                land:'Cars Land',            qt:"mater's junkyard jamboree",                    p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
-  {id:'gotg',      name:'Guardians of the Galaxy — Mission: BREAKOUT!',land:'Avengers Campus',  qt:'guardians of the galaxy - mission: breakout!', p:[15,15,25,45,65,80,85,80,75,70,65,70,75,80,70,55,45,30]},
-  {id:'spidey',    name:'WEB SLINGERS: A Spider-Man Adventure',     land:'Avengers Campus',      qt:'web slingers: a spider-man adventure',         p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
-  {id:'incred',    name:'Incredicoaster',                           land:'Pixar Pier',           qt:'incredicoaster',                               p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
-  {id:'tsmm',      name:'Toy Story Midway Mania!',                  land:'Pixar Pier',           qt:'toy story midway mania!',                      p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
-  {id:'insideout', name:'Inside Out Emotional Whirlwind',           land:'Pixar Pier',           qt:'inside out emotional whirlwind',               p:[10,10,20,30,45,55,60,55,50,45,40,45,50,55,50,40,30,15]},
-  {id:'jessie',    name:"Jessie's Critter Carousel",                land:'Pixar Pier',           qt:"jessie's critter carousel",                    p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
-  {id:'ppar_s',    name:"Pixar Pal-A-Round — Swinging",             land:'Pixar Pier',           qt:"pixar pal-a-round - swinging",                 p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
-  {id:'ppar_ns',   name:"Pixar Pal-A-Round — Non-Swinging",         land:'Pixar Pier',           qt:"pixar pal-a-round - non-swinging",             p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
-  {id:'soarin',    name:"Soarin' Around the World",                 land:'Grizzly Peak',         qt:"soarin' around the world",                     p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
-  {id:'grizzly',   name:'Grizzly River Run',                        land:'Grizzly Peak',         qt:'grizzly river run',                            p:[5,5,10,20,35,55,60,55,50,45,45,50,55,60,55,40,30,15]},
-  {id:'monsters',  name:"Monsters, Inc. Mike & Sulley to the Rescue!",land:'Hollywood Land',    qt:"monsters, inc. mike & sulley to the rescue!",  p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,8,5]},
-  {id:'mermaid',   name:"The Little Mermaid — Ariel's Undersea Adventure",land:'Paradise Gardens Park',qt:"the little mermaid ~ ariel's undersea adventure",p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,8,5]},
-  {id:'goofy',     name:"Goofy's Sky School",                       land:'Paradise Gardens Park',qt:"goofy's sky school",                          p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
-  {id:'jellyfish', name:"Jumpin' Jellyfish",                        land:'Paradise Gardens Park',qt:"jumpin' jellyfish",                           p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
-  {id:'swings',    name:'Silly Symphony Swings',                    land:'Paradise Gardens Park',qt:'silly symphony swings',                       p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'rsr', name:'Radiator Springs Racers', land:'Cars Land', qt:'radiator springs racers', p:[20,30,55,80,100,115,110,105,95,90,85,90,100,110,100,80,60,40]},
+  {id:'luigi', name:"Luigi's Rollickin' Roadsters", land:'Cars Land', qt:"luigi's rollickin' roadsters", p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,8,5]},
+  {id:'mater', name:"Mater's Junkyard Jamboree", land:'Cars Land', qt:"mater's junkyard jamboree", p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
+  {id:'gotg', name:'Guardians of the Galaxy — Mission: BREAKOUT!', land:'Avengers Campus', qt:'guardians of the galaxy - mission: breakout!', p:[15,15,25,45,65,80,85,80,75,70,65,70,75,80,70,55,45,30]},
+  {id:'spidey', name:'WEB SLINGERS: A Spider-Man Adventure', land:'Avengers Campus', qt:'web slingers: a spider-man adventure', p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'incred', name:'Incredicoaster', land:'Pixar Pier', qt:'incredicoaster', p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'tsmm', name:'Toy Story Midway Mania!', land:'Pixar Pier', qt:'toy story midway mania!', p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'insideout', name:'Inside Out Emotional Whirlwind', land:'Pixar Pier', qt:'inside out emotional whirlwind', p:[10,10,20,30,45,55,60,55,50,45,40,45,50,55,50,40,30,15]},
+  {id:'jessie', name:"Jessie's Critter Carousel", land:'Pixar Pier', qt:"jessie's critter carousel", p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'ppar_s', name:"Pixar Pal-A-Round — Swinging", land:'Pixar Pier', qt:"pixar pal-a-round - swinging", p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'ppar_ns', name:"Pixar Pal-A-Round — Non-Swinging", land:'Pixar Pier', qt:"pixar pal-a-round - non-swinging", p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'soarin', name:"Soarin' Around the World", land:'Grizzly Peak', qt:"soarin' around the world", p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'grizzly', name:'Grizzly River Run', land:'Grizzly Peak', qt:'grizzly river run', p:[5,5,10,20,35,55,60,55,50,45,45,50,55,60,55,40,30,15]},
+  {id:'monsters', name:"Monsters, Inc. Mike & Sulley to the Rescue!", land:'Hollywood Land', qt:"monsters, inc. mike & sulley to the rescue!", p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,8,5]},
+  {id:'mermaid', name:"The Little Mermaid — Ariel's Undersea Adventure", land:'Paradise Gardens Park', qt:"the little mermaid ~ ariel's undersea adventure", p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,8,5]},
+  {id:'goofy', name:"Goofy's Sky School", land:'Paradise Gardens Park', qt:"goofy's sky school", p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
+  {id:'jellyfish', name:"Jumpin' Jellyfish", land:'Paradise Gardens Park', qt:"jumpin' jellyfish", p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'swings', name:'Silly Symphony Swings', land:'Paradise Gardens Park', qt:'silly symphony swings', p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
 ];
 
 const HRS = ['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm','11pm'];
-
 let park = 'dl', live = {}, searchQ = '';
 
 function favsKey() { return `favs_${park}`; }
@@ -477,11 +466,11 @@ function parkOpenRange() {
 }
 
 const BLOCKS = [
-  { label: 'Mid-Morning',    start: 3,  end: 4  },
-  { label: 'Lunch Break',    start: 5,  end: 7  },
-  { label: 'Afternoon',      start: 7,  end: 10 },
+  { label: 'Mid-Morning', start: 3, end: 4 },
+  { label: 'Lunch Break', start: 5, end: 7 },
+  { label: 'Afternoon', start: 7, end: 10 },
   { label: 'Late Afternoon', start: 10, end: 12 },
-  { label: 'Evening',        start: 12, end: 14 },
+  { label: 'Evening', start: 12, end: 14 },
 ];
 
 function bestBlock(p, m) {
@@ -500,25 +489,22 @@ function bestBlock(p, m) {
 }
 
 function getTrend(p, m, hi) {
-  const curr  = p[hi] * m;
+  const curr = p[hi] * m;
   const next1 = p[Math.min(hi + 1, p.length - 1)] * m;
   const next2 = p[Math.min(hi + 2, p.length - 1)] * m;
   const delta1 = next1 - curr;
   const delta2 = next2 - curr;
-  if (delta1 > 8)  return { arrow: '↑', phrase: 'Rising fast — go now',       color: 'var(--red)' };
-  if (delta1 > 3)  return { arrow: '↑', phrase: 'Wait climbing',               color: 'var(--red)' };
+  if (delta1 > 8) return { arrow: '↑', phrase: 'Rising fast — go now', color: 'var(--red)' };
+  if (delta1 > 3) return { arrow: '↑', phrase: 'Wait climbing', color: 'var(--red)' };
   if (delta1 < -8) return { arrow: '↓', phrase: 'Dropping fast — good window', color: 'var(--green)' };
-  if (delta1 < -3) return { arrow: '↓', phrase: 'Wait easing',                 color: 'var(--green)' };
-  if (delta2 > 8)  return { arrow: '→', phrase: 'Go soon — gets busy',         color: '#c9a000' };
-  if (delta2 < -8) return { arrow: '→', phrase: 'Gets better soon',            color: '#c9a000' };
-  return             { arrow: '→', phrase: 'Holding steady',                    color: '#c9a000' };
+  if (delta1 < -3) return { arrow: '↓', phrase: 'Wait easing', color: 'var(--green)' };
+  if (delta2 > 8) return { arrow: '→', phrase: 'Go soon — gets busy', color: '#c9a000' };
+  if (delta2 < -8) return { arrow: '→', phrase: 'Gets better soon', color: '#c9a000' };
+  return { arrow: '→', phrase: 'Holding steady', color: '#c9a000' };
 }
 
 function getLive(ride) {
-  // ── PARK HOURS GATE ───────────────────────────────────────────────────────
-  // If the park is currently closed per posted hours, treat all rides as closed.
   if (!isParkOpen()) return { wait: null, closed: true };
-  // ─────────────────────────────────────────────────────────────────────────
   if(!live||!Object.keys(live).length) return {wait:null, closed:false};
   const k=ride.qt.toLowerCase().trim();
   const match = live[k] || Object.entries(live).find(([key])=>key.includes(k.slice(0,10))||k.includes(key.slice(0,10)))?.[1];
@@ -613,12 +599,10 @@ function renderFavs() {
 function render() {
   const now=new Date(), dt=dayType(now), s=season(now);
   const cl=crowdLevel(dt,s), m=mult(cl), hi=hIdx(now);
-
   document.getElementById('ctx-day').textContent=dt;
   document.getElementById('ctx-season').textContent=s;
   document.getElementById('crowd-lbl').textContent=['','Low','Mild','Moderate','Busy','Very Busy'][cl];
   document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i<cl));
-
   const dsBadge = document.getElementById('data-source');
   if (usingRealData) {
     dsBadge.textContent = '✦ Real historical data';
@@ -633,7 +617,6 @@ function render() {
     dsBadge.style.color = 'var(--muted)';
     dsBadge.style.border = '1px solid rgba(138,110,47,.2)';
   }
-
   const rides = park==='dl'?DL:DCA;
   const computed = rides.map(r=>{
     const lv=getLive(r);
@@ -643,12 +626,10 @@ function render() {
     const trend=lv.closed?null:getTrend(p,m,hi);
     return {...r, p, real, wait, estimated, status:lv.closed?'closed':status(wait), trend, closed:lv.closed};
   });
-
   const picks=[...computed].filter(r=>r.status==='go').sort((a,b)=>a.wait-b.wait).slice(0,4);
   document.getElementById('picks-sub').textContent = picks.length
     ? `rides worth heading to around ${HRS[hi]}`
     : `all rides are busy around ${HRS[hi]} — see best windows below`;
-
   const pg=document.getElementById('picks');
   pg.innerHTML='';
   if(!picks.length) {
@@ -676,7 +657,6 @@ function render() {
       picks.forEach(r=>{const c=document.getElementById(`sp-${r.id}`);if(c)sparkline(c,r.p,m,hi);});
     });
   }
-
   const ag=document.getElementById('grid');
   ag.innerHTML='';
   [...computed].sort((a,b)=>{
@@ -704,13 +684,11 @@ function render() {
       <button class="fav-btn${favs.has(r.id)?' on':''}" onclick="event.stopPropagation();toggleFav('${r.id}',this)" title="${favs.has(r.id)?'Remove from My Rides':'Add to My Rides'}">&#9733;</button>`;
     ag.appendChild(row);
   });
-
   const nr=document.createElement('div');
   nr.className='noresult'; nr.id='nores'; nr.textContent='No rides match your search.';
   const visCount=[...ag.querySelectorAll('.row')].filter(r=>!r.classList.contains('hide')).length;
   if(!visCount) nr.style.display='block';
   ag.appendChild(nr);
-
   renderFavs();
 }
 
@@ -778,20 +756,20 @@ function openModal(id) {
 
 function drawModalChart(p, m, hi, start, end) {
   const canvas = document.getElementById('modal-canvas');
-  const W = canvas.width  = canvas.offsetWidth  || 480;
+  const W = canvas.width = canvas.offsetWidth || 480;
   const H = canvas.height = canvas.offsetHeight || 160;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0,0,W,H);
   const PAD = {top:12, right:10, bottom:28, left:36};
   const cW = W - PAD.left - PAD.right;
-  const cH = H - PAD.top  - PAD.bottom;
-  const openP   = p.slice(start, end+1);
+  const cH = H - PAD.top - PAD.bottom;
+  const openP = p.slice(start, end+1);
   const openHRS = HRS.slice(start, end+1);
-  const vals   = openP.map(v=>Math.round(v*m));
-  const maxV   = Math.max(...vals, 20);
-  const n      = vals.length;
+  const vals = openP.map(v=>Math.round(v*m));
+  const maxV = Math.max(...vals, 20);
+  const n = vals.length;
   const px = i => PAD.left + (i/(n-1))*cW;
-  const py = v => PAD.top  + cH - (v/maxV)*cH;
+  const py = v => PAD.top + cH - (v/maxV)*cH;
   ctx.strokeStyle='rgba(138,110,47,.15)'; ctx.lineWidth=1;
   [0,.25,.5,.75,1].forEach(f=>{
     const y=PAD.top+cH*(1-f);
@@ -825,6 +803,7 @@ function closeModal(e) {
   if (e && e.target !== document.getElementById('modal-backdrop')) return;
   document.getElementById('modal-backdrop').classList.remove('open');
 }
+
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.getElementById('modal-backdrop').classList.remove('open'); });
 
 function filter(q) {
@@ -877,7 +856,6 @@ function switchPark(p,btn) {
   btn.classList.add('on');
   document.getElementById('q').value='';
   setLoading(true);
-  // Load park hours + historical profiles for new park, then fetch live
   Promise.all([
     loadParkHours(p),
     loadHistoricalProfiles()
@@ -885,16 +863,14 @@ function switchPark(p,btn) {
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
-// Load both parks' hours + historical profiles, then kick off the live fetch.
 Promise.all([
   loadParkHours('dl'),
   loadParkHours('dca'),
   loadHistoricalProfiles()
 ]).then(() => {
   refresh();
-  setInterval(refresh, 5*60*1000);   // re-fetch live data every 5 min
-  setInterval(render,  60*1000);      // re-render every minute to keep hour index current
-  // Reload hours + historical profiles once per day
+  setInterval(refresh, 5*60*1000);
+  setInterval(render, 60*1000);
   setInterval(() => {
     loadParkHours('dl');
     loadParkHours('dca');
@@ -902,6 +878,5 @@ Promise.all([
   }, 24*60*60*1000);
 });
 </script>
-
 </body>
 </html>
