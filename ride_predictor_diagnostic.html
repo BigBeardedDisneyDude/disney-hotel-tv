@@ -101,24 +101,24 @@ const HRS = ['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm
 const MIN_SAMPLES = 5;
 
 const DL = [
-  {id:'indy',name:'Indiana Jones Adventure',land:'Adventureland',p:[10,10,20,40,60,75,80,75,70,65,60,60,65,70,65,55,45,30]},
+  {id:'indy',name:'Indiana Jones™ Adventure',land:'Adventureland',p:[10,10,20,40,60,75,80,75,70,65,60,60,65,70,65,55,45,30]},
   {id:'jungle',name:'Jungle Cruise',land:'Adventureland',p:[5,5,10,20,30,40,45,45,40,35,30,35,40,45,40,30,20,10]},
   {id:'potc',name:'Pirates of the Caribbean',land:'New Orleans Square',p:[5,5,5,10,20,30,35,40,35,30,25,30,35,40,35,25,20,10]},
   {id:'hm',name:'Haunted Mansion',land:'New Orleans Square',p:[5,5,5,10,20,35,40,45,40,35,30,35,40,50,45,35,25,15]},
   {id:'splash',name:"Tiana's Bayou Adventure",land:'Bayou Country',p:[5,5,10,25,45,65,70,65,60,55,50,55,65,70,60,45,30,15]},
-  {id:'pooh',name:"Winnie the Pooh",land:'Bayou Country',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
-  {id:'btmr',name:'Big Thunder Mountain',land:'Frontierland',p:[5,5,10,25,40,55,60,65,60,55,50,55,60,65,60,50,40,25]},
+  {id:'pooh',name:"The Many Adventures of Winnie the Pooh",land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'btmr',name:'Big Thunder Mountain Railroad',land:'Frontierland',p:[5,5,10,25,40,55,60,65,60,55,50,55,60,65,60,50,40,25]},
   {id:'matterhorn',name:'Matterhorn Bobsleds',land:'Fantasyland',p:[5,5,10,20,35,55,65,70,65,60,55,50,55,65,60,50,40,30]},
   {id:'peter',name:"Peter Pan's Flight",land:'Fantasyland',p:[10,10,20,35,50,65,70,70,65,60,55,60,65,70,65,50,40,25]},
   {id:'pinoc',name:"Pinocchio's Daring Journey",land:'Fantasyland',p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,5,5]},
-  {id:'dumbo',name:'Dumbo',land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'dumbo',name:'Dumbo the Flying Elephant',land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
   {id:'alice',name:'Alice in Wonderland',land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
   {id:'toad',name:"Mr. Toad's Wild Ride",land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
   {id:'snow',name:"Snow White's Enchanted Wish",land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
   {id:'carousel',name:'King Arthur Carrousel',land:'Fantasyland',p:[5,5,5,5,10,10,10,10,10,10,10,10,10,10,10,5,5,5]},
   {id:'casey',name:'Casey Jr. Circus Train',land:'Fantasyland',p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
   {id:'storybook',name:'Storybook Land Canal Boats',land:'Fantasyland',p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
-  {id:'smallworld',name:"it's a small world",land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
+  {id:'smallworld',name:'"it\'s a small world"',land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
   {id:'mmrr',name:"Mickey & Minnie's Runaway Railway",land:'Toontown',p:[10,15,25,40,55,65,70,65,60,55,50,55,60,65,60,45,35,20]},
   {id:'roger',name:"Roger Rabbit's Car Toon Spin",land:'Toontown',p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
   {id:'gadget',name:"Chip 'n' Dale's GADGETcoaster",land:'Toontown',p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
@@ -127,8 +127,8 @@ const DL = [
   {id:'autopia',name:'Autopia',land:'Tomorrowland',p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
   {id:'nemo',name:'Finding Nemo Submarine Voyage',land:'Tomorrowland',p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
   {id:'astro',name:'Astro Orbitor',land:'Tomorrowland',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
-  {id:'startours',name:"Star Tours",land:'Tomorrowland',p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
-  {id:'rotr',name:"Rise of the Resistance",land:"Galaxy's Edge",p:[20,30,50,75,100,120,120,110,100,95,90,95,110,115,100,80,60,40]},
+  {id:'startours',name:"Star Tours - The Adventures Continue",land:'Tomorrowland',p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'rotr',name:"Star Wars: Rise of the Resistance",land:"Galaxy's Edge",p:[20,30,50,75,100,120,120,110,100,95,90,95,110,115,100,80,60,40]},
   {id:'falcon',name:"Millennium Falcon: Smugglers Run",land:"Galaxy's Edge",p:[10,15,30,50,70,85,90,85,80,70,65,70,80,85,75,60,45,30]},
 ];
 
@@ -227,10 +227,15 @@ async function load() {
 
   const rideList = currentPark === 'dl' ? DL : DCA;
 
+  // Normalize ride names that are temporarily renamed but should pool together
+  const NAME_ALIASES = {
+    'Hyperspace Mountain': 'Space Mountain',
+  };
+
   // Build buckets: rideName -> hour -> [waits]
   const buckets = {};
   for (const row of rows) {
-    const rn  = row.ride_name;
+    const rn  = NAME_ALIASES[row.ride_name] || row.ride_name;
     const h   = row.hour_of_day;
     const idx = h - 6;
     if (idx < 0 || idx > 17) continue;
