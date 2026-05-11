@@ -1,1 +1,314 @@
+<style>
+:root {
+--teal: #0a4a4a; --gold: #c9a84c; --gold-light: #e8c96d; --gold-dim: #8a6e2f;
+--cream: #fdf6e3; --card: #fff9ee; --text: #1a1208; --muted: #5a4a2a;
+--green: #2d6a2d; --green-bg: #e8f5e8; --red: #8a2020; --red-bg: #ffeaea;
+--yellow: #8a7000; --yellow-bg: #fff8d6;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--cream); font-family: 'Crimson Pro', Georgia, serif; color: var(--text); }
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
+.diag-wrap { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; max-width: 900px; }
+.top-bar { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; }
+.diag-title { font-family: 'Cinzel', serif; font-size: .8rem; font-weight: 600; color: var(--teal); letter-spacing: .1em; text-transform: uppercase; }
+.park-tabs { display: flex; border: 1.5px solid var(--gold-dim); border-radius: 6px; overflow: hidden; }
+.ptab { font-family: 'Cinzel', serif; font-size: .58rem; letter-spacing: .06em; padding: .35rem .85rem; border: none; cursor: pointer; background: transparent; color: var(--gold-dim); border-right: 1px solid var(--gold-dim); transition: all .2s; }
+.ptab:last-child { border-right: none; }
+.ptab.on { background: var(--teal); color: var(--gold-light); }
+.status-pill { font-family: 'Cinzel', serif; font-size: .52rem; letter-spacing: .08em; padding: .18rem .55rem; border-radius: 999px; margin-left: auto; }
+.pill-loading { background: rgba(138,112,0,.15); color: var(--yellow); border: 1px solid rgba(201,168,76,.3); }
+.pill-ok { background: rgba(45,106,45,.15); color: var(--green); border: 1px solid rgba(45,106,45,.25); }
+.pill-err { background: rgba(138,32,32,.15); color: var(--red); border: 1px solid rgba(138,32,32,.25); }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .6rem; }
+.scard { background: var(--card); border: 1px solid rgba(138,110,47,.2); border-radius: 8px; padding: .65rem .85rem; }
+.scard-lbl { font-family: 'Cinzel', serif; font-size: .52rem; letter-spacing: .09em; color: var(--muted); text-transform: uppercase; margin-bottom: .22rem; }
+.scard-val { font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 600; color: var(--teal); line-height: 1; }
+.scard-sub { font-size: .65rem; color: var(--muted); font-style: italic; margin-top: .15rem; }
+.sec-hdr { font-family: 'Cinzel', serif; font-size: .62rem; font-weight: 600; color: var(--teal); letter-spacing: .1em; text-transform: uppercase; border-bottom: 1px solid var(--gold-dim); padding-bottom: .3rem; margin-bottom: .65rem; }
+.ride-table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+.ride-table th { font-family: 'Cinzel', serif; font-size: .52rem; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; text-align: left; padding: .3rem .5rem; border-bottom: 1px solid rgba(138,110,47,.2); white-space: nowrap; }
+.ride-table th.right { text-align: right; }
+.ride-table td { padding: .38rem .5rem; border-bottom: 1px solid rgba(138,110,47,.1); vertical-align: middle; }
+.ride-table tr:last-child td { border-bottom: none; }
+.ride-table tr:hover td { background: rgba(201,168,76,.06); }
+.rname-cell { font-family: 'Cinzel', serif; font-size: .63rem; color: var(--teal); line-height: 1.3; }
+.land-cell { font-size: .6rem; color: var(--muted); font-style: italic; }
+.num-cell { text-align: right; font-family: 'Cinzel', serif; font-size: .72rem; color: var(--teal); white-space: nowrap; }
+.muted-cell { text-align: right; font-size: .65rem; color: var(--muted); font-style: italic; }
+.sample-bar-wrap { width: 80px; height: 7px; background: rgba(138,110,47,.15); border-radius: 999px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: .35rem; }
+.sample-bar-fill { height: 100%; border-radius: 999px; background: var(--teal); transition: width .4s; }
+.drift-pill { display: inline-block; font-family: 'Cinzel', serif; font-size: .5rem; letter-spacing: .06em; padding: .12rem .38rem; border-radius: 999px; white-space: nowrap; }
+.drift-good { background: var(--green-bg); color: var(--green); }
+.drift-warn { background: var(--yellow-bg); color: var(--yellow); }
+.drift-bad { background: var(--red-bg); color: var(--red); }
+.drift-none { background: rgba(90,74,42,.1); color: var(--muted); }
+.hour-heatmap { display: flex; gap: 2px; align-items: center; }
+.hh-cell { width: 10px; height: 14px; border-radius: 2px; flex-shrink: 0; }
+.note { font-size: .68rem; color: var(--muted); font-style: italic; margin-top: .15rem; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--gold-dim); border-top-color: var(--gold); border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: .4rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-state { font-style: italic; color: var(--muted); font-size: .8rem; padding: 1.5rem 0; text-align: center; }
+select { font-family: 'Cinzel', serif; font-size: .58rem; letter-spacing: .05em; color: var(--teal); background: var(--card); border: 1px solid var(--gold-dim); border-radius: 5px; padding: .3rem .6rem; cursor: pointer; outline: none; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<div class="diag-wrap">
+<div class="top-bar">
+  <div class="diag-title">Predictor Diagnostics</div>
+  <div class="park-tabs">
+    <button class="ptab on" onclick="setPark('dl',this)">Disneyland</button>
+    <button class="ptab" onclick="setPark('dca',this)">DCA</button>
+  </div>
+  <select id="day-sel" onchange="load()">
+    <option value="">All day types</option>
+    <option value="0">Sunday</option>
+    <option value="1">Monday</option>
+    <option value="2">Tuesday</option>
+    <option value="3">Wednesday</option>
+    <option value="4">Thursday</option>
+    <option value="5">Friday</option>
+    <option value="6">Saturday</option>
+  </select>
+  <select id="season-sel" onchange="load()">
+    <option value="">All seasons</option>
+    <option value="regular">Regular</option>
+    <option value="summer">Summer</option>
+    <option value="spring_break">Spring Break</option>
+    <option value="holiday">Holiday</option>
+  </select>
+  <span class="status-pill pill-loading" id="status-pill"><span class="spinner"></span>Loading…</span>
+</div>
+<div class="summary-grid" id="summary-grid">
+  <div class="scard"><div class="scard-lbl">Total rows</div><div class="scard-val" id="s-rows">–</div><div class="scard-sub">matching filters</div></div>
+  <div class="scard"><div class="scard-lbl">Rides w/ data</div><div class="scard-val" id="s-rides">–</div><div class="scard-sub">of <span id="s-total">–</span> in park</div></div>
+  <div class="scard"><div class="scard-lbl">Avg samples/slot</div><div class="scard-val" id="s-avg">–</div><div class="scard-sub">per ride·hour bucket</div></div>
+  <div class="scard"><div class="scard-lbl">Avg drift</div><div class="scard-val" id="s-drift">–</div><div class="scard-sub">vs hardcoded p[ ]</div></div>
+</div>
+<div>
+  <div class="sec-hdr">Per-ride breakdown</div>
+  <div id="table-wrap"><div class="empty-state"><span class="spinner"></span> Fetching from Supabase…</div></div>
+</div>
+</div>
+<script>
+const SUPABASE_URL = 'https://qumvjdwimpvnaijjwght.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1bXZqZHdpbXB2bmFpamp3Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NzQ4ODcsImV4cCI6MjA5MzQ1MDg4N30.BjBeX8GSZkZoUnW3Ecy3MTPdHVV-6E2U1oJnVHiyr5I';
+const HRS = ['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm','11pm'];
+const MIN_SAMPLES = 5;
 
+// Alias map — same as predict.html, normalizes Supabase names before lookup
+const ALIASES = {
+  'Hyperspace Mountain': 'Space Mountain',
+};
+
+const DL = [
+  {id:'indy',name:'Indiana Jones\u2122 Adventure',land:'Adventureland',p:[10,10,20,40,60,75,80,75,70,65,60,60,65,70,65,55,45,30]},
+  {id:'jungle',name:'Jungle Cruise',land:'Adventureland',p:[5,5,10,20,30,40,45,45,40,35,30,35,40,45,40,30,20,10]},
+  {id:'potc',name:'Pirates of the Caribbean',land:'New Orleans Square',p:[5,5,5,10,20,30,35,40,35,30,25,30,35,40,35,25,20,10]},
+  {id:'hm',name:'Haunted Mansion',land:'New Orleans Square',p:[5,5,5,10,20,35,40,45,40,35,30,35,40,50,45,35,25,15]},
+  {id:'splash',name:"Tiana's Bayou Adventure",land:'Bayou Country',p:[5,5,10,25,45,65,70,65,60,55,50,55,65,70,60,45,30,15]},
+  {id:'pooh',name:'The Many Adventures of Winnie the Pooh',land:'Bayou Country',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'btmr',name:'Big Thunder Mountain Railroad',land:'Frontierland',p:[5,5,10,25,40,55,60,65,60,55,50,55,60,65,60,50,40,25]},
+  {id:'matterhorn',name:'Matterhorn Bobsleds',land:'Fantasyland',p:[5,5,10,20,35,55,65,70,65,60,55,50,55,65,60,50,40,30]},
+  {id:'peter',name:"Peter Pan's Flight",land:'Fantasyland',p:[10,10,20,35,50,65,70,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'pinoc',name:"Pinocchio's Daring Journey",land:'Fantasyland',p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,5,5]},
+  {id:'dumbo',name:'Dumbo the Flying Elephant',land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {id:'alice',name:'Alice in Wonderland',land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'toad',name:"Mr. Toad's Wild Ride",land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'snow',name:"Snow White's Enchanted Wish",land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {id:'carousel',name:'King Arthur Carrousel',land:'Fantasyland',p:[5,5,5,5,10,10,10,10,10,10,10,10,10,10,10,5,5,5]},
+  {id:'casey',name:'Casey Jr. Circus Train',land:'Fantasyland',p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'storybook',name:'Storybook Land Canal Boats',land:'Fantasyland',p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'smallworld',name:'\u201cit\u2019s a small world\u201d',land:'Fantasyland',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
+  {id:'mmrr',name:"Mickey & Minnie's Runaway Railway",land:'Toontown',p:[10,15,25,40,55,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'roger',name:"Roger Rabbit's Car Toon Spin",land:'Toontown',p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'gadget',name:"Chip 'n' Dale's GADGETcoaster",land:'Toontown',p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'space',name:'Space Mountain',land:'Tomorrowland',p:[5,5,10,25,45,65,70,75,70,65,60,65,70,75,70,55,45,30]},
+  {id:'buzz',name:'Buzz Lightyear Astro Blasters',land:'Tomorrowland',p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'autopia',name:'Autopia',land:'Tomorrowland',p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'nemo',name:'Finding Nemo Submarine Voyage',land:'Tomorrowland',p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {id:'astro',name:'Astro Orbitor',land:'Tomorrowland',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
+  {id:'startours',name:'Star Tours - The Adventures Continue',land:'Tomorrowland',p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {id:'rotr',name:'Star Wars: Rise of the Resistance',land:"Galaxy's Edge",p:[20,30,50,75,100,120,120,110,100,95,90,95,110,115,100,80,60,40]},
+  {id:'falcon',name:'Millennium Falcon: Smugglers Run',land:"Galaxy's Edge",p:[10,15,30,50,70,85,90,85,80,70,65,70,80,85,75,60,45,30]},
+];
+
+const DCA = [
+  {id:'rsr',name:'Radiator Springs Racers',land:'Cars Land',p:[20,30,55,80,100,115,110,105,95,90,85,90,100,110,100,80,60,40]},
+  {id:'luigi',name:"Luigi's Rollickin' Roadsters",land:'Cars Land',p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,8,5]},
+  {id:'mater',name:"Mater's Junkyard Jamboree",land:'Cars Land',p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
+  {id:'gotg',name:'Guardians of the Galaxy \u2014 Mission: BREAKOUT!',land:'Avengers Campus',p:[15,15,25,45,65,80,85,80,75,70,65,70,75,80,70,55,45,30]},
+  {id:'spidey',name:'WEB SLINGERS: A Spider-Man Adventure',land:'Avengers Campus',p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'incred',name:'Incredicoaster',land:'Pixar Pier',p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'tsmm',name:'Toy Story Midway Mania!',land:'Pixar Pier',p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {id:'insideout',name:'Inside Out Emotional Whirlwind',land:'Pixar Pier',p:[10,10,20,30,45,55,60,55,50,45,40,45,50,55,50,40,30,15]},
+  {id:'jessie',name:"Jessie's Critter Carousel",land:'Pixar Pier',p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'soarin',name:"Soarin' Around the World",land:'Grizzly Peak',p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
+  {id:'grizzly',name:'Grizzly River Run',land:'Grizzly Peak',p:[5,5,10,20,35,55,60,55,50,45,45,50,55,60,55,40,30,15]},
+  {id:'monsters',name:"Monsters, Inc. Mike & Sulley to the Rescue!",land:'Hollywood Land',p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,8,5]},
+  {id:'mermaid',name:"The Little Mermaid \u2014 Ariel's Undersea Adventure",land:'Paradise Gardens Park',p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,8,5]},
+  {id:'goofy',name:"Goofy's Sky School",land:'Paradise Gardens Park',p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
+  {id:'jellyfish',name:"Jumpin' Jellyfish",land:'Paradise Gardens Park',p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {id:'swings',name:'Silly Symphony Swings',land:'Paradise Gardens Park',p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+];
+
+let currentPark = 'dl';
+
+function setPark(p, btn) {
+  currentPark = p;
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  load();
+}
+
+function getSeason(month) {
+  if (month === 12 || month === 1) return 'holiday';
+  if (month >= 6 && month <= 8) return 'summer';
+  if (month === 3 || month === 4) return 'spring_break';
+  return 'regular';
+}
+
+async function load() {
+  const pill = document.getElementById('status-pill');
+  pill.className = 'status-pill pill-loading';
+  pill.innerHTML = '<span class="spinner"></span>Loading…';
+  document.getElementById('table-wrap').innerHTML = '<div class="empty-state"><span class="spinner"></span> Fetching from Supabase…</div>';
+
+  const dayVal = document.getElementById('day-sel').value;
+  const seasonVal = document.getElementById('season-sel').value;
+
+  const params = new URLSearchParams({
+    select: 'park,ride_name,hour_of_day,wait_time',
+    park: `eq.${currentPark}`,
+    is_open: 'eq.true',
+    wait_time: 'gte.0',
+    order: 'ride_name,hour_of_day',
+    limit: 50000
+  });
+  if (dayVal !== '') params.set('day_of_week', `eq.${dayVal}`);
+  if (seasonVal !== '') params.set('season', `eq.${seasonVal}`);
+
+  let rows;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times?${params}`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+      signal: AbortSignal.timeout(12000)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    rows = await res.json();
+  } catch(e) {
+    pill.className = 'status-pill pill-err';
+    pill.innerHTML = '● Error';
+    document.getElementById('table-wrap').innerHTML = `<div class="empty-state">Could not reach Supabase: ${e.message}</div>`;
+    return;
+  }
+
+  pill.className = 'status-pill pill-ok';
+  pill.innerHTML = `● ${rows.length.toLocaleString()} rows`;
+
+  const rideList = currentPark === 'dl' ? DL : DCA;
+
+  // Build buckets applying alias map: rideName -> hour -> [waits]
+  const buckets = {};
+  for (const row of rows) {
+    const rn = ALIASES[row.ride_name] || row.ride_name;
+    const h = row.hour_of_day;
+    const idx = h - 6;
+    if (idx < 0 || idx > 17) continue;
+    if (!buckets[rn]) buckets[rn] = {};
+    if (!buckets[rn][idx]) buckets[rn][idx] = [];
+    buckets[rn][idx].push(row.wait_time);
+  }
+
+  // Per-ride stats
+  const rideStats = rideList.map(ride => {
+    const rb = buckets[ride.name] || {};
+    let totalSamples = 0, slotsFilled = 0, driftSum = 0, driftCount = 0;
+    const hourCounts = new Array(18).fill(0);
+    const hourAvgs = new Array(18).fill(null);
+    for (let i = 0; i < 18; i++) {
+      const bucket = rb[i] || [];
+      hourCounts[i] = bucket.length;
+      totalSamples += bucket.length;
+      if (bucket.length >= MIN_SAMPLES) {
+        slotsFilled++;
+        const avg = bucket.reduce((a,b)=>a+b,0) / bucket.length;
+        hourAvgs[i] = avg;
+        const predicted = ride.p[i];
+        driftSum += Math.abs(avg - predicted);
+        driftCount++;
+      }
+    }
+    const avgDrift = driftCount ? Math.round(driftSum / driftCount) : null;
+    const maxCount = Math.max(...hourCounts, 1);
+    return { ...ride, totalSamples, slotsFilled, avgDrift, hourCounts, hourAvgs, maxCount };
+  });
+
+  // Summary stats
+  const ridesWithData = rideStats.filter(r => r.totalSamples > 0).length;
+  const allSlotCounts = rideStats.flatMap(r => r.hourCounts.filter(c => c > 0));
+  const avgPerSlot = allSlotCounts.length ? Math.round(allSlotCounts.reduce((a,b)=>a+b,0)/allSlotCounts.length) : 0;
+  const drifts = rideStats.filter(r => r.avgDrift !== null).map(r => r.avgDrift);
+  const avgDrift = drifts.length ? Math.round(drifts.reduce((a,b)=>a+b,0)/drifts.length) : null;
+
+  document.getElementById('s-rows').textContent = rows.length.toLocaleString();
+  document.getElementById('s-rides').textContent = ridesWithData;
+  document.getElementById('s-total').textContent = rideList.length;
+  document.getElementById('s-avg').textContent = avgPerSlot;
+  document.getElementById('s-drift').textContent = avgDrift !== null ? `${avgDrift} min` : '–';
+
+  // Sort: most data first
+  const sorted = [...rideStats].sort((a,b) => b.totalSamples - a.totalSamples);
+  const maxSamples = sorted[0]?.totalSamples || 1;
+
+  let html = `<div style="overflow-x:auto">
+<table class="ride-table">
+<thead>
+<tr>
+  <th>Ride</th>
+  <th class="right">Samples</th>
+  <th class="right">Slots (≥${MIN_SAMPLES})</th>
+  <th class="right">Avg drift</th>
+  <th>Hour coverage</th>
+</tr>
+</thead>
+<tbody>`;
+
+  for (const r of sorted) {
+    const driftClass = r.avgDrift === null ? 'drift-none'
+      : r.avgDrift <= 8 ? 'drift-good'
+      : r.avgDrift <= 18 ? 'drift-warn'
+      : 'drift-bad';
+    const driftLabel = r.avgDrift === null ? 'no data'
+      : `±${r.avgDrift} min`;
+    const barPct = Math.round((r.totalSamples / maxSamples) * 100);
+    const maxH = Math.max(...r.hourCounts, 1);
+    const heatCells = r.hourCounts.map((c, i) => {
+      const opacity = c === 0 ? 0.08 : 0.15 + (c / maxH) * 0.75;
+      const title = `${HRS[i]}: ${c} samples${r.hourAvgs[i] !== null ? `, avg ${Math.round(r.hourAvgs[i])} min (p=${r.p[i]})` : ''}`;
+      return `<div class="hh-cell" title="${title}" style="background:rgba(10,74,74,${opacity.toFixed(2)})"></div>`;
+    }).join('');
+
+    html += `<tr>
+<td>
+  <div class="rname-cell">${r.name}</div>
+  <div class="land-cell">${r.land}</div>
+</td>
+<td class="num-cell">
+  <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px">
+    <div class="sample-bar-wrap"><div class="sample-bar-fill" style="width:${barPct}%"></div></div>
+    ${r.totalSamples.toLocaleString()}
+  </div>
+</td>
+<td class="num-cell">${r.slotsFilled}<span style="font-family:'Crimson Pro',serif;font-weight:400;font-size:.65rem;color:var(--muted)"> / 18</span></td>
+<td class="num-cell"><span class="drift-pill ${driftClass}">${driftLabel}</span></td>
+<td><div class="hour-heatmap">${heatCells}</div></td>
+</tr>`;
+  }
+
+  html += `</tbody></table></div>
+<p class="note" style="margin-top:.6rem">Hover heatmap cells for hour-by-hour detail. Drift = |real avg − hardcoded p[ ]|. Green ≤ 8 min · Yellow ≤ 18 min · Red &gt; 18 min. Min ${MIN_SAMPLES} samples to count a slot.</p>`;
+
+  document.getElementById('table-wrap').innerHTML = html;
+}
+
+load();
+</script>
