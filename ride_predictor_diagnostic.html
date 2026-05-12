@@ -286,7 +286,12 @@ async function load() {
   let rows;
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times?${params}`, {
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Range-Unit': 'items',
+        'Range': '0-49999',
+      },
       signal: AbortSignal.timeout(12000)
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
