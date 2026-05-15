@@ -888,13 +888,15 @@ ${idx > 0 ? '<div class="ll-arrow">→</div>' : ''}
 stackEl.appendChild(stepEl);
 });
 
-// Standby note: rides worth skipping LL on
+// Standby note: LL-eligible rides whose peak is low enough to skip burning a LL
 const standbyRides = rides
 .map(r => {
 const { p } = getProfile(r);
 const lv = getLive(r);
 if (lv.closed) return null;
-if (r.ll) return null; // already covered in LL targets
+if (!r.ll) return null; // only LL rides are relevant here
+const pk = peakHour(p, m);
+if (pk.wait >= LL_THRESHOLD_SKIP) return null; // already in LL targets above
 const sb = bestStandbyWindow(p, m);
 return { name: r.name, sb };
 })
