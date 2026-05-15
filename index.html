@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -8,8 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tv-mode.css">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
 --gold: #c9a84c;
 --gold-light: #e8cc7a;
@@ -22,15 +20,13 @@
 --bar-gold: #c8a03a;
 --bar-gold-light: #e6c056;
 }
-
 html, body {
 width: 100%; height: 100%;
 overflow: hidden;
 background: #000;
-font-family: ‘Raleway’, sans-serif;
+font-family: 'Raleway', sans-serif;
 cursor: default;
 }
-
 /* ── BACKGROUND ── */
 #bg {
 position: fixed;
@@ -48,18 +44,18 @@ transform: translate(-50%, -50%);
 object-fit: contain;
 }
 @media (max-width: 768px) {
-  #bg-video { object-fit: cover; }
+#bg-video { object-fit: cover; }
 }
 #bg-fallback {
 position: absolute;
 inset: 0;
-background-image: url(‘bg.jpg’);
+background-image: url('bg.jpg');
 background-size: cover;
 background-position: center 45%;
 z-index: 0;
 }
 #bg::after {
-content: ‘’;
+content: '';
 position: absolute;
 inset: 0;
 background: linear-gradient(180deg,
@@ -71,7 +67,6 @@ rgba(0,0,0,0.35) 75%,
 rgba(0,0,0,1.00) 100%
 );
 }
-
 /* ── HEADER ── */
 #header {
 position: fixed;
@@ -99,38 +94,38 @@ z-index: 102;
 #header-left { display: flex; flex-direction: column; gap: 6px; }
 #wordmark { display: flex; flex-direction: column; gap: 1px; }
 #wordmark .dh-logo {
-font-family: ‘Cinzel’, serif; font-weight: 400;
+font-family: 'Cinzel', serif; font-weight: 400;
 font-size: clamp(14px, 3.5vw, 20px);
 letter-spacing: 0.10em; color: #fff8ee !important;
 text-shadow: 0 1px 8px rgba(0,0,0,0.6);
 }
 #wordmark .dh-logo .d-letter { font-style: italic; color: #e8cc7a !important; }
 #wordmark .dh-sub {
-font-family: ‘Raleway’, sans-serif; font-weight: 200;
+font-family: 'Raleway', sans-serif; font-weight: 200;
 font-size: clamp(7px, 1.8vw, 9px);
 letter-spacing: 0.38em; color: #c9a84c !important;
 text-transform: uppercase; opacity: 0.85;
 }
 #greeting-line {
-font-family: ‘Raleway’, sans-serif; font-weight: 200;
+font-family: 'Raleway', sans-serif; font-weight: 200;
 font-size: clamp(9px, 2vw, 11px);
 letter-spacing: 0.28em; color: #e8cc7a !important;
 text-transform: uppercase;
 }
 #welcome-name {
-font-family: ‘Cinzel’, serif; font-weight: 700;
+font-family: 'Cinzel', serif; font-weight: 700;
 font-size: clamp(18px, 5vw, 30px);
 letter-spacing: 0.04em; color: #fff8ee !important;
 text-shadow: 0 2px 12px rgba(0,0,0,0.7);
 line-height: 1.0;
 }
 #time-display {
-font-family: ‘Cinzel’, serif; font-weight: 600;
+font-family: 'Cinzel', serif; font-weight: 600;
 font-size: clamp(20px, 5vw, 30px);
 color: #fff8ee !important; letter-spacing: 0.06em; line-height: 1.0;
 }
 #date-display {
-font-family: ‘Raleway’, sans-serif; font-weight: 200;
+font-family: 'Raleway', sans-serif; font-weight: 200;
 font-size: clamp(8px, 1.8vw, 10px);
 letter-spacing: 0.25em; color: #e8cc7a !important;
 text-transform: uppercase; opacity: 0.85;
@@ -139,7 +134,6 @@ margin-top: 1px; white-space: nowrap;
 #weather-temp { font-size: clamp(18px, 4.5vw, 24px); font-weight: 300; color: #fff8ee !important; letter-spacing: 0.02em; }
 #weather-desc { font-size: clamp(9px, 2vw, 11px); font-weight: 200; color: rgba(255,248,238,0.7) !important; letter-spacing: 0.1em; text-transform: uppercase; align-self: flex-end; margin-bottom: 2px; }
 #welcome-block { display: flex; flex-direction: column; gap: 1px; }
-
 /* Right info column */
 #info-right {
 display: flex;
@@ -152,13 +146,12 @@ flex-shrink: 0;
 display: flex; align-items: center;
 gap: 12px; flex-wrap: wrap; justify-content: flex-end;
 }
-#weather-block { display: flex; align-items: center; gap: 5px; font-family: ‘Raleway’, sans-serif; }
+#weather-block { display: flex; align-items: center; gap: 5px; font-family: 'Raleway', sans-serif; }
 #weather-icon { font-size: clamp(16px, 4vw, 20px); line-height: 1; }
 #weather-temp { font-size: clamp(18px, 4.5vw, 24px); font-weight: 300; color: var(--warm-white); letter-spacing: 0.02em; }
 #weather-desc { font-size: clamp(9px, 2vw, 11px); font-weight: 200; color: rgba(255,248,238,0.7); letter-spacing: 0.1em; text-transform: uppercase; align-self: flex-end; margin-bottom: 2px; }
 @media (max-width: 480px) { #weather-desc { display: none; } }
 #time-block { display: flex; flex-direction: column; align-items: flex-end; }
-
 /* ── COUNTDOWN ── */
 #countdown-strip {
 display: none;
@@ -169,28 +162,27 @@ margin-top: 3px;
 #countdown-strip.visible { display: flex; }
 #countdown-icon { font-size: 8px; color: var(--gold); opacity: 0.7; }
 #countdown-text {
-font-family: ‘Raleway’, sans-serif; font-weight: 200;
+font-family: 'Raleway', sans-serif; font-weight: 200;
 font-size: clamp(8px, 1.8vw, 10px);
 letter-spacing: 0.22em; color: rgba(201,168,76,0.75);
 text-transform: uppercase;
 }
 #countdown-number {
-font-family: ‘Cinzel’, serif; font-weight: 600;
+font-family: 'Cinzel', serif; font-weight: 600;
 font-size: clamp(10px, 2.2vw, 13px);
 color: var(--gold-light); letter-spacing: 0.06em;
 }
 #countdown-unit {
-font-family: ‘Raleway’, sans-serif; font-weight: 200;
+font-family: 'Raleway', sans-serif; font-weight: 200;
 font-size: clamp(8px, 1.6vw, 10px);
 letter-spacing: 0.2em; color: var(--gold);
 text-transform: uppercase; opacity: 0.8;
 }
 #countdown-label {
-font-family: ‘Cormorant Garamond’, serif; font-style: italic;
+font-family: 'Cormorant Garamond', serif; font-style: italic;
 font-size: clamp(9px, 2vw, 11px);
 color: rgba(201,168,76,0.6); letter-spacing: 0.06em;
 }
-
 /* ── BOTTOM MENU BAR ── */
 #menu-bar {
 position: fixed;
@@ -216,18 +208,17 @@ padding: 6px 4px; border-radius: 4px;
 position: relative;
 }
 .menu-item::after {
-content: ‘’; position: absolute; inset: 0;
+content: ''; position: absolute; inset: 0;
 background: rgba(255,255,255,0.0); border-radius: 4px; transition: background 0.25s;
 }
 .menu-item:hover { transform: translateY(-3px); filter: brightness(1.15); }
 .menu-item:hover::after { background: rgba(255,255,255,0.08); }
 .menu-icon { width: clamp(28px, 7vw, 40px); height: clamp(28px, 7vw, 40px); display: flex; align-items: center; justify-content: center; }
 .menu-icon svg { width: 100%; height: 100%; fill: rgba(20,50,65,0.9); }
-.menu-label { font-family: ‘Cinzel’, serif; font-weight: 600; font-size: clamp(8px, 2vw, 11px); letter-spacing: 0.12em; color: rgba(20,50,65,0.92); text-transform: uppercase; text-align: center; line-height: 1.2; }
-.menu-sublabel { font-family: ‘Raleway’, sans-serif; font-weight: 300; font-size: clamp(7px, 1.5vw, 9px); letter-spacing: 0.1em; color: rgba(20,50,65,0.6); text-transform: uppercase; text-align: center; }
+.menu-label { font-family: 'Cinzel', serif; font-weight: 600; font-size: clamp(8px, 2vw, 11px); letter-spacing: 0.12em; color: rgba(20,50,65,0.92); text-transform: uppercase; text-align: center; line-height: 1.2; }
+.menu-sublabel { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: clamp(7px, 1.5vw, 9px); letter-spacing: 0.1em; color: rgba(20,50,65,0.6); text-transform: uppercase; text-align: center; }
 @media (max-width: 520px) { .menu-sublabel { display: none; } }
 .menu-divider { width: 1px; height: 48px; background: linear-gradient(180deg, transparent, rgba(20,50,65,0.2), transparent); flex-shrink: 0; }
-
 /* ── GEAR BUTTON ── */
 #gear-btn {
 position: fixed;
@@ -249,7 +240,6 @@ transform: rotate(30deg);
 }
 #gear-btn svg { width: 16px; height: 16px; fill: rgba(201,168,76,0.7); transition: fill 0.2s; }
 #gear-btn:hover svg { fill: var(--gold-light); }
-
 /* ── MUSIC BUTTON ── */
 #music-btn {
 position: absolute;
@@ -262,7 +252,7 @@ border-bottom: none;
 border-radius: 14px 14px 0 0;
 padding: 4px 14px 5px;
 color: var(--gold-light);
-font-family: ‘Raleway’, sans-serif;
+font-family: 'Raleway', sans-serif;
 font-size: 9px; font-weight: 300;
 letter-spacing: 0.28em; text-transform: uppercase;
 cursor: pointer; z-index: 102;
@@ -270,7 +260,6 @@ transition: background 0.3s;
 white-space: nowrap;
 }
 #music-btn:hover { background: rgba(201,168,76,0.2); }
-
 /* ── MODAL OVERLAY ── */
 #modal-overlay {
 position: fixed; inset: 0; z-index: 200;
@@ -282,7 +271,6 @@ padding: 20px;
 animation: fadeIn 0.2s ease;
 }
 #modal-overlay.open { display: flex; }
-
 #settings-modal {
 background: linear-gradient(160deg, rgba(22,52,68,0.98) 0%, rgba(14,36,48,0.99) 100%);
 border: 1px solid rgba(201,168,76,0.35);
@@ -293,15 +281,14 @@ overflow: hidden;
 animation: slideUp 0.25s ease;
 }
 @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-
 #modal-header {
 padding: 22px 24px 16px;
 border-bottom: 1px solid rgba(201,168,76,0.15);
 display: flex; align-items: center; justify-content: space-between;
 }
 #modal-title-block { display: flex; flex-direction: column; gap: 3px; }
-#modal-title { font-family: ‘Cinzel’, serif; font-weight: 600; font-size: 15px; letter-spacing: 0.1em; color: var(--warm-white); }
-#modal-subtitle { font-family: ‘Raleway’, sans-serif; font-weight: 200; font-size: 9px; letter-spacing: 0.3em; color: rgba(201,168,76,0.6); text-transform: uppercase; }
+#modal-title { font-family: 'Cinzel', serif; font-weight: 600; font-size: 15px; letter-spacing: 0.1em; color: var(--warm-white); }
+#modal-subtitle { font-family: 'Raleway', sans-serif; font-weight: 200; font-size: 9px; letter-spacing: 0.3em; color: rgba(201,168,76,0.6); text-transform: uppercase; }
 #modal-close {
 width: 28px; height: 28px;
 background: rgba(255,248,238,0.05);
@@ -313,12 +300,10 @@ display: flex; align-items: center; justify-content: center;
 transition: all 0.2s; flex-shrink: 0;
 }
 #modal-close:hover { background: rgba(255,248,238,0.1); color: var(--warm-white); }
-
 #modal-body { padding: 22px 24px 24px; display: flex; flex-direction: column; gap: 22px; overflow-y: auto; max-height: 60vh; }
-
 .field-group { display: flex; flex-direction: column; gap: 8px; }
-.field-label { font-family: ‘Cinzel’, serif; font-size: 9px; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; }
-.field-hint { font-family: ‘Raleway’, sans-serif; font-weight: 200; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,248,238,0.3); margin-top: -4px; }
+.field-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; }
+.field-hint { font-family: 'Raleway', sans-serif; font-weight: 200; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,248,238,0.3); margin-top: -4px; }
 .modal-input {
 width: 100%;
 background: rgba(255,248,238,0.05);
@@ -326,7 +311,7 @@ border: 1px solid rgba(201,168,76,0.25);
 border-radius: 3px;
 padding: 10px 12px;
 color: var(--warm-white);
-font-family: ‘Raleway’, sans-serif;
+font-family: 'Raleway', sans-serif;
 font-weight: 300; font-size: 14px;
 letter-spacing: 0.04em;
 outline: none;
@@ -334,10 +319,9 @@ transition: border-color 0.2s, background 0.2s;
 }
 .modal-input:focus { border-color: rgba(201,168,76,0.6); background: rgba(255,248,238,0.08); }
 .modal-input::placeholder { color: rgba(255,248,238,0.2); }
-.modal-input[type=“date”]::-webkit-calendar-picker-indicator { filter: invert(0.7) sepia(1) saturate(2) hue-rotate(5deg); cursor: pointer; }
-
+.modal-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7) sepia(1) saturate(2) hue-rotate(5deg); cursor: pointer; }
 .field-clear {
-font-family: ‘Raleway’, sans-serif; font-weight: 300;
+font-family: 'Raleway', sans-serif; font-weight: 300;
 font-size: 9px; letter-spacing: 0.2em;
 color: rgba(255,248,238,0.25); text-transform: uppercase;
 background: none; border: none; cursor: pointer;
@@ -346,7 +330,6 @@ transition: color 0.2s; align-self: flex-start;
 }
 .field-clear:hover { color: rgba(255,248,238,0.5); }
 .modal-divider { height: 1px; background: rgba(201,168,76,0.1); }
-
 #modal-footer { padding: 0 24px 22px; display: flex; flex-direction: column; gap: 10px; }
 #save-btn {
 width: 100%;
@@ -354,22 +337,20 @@ background: linear-gradient(135deg, rgba(201,168,76,0.9) 0%, rgba(180,138,42,0.9
 border: none; border-radius: 3px;
 padding: 12px;
 color: rgba(20,50,65,0.95);
-font-family: ‘Cinzel’, serif; font-weight: 600;
+font-family: 'Cinzel', serif; font-weight: 600;
 font-size: 11px; letter-spacing: 0.2em;
 text-transform: uppercase; cursor: pointer;
 transition: all 0.2s;
 }
 #save-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
 #save-btn:active { transform: translateY(0); }
-
 #bookmark-hint {
-font-family: ‘Raleway’, sans-serif; font-weight: 200;
+font-family: 'Raleway', sans-serif; font-weight: 200;
 font-size: 9px; letter-spacing: 0.18em;
 color: rgba(255,248,238,0.22); text-align: center;
 text-transform: uppercase; line-height: 1.7;
 }
 #bookmark-hint strong { color: rgba(201,168,76,0.5); font-weight: 400; }
-
 /* First-run nudge */
 #first-run-nudge {
 position: fixed;
@@ -387,438 +368,414 @@ animation: fadeIn 0.4s 0.8s ease both;
 max-width: 180px;
 }
 #first-run-nudge.show { display: flex; }
-#nudge-text { font-family: ‘Raleway’, sans-serif; font-weight: 300; font-size: 10px; letter-spacing: 0.1em; color: rgba(255,248,238,0.7); line-height: 1.5; }
+#nudge-text { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 10px; letter-spacing: 0.1em; color: rgba(255,248,238,0.7); line-height: 1.5; }
 #nudge-arrow { position: absolute; bottom: -7px; right: 12px; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 7px solid rgba(201,168,76,0.4); }
-#nudge-arrow::after { content: ‘’; position: absolute; top: -8px; left: -5px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid rgba(22,52,68,0.95); }
-
-#weather-loading { font-size: 11px; color: rgba(255,248,238,0.5); font-family: ‘Raleway’, sans-serif; font-weight: 200; letter-spacing: 0.15em; }
-
+#nudge-arrow::after { content: ''; position: absolute; top: -8px; left: -5px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid rgba(22,52,68,0.95); }
+#weather-loading { font-size: 11px; color: rgba(255,248,238,0.5); font-family: 'Raleway', sans-serif; font-weight: 200; letter-spacing: 0.15em; }
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 body { animation: fadeIn 1.5s ease-out; }
-
 /* ── TODAY IN PARKS WIDGET ── */
 #today-widget {
-  position: fixed;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 100;
-  width: 240px;
-  pointer-events: auto;
-  /* slide in/out by translating left */
-  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+position: fixed;
+left: 0;
+top: 50%;
+transform: translateY(-50%);
+z-index: 100;
+width: 240px;
+pointer-events: auto;
+/* slide in/out by translating left */
+transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
 }
 /* collapsed: slide box off-screen, leave only the tab visible */
 #today-widget.collapsed {
-  transform: translateY(-50%) translateX(calc(-240px + 18px));
+transform: translateY(-50%) translateX(calc(-240px + 18px));
 }
-
 #today-box {
-  background: linear-gradient(160deg, rgba(14,38,52,0.97) 0%, rgba(10,26,38,0.99) 100%);
-  border: 1px solid rgba(201,168,76,0.35);
-  border-radius: 0 8px 8px 0;
-  box-shadow: 4px 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.07);
-  overflow: visible;
-  position: relative;
+background: linear-gradient(160deg, rgba(14,38,52,0.97) 0%, rgba(10,26,38,0.99) 100%);
+border: 1px solid rgba(201,168,76,0.35);
+border-radius: 0 8px 8px 0;
+box-shadow: 4px 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.07);
+overflow: visible;
+position: relative;
 }
-
 /* pull tab on right edge */
 #today-toggle {
-  position: absolute;
-  right: -18px; top: 50%;
-  transform: translateY(-50%);
-  width: 18px; height: 40px;
-  background: linear-gradient(160deg, rgba(14,38,52,0.97), rgba(10,26,38,0.99));
-  border: 1px solid rgba(201,168,76,0.35);
-  border-left: none;
-  border-radius: 0 5px 5px 0;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+position: absolute;
+right: -18px; top: 50%;
+transform: translateY(-50%);
+width: 18px; height: 40px;
+background: linear-gradient(160deg, rgba(14,38,52,0.97), rgba(10,26,38,0.99));
+border: 1px solid rgba(201,168,76,0.35);
+border-left: none;
+border-radius: 0 5px 5px 0;
+display: flex; align-items: center; justify-content: center;
+cursor: pointer;
+-webkit-tap-highlight-color: transparent;
 }
 #today-toggle-icon {
-  font-size: 9px; color: var(--gold);
-  transition: transform 0.4s;
-  user-select: none;
+font-size: 9px; color: var(--gold);
+transition: transform 0.4s;
+user-select: none;
 }
 #today-widget.collapsed #today-toggle-icon {
-  transform: scaleX(-1);
+transform: scaleX(-1);
 }
 #today-toggle:hover { background: rgba(201,168,76,0.12); }
-
 /* header */
 #today-box-header {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px 9px;
-  border-bottom: 1px solid rgba(201,168,76,0.15);
-  background: rgba(201,168,76,0.05);
-  border-radius: 0 8px 0 0;
+display: flex; align-items: center; gap: 8px;
+padding: 10px 14px 9px;
+border-bottom: 1px solid rgba(201,168,76,0.15);
+background: rgba(201,168,76,0.05);
+border-radius: 0 8px 0 0;
 }
 #today-label-dot {
-  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-  background: #7fd88a;
-  box-shadow: 0 0 7px rgba(127,216,138,0.85);
-  animation: pulse-dot 2s ease-in-out infinite;
+width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+background: #7fd88a;
+box-shadow: 0 0 7px rgba(127,216,138,0.85);
+animation: pulse-dot 2s ease-in-out infinite;
 }
 @keyframes pulse-dot {
-  0%,100% { opacity:1; transform:scale(1); }
-  50%      { opacity:0.35; transform:scale(0.6); }
+0%,100% { opacity:1; transform:scale(1); }
+50% { opacity:0.35; transform:scale(0.6); }
 }
 #today-label-text {
-  font-family: 'Cinzel', serif; font-weight: 600;
-  font-size: 9px; letter-spacing: 0.30em; text-transform: uppercase;
-  color: var(--gold); flex: 1;
+font-family: 'Cinzel', serif; font-weight: 600;
+font-size: 9px; letter-spacing: 0.30em; text-transform: uppercase;
+color: var(--gold); flex: 1;
 }
 #today-card-counter {
-  font-family: 'Raleway', sans-serif; font-weight: 200;
-  font-size: 8px; letter-spacing: 0.12em;
-  color: rgba(201,168,76,0.38);
+font-family: 'Raleway', sans-serif; font-weight: 200;
+font-size: 8px; letter-spacing: 0.12em;
+color: rgba(201,168,76,0.38);
 }
-
 /* card viewport */
 #today-scroll-outer { overflow: hidden; }
 #today-cards {
-  display: flex;
-  transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+display: flex;
+transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
 }
 .today-card {
-  flex-shrink: 0;
-  width: 240px;
-  padding: 13px 14px 11px;
-  display: flex; flex-direction: column; gap: 6px;
+flex-shrink: 0;
+width: 240px;
+padding: 13px 14px 11px;
+display: flex; flex-direction: column; gap: 6px;
 }
 .today-card-emoji { font-size: 20px; line-height: 1; }
 .today-card-name {
-  font-family: 'Cinzel', serif; font-weight: 600;
-  font-size: 11px; letter-spacing: 0.07em;
-  color: var(--warm-white); line-height: 1.4;
+font-family: 'Cinzel', serif; font-weight: 600;
+font-size: 11px; letter-spacing: 0.07em;
+color: var(--warm-white); line-height: 1.4;
 }
 .today-card-loc {
-  font-family: 'Raleway', sans-serif; font-weight: 200;
-  font-size: 9px; letter-spacing: 0.13em; text-transform: uppercase;
-  color: rgba(255,248,238,0.35);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+font-family: 'Raleway', sans-serif; font-weight: 200;
+font-size: 9px; letter-spacing: 0.13em; text-transform: uppercase;
+color: rgba(255,248,238,0.35);
+white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 /* hours card variant */
 .today-card-hours-title {
-  font-family: 'Cinzel', serif; font-weight: 600;
-  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--gold); margin-bottom: 2px;
+font-family: 'Cinzel', serif; font-weight: 600;
+font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+color: var(--gold); margin-bottom: 2px;
 }
 .today-card-hours-time {
-  font-family: 'Cinzel', serif; font-weight: 400;
-  font-size: 18px; letter-spacing: 0.05em;
-  color: var(--warm-white); line-height: 1.1;
+font-family: 'Cinzel', serif; font-weight: 400;
+font-size: 18px; letter-spacing: 0.05em;
+color: var(--warm-white); line-height: 1.1;
 }
 .today-card-hours-sub {
-  font-family: 'Raleway', sans-serif; font-weight: 200;
-  font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
-  color: rgba(255,248,238,0.35); margin-top: 1px;
+font-family: 'Raleway', sans-serif; font-weight: 200;
+font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+color: rgba(255,248,238,0.35); margin-top: 1px;
 }
 .today-status-pill {
-  display: inline-block; margin-top: 4px;
-  font-family: 'Raleway', sans-serif; font-weight: 400;
-  font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
-  padding: 3px 9px; border-radius: 2px;
+display: inline-block; margin-top: 4px;
+font-family: 'Raleway', sans-serif; font-weight: 400;
+font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+padding: 3px 9px; border-radius: 2px;
 }
-.pill-open   { background: rgba(80,160,100,0.2); color:#7fd88a; border:1px solid rgba(80,160,100,0.3); }
+.pill-open { background: rgba(80,160,100,0.2); color:#7fd88a; border:1px solid rgba(80,160,100,0.3); }
 .pill-closed { background: rgba(180,80,60,0.18); color:#e07060; border:1px solid rgba(180,80,60,0.25); }
-.pill-soon   { background: rgba(201,168,76,0.15); color:var(--gold-light); border:1px solid rgba(201,168,76,0.25); }
-
+.pill-soon { background: rgba(201,168,76,0.15); color:var(--gold-light); border:1px solid rgba(201,168,76,0.25); }
 /* progress bar */
 #today-progress {
-  height: 2px; background: rgba(201,168,76,0.07); position: relative;
+height: 2px; background: rgba(201,168,76,0.07); position: relative;
 }
 #today-progress-fill {
-  position: absolute; top:0; left:0; height:100%;
-  background: linear-gradient(90deg, var(--gold), var(--gold-light));
-  width: 0%;
+position: absolute; top:0; left:0; height:100%;
+background: linear-gradient(90deg, var(--gold), var(--gold-light));
+width: 0%;
 }
-
 /* dots */
 #today-dots {
-  display: flex; justify-content: center; gap: 5px;
-  padding: 7px 0 8px;
-  border-radius: 0 0 8px 0;
+display: flex; justify-content: center; gap: 5px;
+padding: 7px 0 8px;
+border-radius: 0 0 8px 0;
 }
 .t-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: rgba(201,168,76,0.18); cursor: pointer; transition: all 0.3s;
+width: 5px; height: 5px; border-radius: 50%;
+background: rgba(201,168,76,0.18); cursor: pointer; transition: all 0.3s;
 }
 .t-dot.active { background: var(--gold); width: 14px; border-radius: 3px; }
-
 /* mobile: slightly smaller, still left-anchored */
 @media (max-width: 480px) {
-  #today-widget { width: 210px; }
-  #today-widget.collapsed { transform: translateY(-50%) translateX(calc(-210px + 18px)); }
-  .today-card { width: 210px; }
+#today-widget { width: 210px; }
+#today-widget.collapsed { transform: translateY(-50%) translateX(calc(-210px + 18px)); }
+.today-card { width: 210px; }
 }
 </style>
-
 </head>
 <body>
 <script src="tv-mode.js"></script>
+
+<!-- ── FIREWORKS CANVAS ── -->
+<canvas id="fireworks-canvas" style="position:fixed;inset:0;z-index:300;pointer-events:none;opacity:0;transition:opacity 1s;"></canvas>
+
 <div id="bg">
-  <div id="bg-fallback"></div>
-  <video id="bg-video" src="https://pub-95639426f8bb4fe2a03dae536a3a12fc.r2.dev/Disneylandhotelnoaudio.mp4" autoplay loop muted playsinline preload="auto"
-    oncanplay="document.getElementById('bg-fallback').style.opacity='0'"></video>
+<div id="bg-fallback"></div>
+<video id="bg-video" src="https://pub-95639426f8bb4fe2a03dae536a3a12fc.r2.dev/Disneylandhotelnoaudio.mp4" autoplay loop muted playsinline preload="auto"
+oncanplay="document.getElementById('bg-fallback').style.opacity='0'"></video>
 </div>
 
 <div id="header-divider"></div>
+
 <div id="header">
-  <div id="header-left">
-    <div id="wordmark">
-      <div class="dh-logo"><span class="d-letter">M</span>agic Key TV</div>
-      <div class="dh-sub">Disneyland Resort</div>
-    </div>
-    <div id="welcome-block">
-      <div id="greeting-line">Good Evening</div>
-      <div id="welcome-name">Welcome</div>
-      <div id="countdown-strip">
-        <span id="countdown-icon">✦</span>
-        <span id="countdown-text">Trip in</span>
-        <span id="countdown-number"></span>
-        <span id="countdown-unit"></span>
-        <span id="countdown-label"></span>
-      </div>
-    </div>
-  </div>
-  <div id="info-right">
-    <div id="weather-time-row">
-      <div id="weather-block">
-        <span id="weather-icon">☀️</span>
-        <span id="weather-temp"><span id="weather-loading" style="font-size:11px;opacity:0.5">--</span></span>
-        <span id="weather-desc"></span>
-      </div>
-      <div id="time-block">
-        <div id="time-display">--:-- --M</div>
-        <div id="date-display">Loading…</div>
-      </div>
-    </div>
-  </div>
+<div id="header-left">
+<div id="wordmark">
+<div class="dh-logo"><span class="d-letter">M</span>agic Key TV</div>
+<div class="dh-sub">Disneyland Resort</div>
+</div>
+<div id="welcome-block">
+<div id="greeting-line">Good Evening</div>
+<div id="welcome-name">Welcome</div>
+<div id="countdown-strip">
+<span id="countdown-icon">✦</span>
+<span id="countdown-text">Trip in</span>
+<span id="countdown-number"></span>
+<span id="countdown-unit"></span>
+<span id="countdown-label"></span>
+</div>
+</div>
+</div>
+<div id="info-right">
+<div id="weather-time-row">
+<div id="weather-block">
+<span id="weather-icon">☀️</span>
+<span id="weather-temp"><span id="weather-loading" style="font-size:11px;opacity:0.5">--</span></span>
+<span id="weather-desc"></span>
+</div>
+<div id="time-block">
+<div id="time-display">--:-- --M</div>
+<div id="date-display">Loading…</div>
+</div>
+</div>
+</div>
 </div>
 
 <!-- TODAY IN PARKS WIDGET -->
 <div id="today-widget">
-  <div id="today-box">
-    <div id="today-box-header">
-      <div id="today-label-dot"></div>
-      <div id="today-label-text">Today in the Parks</div>
-      <div id="today-card-counter"></div>
-    </div>
-    <div id="today-scroll-outer">
-      <div id="today-cards">
-        <div class="today-card">
-          <div class="today-card-name" style="opacity:0.28;font-size:9px;">Loading schedule…</div>
-        </div>
-      </div>
-    </div>
-    <div id="today-progress"><div id="today-progress-fill"></div></div>
-    <div id="today-dots"></div>
-    <!-- pull tab -->
-    <div id="today-toggle" onclick="todayToggle()" title="Collapse">
-      <span id="today-toggle-icon">‹</span>
-    </div>
-  </div>
+<div id="today-box">
+<div id="today-box-header">
+<div id="today-label-dot"></div>
+<div id="today-label-text">Today in the Parks</div>
+<div id="today-card-counter"></div>
+</div>
+<div id="today-scroll-outer">
+<div id="today-cards">
+<div class="today-card">
+<div class="today-card-name" style="opacity:0.28;font-size:9px;">Loading schedule…</div>
+</div>
+</div>
+</div>
+<div id="today-progress"><div id="today-progress-fill"></div></div>
+<div id="today-dots"></div>
+<!-- pull tab -->
+<div id="today-toggle" onclick="todayToggle()" title="Collapse">
+<span id="today-toggle-icon">‹</span>
+</div>
+</div>
 </div>
 
 <!-- BOTTOM MENU BAR -->
-
 <div id="menu-bar">
-  <button id="music-btn" onclick="handleMusicBtn()">♪ Play Music</button>
+<button id="music-btn" onclick="handleMusicBtn()">♪ Play Music</button>
 
-  <!-- 1. Disney Updates -->
+<!-- 1. Disney Updates -->
+<div class="menu-item" onclick="window.location.href='updates.html'">
+<div class="menu-icon">
+<svg viewBox="0 0 36 36"><circle cx="11" cy="9" r="6"/><circle cx="25" cy="9" r="6"/><circle cx="18" cy="22" r="11"/></svg>
+</div>
+<div class="menu-label">Disney<br>Updates</div>
+</div>
+<div class="menu-divider"></div>
 
-  <div class="menu-item" onclick="window.location.href='updates.html'">
-    <div class="menu-icon">
-      <svg viewBox="0 0 36 36"><circle cx="11" cy="9" r="6"/><circle cx="25" cy="9" r="6"/><circle cx="18" cy="22" r="11"/></svg>
-    </div>
-    <div class="menu-label">Disney<br>Updates</div>
-  </div>
+<!-- 3. Wait Times -->
+<div class="menu-item" onclick="window.location.href='waittimes.html'">
+<div class="menu-icon">
+<svg viewBox="0 0 36 36">
+<rect x="13" y="18" width="10" height="14"/>
+<rect x="9" y="22" width="6" height="10"/>
+<rect x="21" y="22" width="6" height="10"/>
+<rect x="10" y="18" width="4" height="6"/>
+<rect x="22" y="18" width="4" height="6"/>
+<polygon points="18,4 22,12 14,12"/>
+<rect x="10" y="14" width="4" height="5"/>
+<rect x="22" y="14" width="4" height="5"/>
+<rect x="15" y="24" width="6" height="8"/>
+</svg>
+</div>
+<div class="menu-label">Wait<br>Times</div>
+</div>
+<div class="menu-divider"></div>
 
-  <div class="menu-divider"></div>
+<!-- 3. Ride Predictor — Madam Leota crystal ball -->
+<div class="menu-item" onclick="window.location.href='predict.html'">
+<div class="menu-icon">
+<svg viewBox="0 0 36 36" fill="none">
+<!-- Base / stand -->
+<rect x="13" y="30" width="10" height="3" rx="1.5" fill="rgba(20,50,65,0.9)"/>
+<rect x="15" y="27" width="6" height="4" rx="1" fill="rgba(20,50,65,0.9)"/>
+<!-- Glow ring around ball -->
+<circle cx="18" cy="16" r="12" fill="rgba(20,50,65,0.15)" stroke="rgba(20,50,65,0.4)" stroke-width="1"/>
+<!-- Crystal ball -->
+<circle cx="18" cy="16" r="10" fill="rgba(20,50,65,0.9)"/>
+<!-- Mystic glow inside -->
+<circle cx="18" cy="16" r="10" fill="rgba(20,50,65,0)" stroke="rgba(20,50,65,0.9)" stroke-width="0"/>
+<!-- Leota face — eyes -->
+<ellipse cx="15" cy="15" rx="2" ry="2.5" fill="rgba(180,138,42,0.9)"/>
+<ellipse cx="21" cy="15" rx="2" ry="2.5" fill="rgba(180,138,42,0.9)"/>
+<!-- Pupils -->
+<ellipse cx="15.5" cy="15.5" rx="1" ry="1.2" fill="rgba(20,50,65,0.9)"/>
+<ellipse cx="21.5" cy="15.5" rx="1" ry="1.2" fill="rgba(20,50,65,0.9)"/>
+<!-- Mouth — slight smile -->
+<path d="M15 20 Q18 22.5 21 20" stroke="rgba(180,138,42,0.9)" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+<!-- Wispy hair lines -->
+<path d="M14 9 Q13 6 15 5" stroke="rgba(180,138,42,0.6)" stroke-width="1" stroke-linecap="round" fill="none"/>
+<path d="M18 8 Q18 5 18 4" stroke="rgba(180,138,42,0.6)" stroke-width="1" stroke-linecap="round" fill="none"/>
+<path d="M22 9 Q23 6 21 5" stroke="rgba(180,138,42,0.6)" stroke-width="1" stroke-linecap="round" fill="none"/>
+<!-- Highlight on ball -->
+<ellipse cx="13.5" cy="11" rx="2.5" ry="1.5" fill="rgba(255,248,238,0.12)" transform="rotate(-20 13.5 11)"/>
+</svg>
+</div>
+<div class="menu-label">Ride<br>Predictor</div>
+<div class="menu-sublabel">Plan Your Day</div>
+</div>
+<div class="menu-divider"></div>
 
-  <!-- 3. Wait Times -->
+<!-- 4. Ride Survey -->
+<div class="menu-item" onclick="window.location.href='survey.html'">
+<div class="menu-icon">
+<svg viewBox="0 0 36 36">
+<rect x="14" y="4" width="8" height="22" rx="1.5"/>
+<polygon points="14,26 22,26 18,34"/>
+<rect x="14" y="2" width="8" height="4" rx="1"/>
+<line x1="14" y1="10" x2="22" y2="10" stroke="rgba(180,138,42,0.7)" stroke-width="1.2" fill="none"/>
+<line x1="14" y1="14" x2="22" y2="14" stroke="rgba(180,138,42,0.7)" stroke-width="1.2" fill="none"/>
+<line x1="14" y1="18" x2="22" y2="18" stroke="rgba(180,138,42,0.7)" stroke-width="1.2" fill="none"/>
+</svg>
+</div>
+<div class="menu-label">Ride<br>Survey</div>
+<div class="menu-sublabel">Rank Rides</div>
+</div>
+<div class="menu-divider"></div>
 
-  <div class="menu-item" onclick="window.location.href='waittimes.html'">
-    <div class="menu-icon">
-      <svg viewBox="0 0 36 36">
-        <rect x="13" y="18" width="10" height="14"/>
-        <rect x="9" y="22" width="6" height="10"/>
-        <rect x="21" y="22" width="6" height="10"/>
-        <rect x="10" y="18" width="4" height="6"/>
-        <rect x="22" y="18" width="4" height="6"/>
-        <polygon points="18,4 22,12 14,12"/>
-        <rect x="10" y="14" width="4" height="5"/>
-        <rect x="22" y="14" width="4" height="5"/>
-        <rect x="15" y="24" width="6" height="8"/>
-      </svg>
-    </div>
-    <div class="menu-label">Wait<br>Times</div>
-  </div>
+<!-- 5. Live Streams -->
+<div class="menu-item" onclick="window.location.href='streams.html'">
+<div class="menu-icon">
+<svg viewBox="0 0 36 36">
+<path d="M6,18 Q6,9 18,5" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M30,18 Q30,9 18,5" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M10,22 Q10,13 18,10" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2" stroke-linecap="round"/>
+<path d="M26,22 Q26,13 18,10" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2" stroke-linecap="round"/>
+<circle cx="18" cy="22" r="8" fill="rgba(20,50,65,0.9)"/>
+<polygon points="15,18.5 15,25.5 23,22" fill="rgba(180,138,42,1)"/>
+</svg>
+</div>
+<div class="menu-label">Live<br>Streams</div>
+<div class="menu-sublabel">Watch Now</div>
+</div>
+<div class="menu-divider"></div>
 
-  <div class="menu-divider"></div>
+<!-- 6. Resort Map -->
+<div class="menu-item" onclick="window.open('https://disneyland.disney.go.com/maps/', '_blank')">
+<div class="menu-icon">
+<svg viewBox="0 0 36 36">
+<polygon points="2,6 12,2 24,6 34,2 34,30 24,34 12,30 2,34" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5"/>
+<polygon points="2,6 12,2 24,6 34,2 34,30 24,34 12,30 2,34"/>
+<polyline points="12,2 12,30" stroke="rgba(180,138,42,0.7)" stroke-width="1.5" fill="none"/>
+<polyline points="24,6 24,34" stroke="rgba(180,138,42,0.7)" stroke-width="1.5" fill="none"/>
+</svg>
+</div>
+<div class="menu-label">Resort<br>Map</div>
+<div class="menu-sublabel">Navigate</div>
+</div>
+<div class="menu-divider"></div>
 
-  <!-- 3. Ride Predictor — Madam Leota crystal ball -->
-
-  <div class="menu-item" onclick="window.location.href='predict.html'">
-    <div class="menu-icon">
-      <svg viewBox="0 0 36 36" fill="none">
-        <!-- Base / stand -->
-        <rect x="13" y="30" width="10" height="3" rx="1.5" fill="rgba(20,50,65,0.9)"/>
-        <rect x="15" y="27" width="6" height="4" rx="1" fill="rgba(20,50,65,0.9)"/>
-        <!-- Glow ring around ball -->
-        <circle cx="18" cy="16" r="12" fill="rgba(20,50,65,0.15)" stroke="rgba(20,50,65,0.4)" stroke-width="1"/>
-        <!-- Crystal ball -->
-        <circle cx="18" cy="16" r="10" fill="rgba(20,50,65,0.9)"/>
-        <!-- Mystic glow inside -->
-        <circle cx="18" cy="16" r="10" fill="rgba(20,50,65,0)" stroke="rgba(20,50,65,0.9)" stroke-width="0"/>
-        <!-- Leota face — eyes -->
-        <ellipse cx="15" cy="15" rx="2" ry="2.5" fill="rgba(180,138,42,0.9)"/>
-        <ellipse cx="21" cy="15" rx="2" ry="2.5" fill="rgba(180,138,42,0.9)"/>
-        <!-- Pupils -->
-        <ellipse cx="15.5" cy="15.5" rx="1" ry="1.2" fill="rgba(20,50,65,0.9)"/>
-        <ellipse cx="21.5" cy="15.5" rx="1" ry="1.2" fill="rgba(20,50,65,0.9)"/>
-        <!-- Mouth — slight smile -->
-        <path d="M15 20 Q18 22.5 21 20" stroke="rgba(180,138,42,0.9)" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-        <!-- Wispy hair lines -->
-        <path d="M14 9 Q13 6 15 5" stroke="rgba(180,138,42,0.6)" stroke-width="1" stroke-linecap="round" fill="none"/>
-        <path d="M18 8 Q18 5 18 4" stroke="rgba(180,138,42,0.6)" stroke-width="1" stroke-linecap="round" fill="none"/>
-        <path d="M22 9 Q23 6 21 5" stroke="rgba(180,138,42,0.6)" stroke-width="1" stroke-linecap="round" fill="none"/>
-        <!-- Highlight on ball -->
-        <ellipse cx="13.5" cy="11" rx="2.5" ry="1.5" fill="rgba(255,248,238,0.12)" transform="rotate(-20 13.5 11)"/>
-      </svg>
-    </div>
-    <div class="menu-label">Ride<br>Predictor</div>
-    <div class="menu-sublabel">Plan Your Day</div>
-  </div>
-
-  <div class="menu-divider"></div>
-
-  <!-- 4. Ride Survey -->
-
-  <div class="menu-item" onclick="window.location.href='survey.html'">
-    <div class="menu-icon">
-      <svg viewBox="0 0 36 36">
-        <rect x="14" y="4" width="8" height="22" rx="1.5"/>
-        <polygon points="14,26 22,26 18,34"/>
-        <rect x="14" y="2" width="8" height="4" rx="1"/>
-        <line x1="14" y1="10" x2="22" y2="10" stroke="rgba(180,138,42,0.7)" stroke-width="1.2" fill="none"/>
-        <line x1="14" y1="14" x2="22" y2="14" stroke="rgba(180,138,42,0.7)" stroke-width="1.2" fill="none"/>
-        <line x1="14" y1="18" x2="22" y2="18" stroke="rgba(180,138,42,0.7)" stroke-width="1.2" fill="none"/>
-      </svg>
-    </div>
-    <div class="menu-label">Ride<br>Survey</div>
-    <div class="menu-sublabel">Rank Rides</div>
-  </div>
-
-  <div class="menu-divider"></div>
-
-  <!-- 5. Live Streams -->
-
-  <div class="menu-item" onclick="window.location.href='streams.html'">
-    <div class="menu-icon">
-      <svg viewBox="0 0 36 36">
-        <path d="M6,18 Q6,9 18,5" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M30,18 Q30,9 18,5" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M10,22 Q10,13 18,10" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2" stroke-linecap="round"/>
-        <path d="M26,22 Q26,13 18,10" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="18" cy="22" r="8" fill="rgba(20,50,65,0.9)"/>
-        <polygon points="15,18.5 15,25.5 23,22" fill="rgba(180,138,42,1)"/>
-      </svg>
-    </div>
-    <div class="menu-label">Live<br>Streams</div>
-    <div class="menu-sublabel">Watch Now</div>
-  </div>
-
-  <div class="menu-divider"></div>
-
-  <!-- 6. Resort Map -->
-
-  <div class="menu-item" onclick="window.open('https://disneyland.disney.go.com/maps/', '_blank')">
-    <div class="menu-icon">
-      <svg viewBox="0 0 36 36">
-        <polygon points="2,6 12,2 24,6 34,2 34,30 24,34 12,30 2,34" fill="none" stroke="rgba(20,50,65,0.9)" stroke-width="2.5"/>
-        <polygon points="2,6 12,2 24,6 34,2 34,30 24,34 12,30 2,34"/>
-        <polyline points="12,2 12,30" stroke="rgba(180,138,42,0.7)" stroke-width="1.5" fill="none"/>
-        <polyline points="24,6 24,34" stroke="rgba(180,138,42,0.7)" stroke-width="1.5" fill="none"/>
-      </svg>
-    </div>
-    <div class="menu-label">Resort<br>Map</div>
-    <div class="menu-sublabel">Navigate</div>
-  </div>
-
-  <div class="menu-divider"></div>
-
-  <!-- 7. Dining -->
-
-  <div class="menu-item" onclick="window.open('https://disneyland.disney.go.com/dining/', '_blank')">
-    <div class="menu-icon">
-      <svg viewBox="0 0 36 36">
-        <rect x="6.5" y="2" width="2.5" height="32" rx="1.2"/>
-        <path d="M5,2 Q5,11 9,15 Q13,11 13,2Z"/>
-        <rect x="25" y="2" width="2.5" height="32" rx="1.2"/>
-        <path d="M22,2 Q22,10 27.5,14 Q27.5,2 27.5,2Z"/>
-      </svg>
-    </div>
-    <div class="menu-label">Dining</div>
-    <div class="menu-sublabel">Reservations</div>
-  </div>
-
+<!-- 7. Dining -->
+<div class="menu-item" onclick="window.open('https://disneyland.disney.go.com/dining/', '_blank')">
+<div class="menu-icon">
+<svg viewBox="0 0 36 36">
+<rect x="6.5" y="2" width="2.5" height="32" rx="1.2"/>
+<path d="M5,2 Q5,11 9,15 Q13,11 13,2Z"/>
+<rect x="25" y="2" width="2.5" height="32" rx="1.2"/>
+<path d="M22,2 Q22,10 27.5,14 Q27.5,2 27.5,2Z"/>
+</svg>
+</div>
+<div class="menu-label">Dining</div>
+<div class="menu-sublabel">Reservations</div>
+</div>
 </div>
 
 <!-- GEAR BUTTON -->
-
 <button id="gear-btn" onclick="openModal()" title="Personalize">
-  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
-    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-  </svg>
+<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
+<path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+</svg>
 </button>
 
 <!-- FIRST-RUN NUDGE -->
-
 <div id="first-run-nudge">
-  <span id="nudge-text">Tap to personalize your name &amp; trip countdown</span>
-  <div id="nudge-arrow"></div>
+<span id="nudge-text">Tap to personalize your name &amp; trip countdown</span>
+<div id="nudge-arrow"></div>
 </div>
 
 <!-- SETTINGS MODAL -->
-
 <div id="modal-overlay" onclick="handleOverlayClick(event)">
-  <div id="settings-modal">
-    <div id="modal-header">
-      <div id="modal-title-block">
-        <div id="modal-title">Personalize</div>
-        <div id="modal-subtitle">Your settings · Saved locally</div>
-      </div>
-      <button id="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div id="modal-body">
-      <div class="field-group">
-        <label class="field-label" for="input-name">Family Name</label>
-        <div class="field-hint">Displays as "[Name] Family" — e.g. enter "Cooke" → "Cooke Family"</div>
-        <input class="modal-input" type="text" id="input-name" placeholder="Your Family Name" maxlength="40" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="modal-divider"></div>
-      <div class="field-group">
-        <label class="field-label" for="input-trip">Next Trip Date</label>
-        <div class="field-hint">Shows a countdown banner below the header</div>
-        <input class="modal-input" type="date" id="input-trip">
-        <button class="field-clear" onclick="clearTrip()">Clear trip date</button>
-      </div>
-    </div>
-    <div id="modal-footer">
-      <button id="save-btn" onclick="saveSettings()">Save Settings</button>
-      <div id="bookmark-hint">Settings are <strong>saved in your browser</strong> and will persist across pages.</div>
-    </div>
-  </div>
+<div id="settings-modal">
+<div id="modal-header">
+<div id="modal-title-block">
+<div id="modal-title">Personalize</div>
+<div id="modal-subtitle">Your settings · Saved locally</div>
+</div>
+<button id="modal-close" onclick="closeModal()">✕</button>
+</div>
+<div id="modal-body">
+<div class="field-group">
+<label class="field-label" for="input-name">Family Name</label>
+<div class="field-hint">Displays as "[Name] Family" — e.g. enter "Cooke" → "Cooke Family"</div>
+<input class="modal-input" type="text" id="input-name" placeholder="Your Family Name" maxlength="40" autocomplete="off" spellcheck="false">
+</div>
+<div class="modal-divider"></div>
+<div class="field-group">
+<label class="field-label" for="input-trip">Next Trip Date</label>
+<div class="field-hint">Shows a countdown banner below the header</div>
+<input class="modal-input" type="date" id="input-trip">
+<button class="field-clear" onclick="clearTrip()">Clear trip date</button>
+</div>
+</div>
+<div id="modal-footer">
+<button id="save-btn" onclick="saveSettings()">Save Settings</button>
+<div id="bookmark-hint">Settings are <strong>saved in your browser</strong> and will persist across pages.</div>
+</div>
+</div>
 </div>
 
 <iframe id="sc-player"
-  src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/andrew-cooke-712519831/disneyland-hotel-room-audio&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false"
-  style="position:absolute;top:-9999px;left:-9999px;width:1px;height:1px;"
-  allow="autoplay">
+src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/andrew-cooke-712519831/disneyland-hotel-room-audio&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false"
+style="position:absolute;top:-9999px;left:-9999px;width:1px;height:1px;"
+allow="autoplay">
 </iframe>
 
 <script>
@@ -832,9 +789,138 @@ const urlTrip = urlParams.get('trip') || '';
 const stored = loadSettings();
 const params = { name: urlName || stored.name || '', trip: urlTrip || stored.trip || '' };
 if (urlName || urlTrip) persistSettings(params.name, params.trip);
+
 const isFirstRun = !params.name && !params.trip;
 if (params.name) { document.getElementById('welcome-name').textContent = params.name + ' Family'; } else { document.getElementById('welcome-name').textContent = 'Welcome'; }
 if (isFirstRun) { const nudge = document.getElementById('first-run-nudge'); nudge.classList.add('show'); setTimeout(() => { nudge.style.opacity = '0'; nudge.style.transition = 'opacity 0.8s'; setTimeout(() => nudge.classList.remove('show'), 800); }, 6000); }
+
+// ── FIREWORKS ──
+let fireworksFired = false;
+
+function launchFireworks() {
+  if (fireworksFired) return;
+  fireworksFired = true;
+
+  const canvas = document.getElementById('fireworks-canvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  canvas.style.opacity = '1';
+
+  const COLORS = [
+    '#e8cc7a','#c9a84c','#fff8ee','#7fd8fa',
+    '#f5b8d4','#a8e6cf','#ffd700','#ffffff'
+  ];
+
+  const particles = [];
+
+  function spawnBurst(x, y) {
+    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const count = 60 + Math.floor(Math.random() * 40);
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.3;
+      const speed = 2.5 + Math.random() * 5;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        alpha: 1,
+        decay: 0.012 + Math.random() * 0.01,
+        radius: 2 + Math.random() * 2,
+        color,
+        trail: [],
+      });
+    }
+  }
+
+  // Schedule bursts spread across 10 seconds
+  const W = () => canvas.width, H = () => canvas.height;
+  const burstTimes = [
+    [0,    () => [W()*0.5,  H()*0.35]],
+    [400,  () => [W()*0.25, H()*0.40]],
+    [700,  () => [W()*0.75, H()*0.38]],
+    [1200, () => [W()*0.5,  H()*0.25]],
+    [1600, () => [W()*0.3,  H()*0.50]],
+    [1900, () => [W()*0.7,  H()*0.45]],
+    [2400, () => [W()*0.5,  H()*0.35]],
+    [2800, () => [W()*0.2,  H()*0.35]],
+    [3100, () => [W()*0.8,  H()*0.40]],
+    [3500, () => [W()*0.55, H()*0.28]],
+    [4000, () => [W()*0.5,  H()*0.35]],
+    [4500, () => [W()*0.35, H()*0.42]],
+    [5000, () => [W()*0.65, H()*0.38]],
+    [5600, () => [W()*0.5,  H()*0.30]],
+    [6200, () => [W()*0.25, H()*0.45]],
+    [6700, () => [W()*0.75, H()*0.42]],
+    [7200, () => [W()*0.5,  H()*0.35]],
+    [7800, () => [W()*0.4,  H()*0.32]],
+    [8300, () => [W()*0.6,  H()*0.38]],
+    [9000, () => [W()*0.5,  H()*0.28]],
+  ];
+
+  burstTimes.forEach(([delay, pos]) => {
+    setTimeout(() => {
+      const [x, y] = pos();
+      spawnBurst(x, y);
+      // twin burst nearby for density
+      setTimeout(() => spawnBurst(x + (Math.random()-0.5)*80, y + (Math.random()-0.5)*60), 120);
+    }, delay);
+  });
+
+  let running = true;
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.trail.push({ x: p.x, y: p.y, alpha: p.alpha });
+      if (p.trail.length > 5) p.trail.shift();
+
+      // draw trail
+      for (let t = 0; t < p.trail.length; t++) {
+        const tr = p.trail[t];
+        ctx.globalAlpha = tr.alpha * 0.25 * (t / p.trail.length);
+        ctx.beginPath();
+        ctx.arc(tr.x, tr.y, p.radius * 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = p.alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.06; // gravity
+      p.vx *= 0.98;
+      p.vy *= 0.98;
+      p.alpha -= p.decay;
+
+      if (p.alpha <= 0) particles.splice(i, 1);
+    }
+
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  // Fade out canvas after 11s, stop loop after fade
+  setTimeout(() => {
+    canvas.style.transition = 'opacity 2s';
+    canvas.style.opacity = '0';
+    setTimeout(() => { running = false; ctx.clearRect(0, 0, canvas.width, canvas.height); }, 2100);
+  }, 10000);
+}
 
 function updateCountdown() {
   const trip = params.trip; const strip = document.getElementById('countdown-strip');
@@ -846,10 +932,11 @@ function updateCountdown() {
   if (diff < 0) { strip.classList.remove('visible'); return; }
   strip.classList.add('visible');
   const numEl = document.getElementById('countdown-number'), unitEl = document.getElementById('countdown-unit'), textEl = document.getElementById('countdown-text'), labelEl = document.getElementById('countdown-label');
-  if (diff === 0) { textEl.textContent = ''; numEl.textContent = 'Today is the day!'; unitEl.textContent = ''; labelEl.textContent = '🏰'; }
+  if (diff === 0) { textEl.textContent = ''; numEl.textContent = 'Today is the day!'; unitEl.textContent = ''; labelEl.textContent = '🏰'; launchFireworks(); }
   else if (diff === 1) { textEl.textContent = 'Trip is'; numEl.textContent = 'Tomorrow'; unitEl.textContent = ''; labelEl.textContent = ''; }
   else { const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; textEl.textContent = 'Trip in'; numEl.textContent = diff; unitEl.textContent = 'days'; labelEl.textContent = '· ' + months[tripDate.getMonth()] + ' ' + tripDate.getDate(); }
 }
+
 updateCountdown();
 
 function updateClock() {
@@ -908,15 +995,14 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
 (function() {
   // Fallback IDs — overwritten at runtime by resolveParkIds()
   let PARK_IDS = {
-    dl:  '7340550b-c14d-4def-80bb-acbe51cd9ab2',
+    dl: '7340550b-c14d-4def-80bb-acbe51cd9ab2',
     dca: '832fcd51-ea19-4e77-85c7-75d5843b127c'
   };
   const PARK_LABELS = { dl: 'Disneyland', dca: 'DCA' };
-  const TYPE_EMOJI  = { show:'🎬', character:'🤝', parade:'🎺', fireworks:'✨', event:'🎟' };
-  const ADVANCE_MS  = 15000;
-
+  const TYPE_EMOJI = { show:'🎬', character:'🤝', parade:'🎺', fireworks:'✨', event:'🎟' };
+  const ADVANCE_MS = 15000;
   let widgetCards = [];
-  let widgetIdx   = 0;
+  let widgetIdx = 0;
   let widgetTimer = null;
 
   // Resolve real entity IDs from the ThemeParks.wiki destinations list
@@ -930,9 +1016,9 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
       });
       if (!dlResort || !dlResort.parks) return;
       const parks = dlResort.parks;
-      const dl  = parks.find(p => (p.name||'').toLowerCase().includes('disneyland') && !(p.name||'').toLowerCase().includes('california'));
+      const dl = parks.find(p => (p.name||'').toLowerCase().includes('disneyland') && !(p.name||'').toLowerCase().includes('california'));
       const dca = parks.find(p => (p.name||'').toLowerCase().includes('california'));
-      if (dl)  PARK_IDS.dl  = dl.id;
+      if (dl) PARK_IDS.dl = dl.id;
       if (dca) PARK_IDS.dca = dca.id;
     } catch(e) { /* keep fallback IDs */ }
   }
@@ -946,7 +1032,7 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
 
   // ── helpers ──
   // Parse h and m directly from the LOCAL part of the ISO string (before any tz offset)
-  // e.g. "2026-05-05T22:00:00-07:00" → h=22, m=0  (Anaheim local time, no conversion)
+  // e.g. "2026-05-05T22:00:00-07:00" → h=22, m=0 (Anaheim local time, no conversion)
   // This avoids JS Date() converting to browser timezone and showing wrong hours.
   function parseLocalHM(t) {
     if (!t) return null;
@@ -984,276 +1070,157 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
 
   function inferLoc(name, park) {
     const n = (name||'').toLowerCase();
-    if (n.includes('fantasmic'))       return 'Rivers of America';
-    if (n.includes('world of color'))  return 'Paradise Bay';
-    if (n.includes('frozen'))          return 'Hyperion Theater';
-    if (n.includes('parade'))          return park==='dl'?'Main Street U.S.A.':'Buena Vista St.';
+    if (n.includes('fantasmic')) return 'Rivers of America';
+    if (n.includes('world of color')) return 'Paradise Bay';
+    if (n.includes('frozen')) return 'Hyperion Theater';
+    if (n.includes('parade')) return park==='dl'?'Main Street U.S.A.':'Buena Vista St.';
     if (n.includes('firework')||n.includes('remember')||n.includes('wondrous')) return 'Disneyland Skies';
     if (n.includes('mickey')||n.includes('minnie')) return park==='dl'?'Town Square Theater':'Carthay Circle';
-    if (n.includes('princess'))        return 'Fantasy Faire';
-    if (n.includes('avenger'))         return 'Avengers Campus';
-    if (n.includes('lion king'))       return 'Fantasyland Theatre';
+    if (n.includes('princess')) return 'Fantasy Faire';
+    if (n.includes('avenger')) return 'Avengers Campus';
+    if (n.includes('lion king')) return 'Fantasyland Theatre';
     return PARK_LABELS[park];
   }
 
   async function fetchT(url, ms=8000) {
     const c = new AbortController();
-    const t = setTimeout(()=>c.abort(), ms);
+    const t = setTimeout(() => c.abort(), ms);
     try {
-      const r = await fetch(url, {signal:c.signal});
+      const r = await fetch(url, { signal: c.signal });
       clearTimeout(t);
-      if (!r.ok) throw new Error('HTTP '+r.status);
+      if (!r.ok) throw new Error(r.status);
       return await r.json();
     } catch(e) { clearTimeout(t); throw e; }
   }
 
-  // ── park hours fallback cards — uses ThemeParks.wiki schedule endpoint ──
-  async function buildHoursCards() {
-    const cards = [];
-    const parkDefs = [
-      {pk:'dl',  id:PARK_IDS.dl,  label:'Disneyland',          sub:'The Original Magic Kingdom'},
-      {pk:'dca', id:PARK_IDS.dca, label:'California Adventure', sub:'Disney California Adventure Park'}
-    ];
-    // Use local date (not UTC) so it doesn't roll to tomorrow after 5pm Pacific
-    const _now = new Date();
-    const today = _now.getFullYear()+'-'+String(_now.getMonth()+1).padStart(2,'0')+'-'+String(_now.getDate()).padStart(2,'0');
-    for (const p of parkDefs) {
-      let openStr='—', closeStr='—', statusCls='', statusTxt='';
-      try {
-        const d = await fetchT('https://api.themeparks.wiki/v1/entity/'+p.id+'/schedule');
-        // Find today's "OPERATING" schedule entry at the park level
-        const todayEntry = (d.schedule||[]).find(s =>
-          s.date === today && s.type === 'OPERATING'
-        );
-        if (todayEntry && todayEntry.openingTime && todayEntry.closingTime) {
-          openStr  = fmt12(todayEntry.openingTime);
-          closeStr = fmt12(todayEntry.closingTime);
-          // Compare current Pacific time against park hours (park times are in Pacific)
-          const nowPacific = new Date().toLocaleString('en-US', {timeZone:'America/Los_Angeles'});
-          const nowPacificDate = new Date(nowPacific);
-          const nowM = nowPacificDate.getHours()*60+nowPacificDate.getMinutes();
-          const om  = toMins(todayEntry.openingTime);
-          const cm  = toMins(todayEntry.closingTime);
-          if      (nowM < om)  { statusCls='pill-soon';   statusTxt='Opens Soon'; }
-          else if (nowM < cm)  { statusCls='pill-open';   statusTxt='● Open Now'; }
-          else                 { statusCls='pill-closed'; statusTxt='Closed'; }
-        }
-      } catch { /* leave dashes */ }
-      cards.push({
-        type: 'hours',
-        park: p.pk,
-        label: p.label,
-        sub: p.sub,
-        open: openStr,
-        close: closeStr,
-        statusCls, statusTxt
-      });
+  function buildHoursCard(label, hours) {
+    if (!hours) return null;
+    const open = hours.openingTime || hours.open || '';
+    const close = hours.closingTime || hours.close || '';
+    if (!open && !close) return null;
+    const openMins = toMins(open);
+    const closeMins = toMins(close);
+    const nowMins = new Date().getHours()*60 + new Date().getMinutes();
+    let pill = '';
+    if (openMins !== null && closeMins !== null) {
+      if (nowMins < openMins) pill = '<span class="today-status-pill pill-soon">Opens ' + fmt12(open) + '</span>';
+      else if (nowMins >= closeMins) pill = '<span class="today-status-pill pill-closed">Closed</span>';
+      else pill = '<span class="today-status-pill pill-open">Open Now</span>';
     }
-    return cards;
+    return `<div class="today-card">
+      <div class="today-card-hours-title">${label}</div>
+      <div class="today-card-hours-time">${fmt12(open)} – ${fmt12(close)}</div>
+      <div class="today-card-hours-sub">Park Hours</div>
+      ${pill}
+    </div>`;
   }
 
-  // ── main load ──
-  // Disney has no public unauthenticated API for show schedules.
-  // We fetch today's entertainment from Disney's day calendar page via a CORS proxy,
-  // parsing show names and times from the rendered HTML.
-  // If that fails, we fall back to a curated list of currently-running shows.
-  async function loadWidget() {
-    const _now = new Date();
-    const today = _now.getFullYear()+'-'+String(_now.getMonth()+1).padStart(2,'0')+'-'+String(_now.getDate()).padStart(2,'0');
-    let items = [];
-
+  async function fetchSchedule(parkId, parkKey) {
     try {
-      // Disney's day calendar returns structured data we can parse
-      // Use allorigins proxy (same one used in waittimes.html) to bypass CORS
-      const calUrl = 'https://disneyland.disney.go.com/calendars/day/#/disneyland/';
-      const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(
-        'https://disneyland.disney.go.com/api/calendar/day/?date=' + today + '&region=us'
-      );
-      const resp = await fetchT(proxyUrl, 10000);
-      const raw = typeof resp.contents === 'string' ? resp.contents : JSON.stringify(resp);
-      const data = JSON.parse(raw);
-
-      // Disney calendar API returns arrays of entertainment by park
-      // Structure: { parks: [{ id, name, entertainments: [{name, performanceTimes:[{startTime}], ...}] }] }
-      const parks = data.parks || data.items || [];
-      for (const park of parks) {
-        const pk = (park.name||park.id||'').toLowerCase().includes('california') ? 'dca' : 'dl';
-        const ents = park.entertainments || park.entertainment || park.shows || [];
-        for (const ent of ents) {
-          const name = ent.name || ent.title || '';
-          if (!name) continue;
-          const rawTimes = ent.performanceTimes || ent.startTimes || ent.times || [];
-          const times = rawTimes.map(t => {
-            const ts = t.startTime || t.time || t;
-            return typeof ts === 'string' ? fmt12(ts) : '';
-          }).filter(Boolean);
-          const kind = inferType(name, ent.type || ent.facilityType || '');
-          items.push({ type:'ent', name, kind, loc: inferLoc(name, pk), park: pk, times, isNighttime: kind==='fireworks' });
-        }
-      }
-    } catch(e) {
-      console.log('[Widget] Disney calendar fetch failed:', e.message, '— using curated schedule');
-    }
-
-    // ═════════════════════════════════════════════════════════════════
-    // ⚠️  MAINTENANCE REQUIRED
-    //
-    // There is no free public API for Disneyland show/entertainment schedules.
-    // Investigated options (May 2026):
-    //   • Disney's own API requires rotating auth tokens — not viable for
-    //     a static GitHub Pages site without a backend.
-    //   • ThemeParks.wiki has park hours + ride waits only, no show data.
-    //   • ThemeParkIQ (themeparkiq.com/disneyland/entertainment/schedule)
-    //     has live show times but fetches them server-side — no public
-    //     API endpoint is exposed to the browser.
-    //   • MouseWait is a social app with no developer API at all.
-    //   • Best future path: a free Cloudflare Worker that proxies Disney's
-    //     API server-side and caches results — revisit if you ever want
-    //     to add a lightweight backend.
-    //
-    // FOR NOW: Keep this list manually up to date.
-    //
-    // LAST VERIFIED: May 2026
-    //
-    // ── NEXT UPDATE DUE ──────────────────────────────────────────────
-    // 🎃 Halloween Time:     ~late August 2026
-    //    Wondrous Journeys pauses → Halloween Screams fireworks
-    //    Fantasmic! continues
-    //    World of Color pauses → Oogie Boogie Bash (ticketed) some nights
-    //    Parade → check for Halloween overlay
-    //
-    // 🎄 Holiday Time:       ~mid November 2026
-    //    Wondrous Journeys pauses → remember... Dreams Come True w/ snow
-    //    World of Color pauses → World of Color: Season of Light
-    //    Fantasmic! pauses on some nights
-    //    Parade → A Christmas Fantasy Parade
-    //
-    // 🌸 Spring / Food & Wine: ~March 2027
-    // ☀️  Summer:             ~late May 2027
-    //    Wondrous Journeys resumes (or new summer show)
-    //    Check: disneyland.disney.go.com/calendars/day/
-    //
-    // ── PARADE PLACEHOLDER ───────────────────────────────────────────
-    // Add parade entry here once you have confirmed times:
-    // { type:'ent', park:'dl', kind:'parade', name:'[PARADE NAME]',
-    //   loc:'Main Street U.S.A.', times:['[TIME]','[TIME]'], isNighttime:false },
-    // ─────────────────────────────────────────────────────────────────
-    if (items.length === 0) {
-      items = [
-        { type:'ent', park:'dl',  kind:'fireworks', name:'Wondrous Journeys',  loc:'Disneyland Skies',  times:['9:30 PM'],           isNighttime:true  },
-        { type:'ent', park:'dl',  kind:'show',      name:'Fantasmic!',         loc:'Rivers of America', times:['8:30 PM','10:00 PM'], isNighttime:false },
-        // 🎺 PARADE — uncomment and fill in times when confirmed:
-        // { type:'ent', park:'dl', kind:'parade', name:'Better Together: A Pixar Pals Celebration!', loc:'Main Street U.S.A.', times:['11:00 AM','3:00 PM'], isNighttime:false },
-        { type:'ent', park:'dca', kind:'fireworks', name:'World of Color',     loc:'Paradise Bay',      times:['9:00 PM','10:15 PM'], isNighttime:true  },
-      ];
-    }
-
-    items.sort((a,b) => {
-      if (a.isNighttime && !b.isNighttime) return -1;
-      if (!a.isNighttime && b.isNighttime) return 1;
-      if (a.park !== b.park) return a.park === 'dl' ? -1 : 1;
-      return a.name.localeCompare(b.name);
-    });
-
-    // Always prepend park hours cards so they cycle alongside shows
-    const hoursCards = await buildHoursCards();
-    widgetCards = [...hoursCards, ...items];
-    renderWidget();
+      const data = await fetchT(`https://api.themeparks.wiki/v1/entity/${parkId}/schedule`);
+      const today = new Date().toISOString().slice(0,10);
+      const todayEntry = (data.schedule || []).find(s => (s.date||'').slice(0,10) === today && s.type === 'OPERATING');
+      return { hours: todayEntry || null };
+    } catch(e) { return { hours: null }; }
   }
 
-  // ── render ──
-  function renderWidget() {
-    const track   = document.getElementById('today-cards');
-    const dotsEl  = document.getElementById('today-dots');
+  async function fetchLive(parkId, parkKey) {
+    try {
+      const data = await fetchT(`https://api.themeparks.wiki/v1/entity/${parkId}/live`);
+      const liveData = data.liveData || [];
+      const shows = liveData.filter(e => {
+        const t = (e.entityType||'').toUpperCase();
+        return t === 'SHOW' || t === 'CHARACTER' || t === 'ENTERTAINMENT' || t === 'EVENT';
+      });
+      return shows.map(e => {
+        const times = (e.showtimes || []).map(s => s.startTime || s.time || '').filter(Boolean);
+        const type = inferType(e.name, e.entityType);
+        return {
+          emoji: TYPE_EMOJI[type] || '🎬',
+          name: e.name,
+          loc: inferLoc(e.name, parkKey),
+          times,
+        };
+      });
+    } catch(e) { return []; }
+  }
+
+  function renderCards(cards) {
+    widgetCards = cards;
+    widgetIdx = 0;
+    const container = document.getElementById('today-cards');
+    const dotsEl = document.getElementById('today-dots');
     const counter = document.getElementById('today-card-counter');
-    const cw = window.innerWidth <= 480 ? 210 : 240;
-
-    if (!widgetCards.length) {
-      track.innerHTML = '<div class="today-card">'
-        +'<div class="today-card-name" style="opacity:0.28;font-size:9px;">Nothing found for today</div>'
-        +'</div>';
-      dotsEl.innerHTML=''; if(counter) counter.textContent=''; return;
+    if (!cards.length) {
+      container.innerHTML = '<div class="today-card"><div class="today-card-name" style="opacity:0.28;font-size:9px;">No events found today</div></div>';
+      dotsEl.innerHTML = '';
+      counter.textContent = '';
+      return;
     }
-
-    track.innerHTML = widgetCards.map(item => {
-      if (item.type === 'hours') {
-        const status = item.statusCls
-          ? '<span class="today-status-pill '+item.statusCls+'">'+item.statusTxt+'</span>' : '';
-        return '<div class="today-card">'
-          +'<div class="today-card-hours-title">'+item.label+'</div>'
-          +'<div style="display:flex;gap:16px;align-items:baseline;margin-top:2px;">'
-          +  '<div><div class="today-card-hours-sub">Opens</div><div class="today-card-hours-time">'+item.open+'</div></div>'
-          +  '<div><div class="today-card-hours-sub">Closes</div><div class="today-card-hours-time">'+item.close+'</div></div>'
-          +'</div>'
-          + status
-          +'</div>';
-      }
-      // Build times row — show up to 4 times, rest shown as "+N more"
-      const maxTimes = 4;
-      const shownTimes = (item.times||[]).slice(0, maxTimes);
-      const extraCount = (item.times||[]).length - shownTimes.length;
-      const timePills = shownTimes.map(t =>
-        '<span style="display:inline-block;font-family:Cinzel,serif;font-size:9px;letter-spacing:0.05em;'
-        +'color:var(--gold-light);background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.22);'
-        +'border-radius:2px;padding:1px 6px;margin:1px 2px 1px 0;">'
-        +t+'</span>'
-      ).join('');
-      const extraPill = extraCount > 0
-        ? '<span style="font-family:Raleway,sans-serif;font-size:8px;color:rgba(201,168,76,0.4);margin-left:2px;">+'+extraCount+' more</span>'
-        : '';
-      const timesRow = shownTimes.length
-        ? '<div style="display:flex;flex-wrap:wrap;align-items:center;margin-top:5px;">'+timePills+extraPill+'</div>'
-        : '';
-      const parkTag = '<div style="font-family:Raleway,sans-serif;font-weight:200;font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(201,168,76,0.38);margin-top:4px;">'+PARK_LABELS[item.park]+'</div>';
-
-      return '<div class="today-card">'
-        +'<div class="today-card-emoji">'+(TYPE_EMOJI[item.kind]||'🎭')+'</div>'
-        +'<div class="today-card-name">'+item.name+'</div>'
-        +'<div class="today-card-loc">'+item.loc+'</div>'
-        + timesRow
-        + parkTag
-        +'</div>';
-    }).join('');
-
-    dotsEl.innerHTML = widgetCards.map((_,i)=>
-      '<div class="t-dot'+(i===0?' active':'')+'" onclick="todayGoTo('+i+')"></div>'
-    ).join('');
-
-    widgetIdx=0; updateWidgetPos(); startWidgetAuto();
+    container.innerHTML = cards.join('');
+    // dots
+    dotsEl.innerHTML = cards.map((_, i) => `<div class="t-dot${i===0?' active':''}" onclick="goCard(${i})"></div>`).join('');
+    counter.textContent = '1 / ' + cards.length;
+    // size cards
+    const w = document.getElementById('today-widget').offsetWidth;
+    document.querySelectorAll('.today-card').forEach(c => c.style.width = w + 'px');
+    startAutoAdvance();
   }
 
-  function updateWidgetPos() {
-    const cw = window.innerWidth<=480 ? 210 : 240;
-    document.getElementById('today-cards').style.transform = 'translateX(-'+(widgetIdx*cw)+'px)';
-    document.querySelectorAll('.t-dot').forEach((d,i)=>d.classList.toggle('active',i===widgetIdx));
-    const counter = document.getElementById('today-card-counter');
-    if (counter && widgetCards.length) counter.textContent=(widgetIdx+1)+'/'+widgetCards.length;
+  function goCard(idx) {
+    if (!widgetCards.length) return;
+    widgetIdx = ((idx % widgetCards.length) + widgetCards.length) % widgetCards.length;
+    const w = document.getElementById('today-widget').offsetWidth;
+    document.getElementById('today-cards').style.transform = `translateX(-${widgetIdx * w}px)`;
+    document.querySelectorAll('.t-dot').forEach((d,i) => d.classList.toggle('active', i===widgetIdx));
+    document.getElementById('today-card-counter').textContent = (widgetIdx+1) + ' / ' + widgetCards.length;
+    const fill = document.getElementById('today-progress-fill');
+    fill.style.transition = 'none'; fill.style.width = '0%';
+    requestAnimationFrame(() => { fill.style.transition = `width ${ADVANCE_MS}ms linear`; fill.style.width = '100%'; });
   }
 
-  function startWidgetAuto() {
+  window.goCard = goCard;
+
+  function startAutoAdvance() {
     if (widgetTimer) clearInterval(widgetTimer);
     const fill = document.getElementById('today-progress-fill');
-    fill.style.transition='none'; fill.style.width='0%';
-    setTimeout(()=>{ fill.style.transition='width '+ADVANCE_MS+'ms linear'; fill.style.width='100%'; }, 40);
-    widgetTimer = setInterval(()=>{
-      if (!widgetCards.length) return;
-      widgetIdx=(widgetIdx+1)%widgetCards.length;
-      updateWidgetPos();
-      fill.style.transition='none'; fill.style.width='0%';
-      setTimeout(()=>{ fill.style.transition='width '+ADVANCE_MS+'ms linear'; fill.style.width='100%'; }, 40);
-    }, ADVANCE_MS);
+    fill.style.transition = `width ${ADVANCE_MS}ms linear`; fill.style.width = '100%';
+    widgetTimer = setInterval(() => goCard(widgetIdx + 1), ADVANCE_MS);
   }
 
-  window.todayGoTo = function(i){ widgetIdx=i; updateWidgetPos(); };
-  window.addEventListener('resize', updateWidgetPos);
+  async function init() {
+    await resolveParkIds();
+    const [dlSched, dcaSched, dlShows, dcaShows] = await Promise.all([
+      fetchSchedule(PARK_IDS.dl, 'dl'),
+      fetchSchedule(PARK_IDS.dca, 'dca'),
+      fetchLive(PARK_IDS.dl, 'dl'),
+      fetchLive(PARK_IDS.dca, 'dca'),
+    ]);
 
-  // Resolve real IDs first, then load
-  resolveParkIds().then(() => {
-    loadWidget();
-    setInterval(loadWidget, 10*60*1000);
-  });
+    const cards = [];
+    // hours cards first
+    const dlHoursCard = buildHoursCard('Disneyland', dlSched.hours);
+    const dcaHoursCard = buildHoursCard('California Adventure', dcaSched.hours);
+    if (dlHoursCard) cards.push(dlHoursCard);
+    if (dcaHoursCard) cards.push(dcaHoursCard);
+
+    // show cards
+    [...dlShows, ...dcaShows].forEach(e => {
+      const timesStr = e.times.length ? e.times.slice(0,3).map(fmt12).join(' · ') : '';
+      cards.push(`<div class="today-card">
+        <div class="today-card-emoji">${e.emoji}</div>
+        <div class="today-card-name">${e.name}</div>
+        <div class="today-card-loc">${e.loc}${timesStr ? ' · ' + timesStr : ''}</div>
+      </div>`);
+    });
+
+    renderCards(cards.length ? cards : [
+      dlHoursCard || '<div class="today-card"><div class="today-card-name" style="opacity:0.4;font-size:10px;">Schedule unavailable</div></div>',
+    ].filter(Boolean));
+  }
+
+  init();
 })();
 </script>
-
 </body>
 </html>
