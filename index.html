@@ -1124,13 +1124,31 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
     } catch(e) { return { hours: null }; }
   }
 
+  // Only show confirmed, currently-running Disneyland Resort entertainment.
+  // Add to this list when new shows open; remove when they close.
+  const SHOW_ALLOWLIST = [
+    'fantasmic',
+    'world of color',
+    'wondrous journeys',
+    'celebrate! a street party',       // Happy is the name variant
+    'better together',                 // WDW crossover, keep just in case
+    'magic happens',                   // parade
+    'soundsational',                   // parade
+    'paint the night',                 // parade
+    'mickey and friends band-to-band', // cavalcade variant
+    'celebrate happy cavalcade',
+    'mickeys happy cavalcade',
+    'mickey\'s happy cavalcade',
+    'pixar',                           // Pixar Fest / Pixar Pals Cavalcade
+  ];
+
   async function fetchLive(parkId, parkKey) {
     try {
       const data = await fetchT(`https://api.themeparks.wiki/v1/entity/${parkId}/live`);
       const liveData = data.liveData || [];
       const shows = liveData.filter(e => {
-        const t = (e.entityType||'').toUpperCase();
-        return t === 'SHOW' || t === 'CHARACTER' || t === 'ENTERTAINMENT' || t === 'EVENT';
+        const n = (e.name||'').toLowerCase();
+        return SHOW_ALLOWLIST.some(allowed => n.includes(allowed));
       });
       return shows.map(e => {
         const times = (e.showtimes || []).map(s => s.startTime || s.time || '').filter(Boolean);
