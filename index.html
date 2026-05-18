@@ -102,19 +102,18 @@ body { animation: fadeIn 1.5s ease-out; }
 /* ── SHOW BANNER ── */
 #show-banner {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: -200px; left: 0; right: 0;
   z-index: 200;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding: 0 12px;
-  transform: translateY(-110%);
-  transition: transform 0.55s cubic-bezier(0.22,1,0.36,1);
+  transition: top 0.55s cubic-bezier(0.22,1,0.36,1);
   pointer-events: none;
 }
 #show-banner.visible {
-  transform: translateY(0);
   pointer-events: auto;
+  /* top is set to header.offsetHeight by positionBanner() */
 }
 #show-banner-inner {
   background: linear-gradient(135deg, rgba(14,36,50,0.97) 0%, rgba(22,52,68,0.98) 100%);
@@ -585,20 +584,24 @@ function getActiveBannerShow() {
 function positionBanner() {
   const header = document.getElementById('header');
   const banner = document.getElementById('show-banner');
-  if (header && banner) banner.style.top = header.offsetHeight + 'px';
+  if (header && banner && banner.classList.contains('visible')) {
+    banner.style.top = header.offsetHeight + 'px';
+  }
 }
 
 function updateShowBanner() {
-  positionBanner();
+  const header = document.getElementById('header');
   const banner = document.getElementById('show-banner');
   const show = getActiveBannerShow();
   if (show && Date.now() >= bannerDismissedUntil) {
     document.getElementById('show-banner-eyebrow').textContent = 'Now Showing \u00b7 ' + show.location;
     document.getElementById('show-banner-name').textContent = show.name;
     document.getElementById('show-banner-watch').href = show.url;
+    banner.style.top = (header ? header.offsetHeight : 80) + 'px';
     banner.classList.add('visible');
   } else {
     banner.classList.remove('visible');
+    banner.style.top = '-200px';
   }
 }
 
