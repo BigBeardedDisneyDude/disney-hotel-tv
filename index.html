@@ -570,10 +570,8 @@ const SHOW_SCHEDULE = [
 let bannerDismissedUntil = 0;
 
 function getActiveBannerShow() {
-  // Always evaluate in Anaheim / Pacific local time so the times in SHOW_SCHEDULE
-  // stay intuitive regardless of where the browser is.
-  const la = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
-  const nowMins = la.getHours() * 60 + la.getMinutes();
+  const now = new Date();
+  const nowMins = now.getHours() * 60 + now.getMinutes();
   for (const show of SHOW_SCHEDULE) {
     for (const t of show.times) {
       const [hh, mm] = t.split(':').map(Number);
