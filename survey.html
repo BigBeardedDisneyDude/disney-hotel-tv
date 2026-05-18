@@ -136,7 +136,7 @@
     margin-bottom: 6px;
     font-weight: 700;
   }
-  input[type=text], input[type=date] {
+  input[type=text], input[type=date], select {
     display: block;
     width: 100%;
     max-width: 100%;
@@ -154,8 +154,45 @@
     -webkit-appearance: none;
     appearance: none;
   }
-  input[type=text]:focus, input[type=date]:focus { border-color: var(--gold); }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23C9A84C' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+  select option { background: #122222; color: var(--cream); }
+  input[type=text]:focus, input[type=date]:focus, select:focus { border-color: var(--gold); }
   input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
+
+  /* ── PARK TOGGLE (trip creation) ── */
+  .park-toggle-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .park-toggle-btn {
+    flex: 1;
+    min-width: 90px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    color: rgba(253,248,239,0.55);
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    line-height: 1.3;
+  }
+  .park-toggle-btn span { display: block; font-size: 10px; font-weight: 400; opacity: 0.7; margin-top: 2px; letter-spacing: 0.04em; }
+  .park-toggle-btn.active-dl  { border-color: #378add; background: rgba(55,138,221,0.12); color: #85b7eb; }
+  .park-toggle-btn.active-dca { border-color: #d85a30; background: rgba(216,90,48,0.12); color: #f09575; }
+  .park-toggle-btn.active-both { border-color: var(--gold); background: rgba(201,168,76,0.12); color: var(--gold-light); }
 
   .btn {
     display: inline-flex;
@@ -181,6 +218,29 @@
   .btn-danger:hover { border-color: var(--veto-red); opacity: 1; background: var(--veto-red-bg); }
   .btn-sm { padding: 7px 16px; font-size: 13px; }
   .btn-full { width: 100%; }
+
+  /* ── HEIGHT SELECTOR ── */
+  .height-picker-wrap {
+    background: rgba(201,168,76,0.06);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  .height-picker-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gold-dim);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .height-picker-note {
+    font-size: 12px;
+    color: rgba(253,248,239,0.45);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
 
   /* ── SHARE BOX ── */
   .share-box {
@@ -243,6 +303,21 @@
   }
   .trip-banner-name { font-family: 'Cinzel', serif; font-size: 18px; color: var(--gold); }
   .trip-banner-date { font-size: 13px; color: var(--cream-dark); opacity: 0.7; margin-top: 3px; }
+  .trip-banner-parks {
+    display: inline-flex;
+    gap: 6px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .park-pill {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 2px 10px;
+    border-radius: 12px;
+  }
+  .park-pill-dl  { background: rgba(55,138,221,0.2); color: #85b7eb; border: 1px solid rgba(55,138,221,0.3); }
+  .park-pill-dca { background: rgba(216,90,48,0.2); color: #f09575; border: 1px solid rgba(216,90,48,0.3); }
   .trip-banner-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
   /* ── TABS ── */
@@ -285,7 +360,7 @@
   .resp-count { font-size: 12px; color: var(--gold-dim); }
 
   /* ── NAME FORM ── */
-  .name-form { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+  .name-form { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
   .name-form input { flex: 1; min-width: 160px; margin-bottom: 0; }
 
   /* ── LEGEND ── */
@@ -326,6 +401,21 @@
     width: 100%; box-sizing: border-box; overflow: hidden;
   }
   .ride-row:hover { background: rgba(255,255,255,0.04); }
+  .ride-row.too-tall {
+    opacity: 0.38;
+    border-color: rgba(212,80,80,0.15);
+    background: rgba(212,80,80,0.04);
+    pointer-events: none;
+  }
+  .cant-ride-label {
+    font-size: 11px;
+    color: var(--veto-red);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    opacity: 0.8;
+  }
   .ride-name { flex: 1; font-size: 14px; color: var(--cream); min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .ride-tag { font-size: 11px; padding: 2px 8px; border-radius: 12px; white-space: nowrap; font-weight: 700; letter-spacing: 0.04em; flex-shrink: 0; }
   .tag-thrill { background: rgba(212,80,80,0.15); color: #f09595; }
@@ -370,6 +460,11 @@
   }
   .submit-bar-info { font-size: 13px; color: var(--cream-dark); opacity: 0.7; }
   .submit-bar-info strong { color: var(--gold); opacity: 1; }
+  .submit-bar-height {
+    font-size: 11px;
+    color: var(--gold-dim);
+    margin-top: 2px;
+  }
 
   /* ── RESULTS ── */
   .section-title {
@@ -398,6 +493,7 @@
   .badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
   .badge-must { background: var(--star-green-bg); color: var(--star-green); }
   .badge-skip { background: var(--veto-red-bg); color: var(--veto-red); }
+  .badge-blocked { background: rgba(212,80,80,0.1); color: rgba(212,80,80,0.6); border: 1px solid rgba(212,80,80,0.2); }
   .result-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
   .result-bar-wrap { width: 80px; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
   .result-bar { height: 6px; border-radius: 3px; }
@@ -506,6 +602,21 @@
       <input type="text" id="trip-name-input" placeholder="e.g. Cooke Family · July 2025" maxlength="60" />
       <label>Date</label>
       <input type="date" id="trip-date-input" />
+      <label>Parks</label>
+      <div class="park-toggle-group">
+        <button class="park-toggle-btn active-both" id="ptog-both" onclick="setParkToggle('both')">
+          Both Parks
+          <span>Disneyland + DCA</span>
+        </button>
+        <button class="park-toggle-btn" id="ptog-DL" onclick="setParkToggle('DL')">
+          Disneyland
+          <span>Main park only</span>
+        </button>
+        <button class="park-toggle-btn" id="ptog-DCA" onclick="setParkToggle('DCA')">
+          DCA Only
+          <span>California Adventure</span>
+        </button>
+      </div>
       <button class="btn btn-gold btn-full" onclick="createTrip()">Create trip &amp; get link</button>
     </div>
     <div class="card" style="margin-top:8px;">
@@ -522,6 +633,7 @@
       <div>
         <div class="trip-banner-name" id="trip-banner-name">Loading…</div>
         <div class="trip-banner-date" id="trip-banner-date"></div>
+        <div class="trip-banner-parks" id="trip-banner-parks"></div>
       </div>
       <div class="trip-banner-actions">
         <button class="btn btn-outline btn-sm" onclick="showShareModal()">Share link</button>
@@ -536,10 +648,35 @@
 
     <!-- SURVEY TAB -->
     <div class="tab-panel active" id="panel-survey">
-      <div class="name-form" id="name-form">
-        <input type="text" id="survey-name" placeholder="Your name" maxlength="30" />
-        <button class="btn btn-gold" onclick="startSurvey()">Start rating</button>
+      <div id="name-form-wrap">
+        <div class="name-form" id="name-form">
+          <input type="text" id="survey-name" placeholder="Your name" maxlength="30" />
+          <button class="btn btn-gold" onclick="proceedToHeight()">Next →</button>
+        </div>
+        <!-- HEIGHT PICKER: shown after name is entered -->
+        <div id="height-form" style="display:none;">
+          <div class="height-picker-wrap">
+            <div class="height-picker-label">Your height — so we can show which rides you can go on</div>
+            <select id="height-select">
+              <option value="999">I can ride everything (no restriction)</option>
+              <option value="48">Up to 48" — I meet most height requirements</option>
+              <option value="46">Up to 46" — I can ride Indiana Jones, Rise of Resistance, etc.</option>
+              <option value="42">Up to 42" — I meet most family ride minimums</option>
+              <option value="40">Up to 40" — I can ride Space Mountain, Soarin', Big Thunder, etc.</option>
+              <option value="38">Up to 38" — I can ride Smugglers Run, Mater's Junkyard, etc.</option>
+              <option value="35">Up to 35" — I can ride Gadget's Go Coaster and below</option>
+              <option value="32">Up to 32" — I meet the lowest height requirements</option>
+              <option value="0">No height minimums met — I need to sit them out or be carried</option>
+            </select>
+            <div class="height-picker-note">Rides you can't meet the minimum for will be shown as locked — you won't be rating those, but they'll still appear in group results.</div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-outline btn-sm" onclick="backToName()">← Back</button>
+            <button class="btn btn-gold" onclick="startSurvey()">Start rating</button>
+          </div>
+        </div>
       </div>
+
       <div id="survey-already-done" style="display:none;">
         <div style="background:var(--star-green-bg);border:1px solid rgba(76,175,130,0.3);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--star-green);">
           You've already submitted ratings for this trip. Your previous ratings are loaded — update anything and save again.
@@ -591,7 +728,10 @@
 
 <!-- STICKY SUBMIT BAR -->
 <div class="submit-bar" id="submit-bar" style="display:none;">
-  <div class="submit-bar-info">Rating as <strong id="submit-bar-name"></strong></div>
+  <div class="submit-bar-info">
+    Rating as <strong id="submit-bar-name"></strong>
+    <div class="submit-bar-height" id="submit-bar-height"></div>
+  </div>
   <div style="display:flex;gap:10px;">
     <button class="btn btn-outline btn-sm" onclick="cancelRating()">Cancel</button>
     <button class="btn btn-gold" onclick="submitRatings()">Save my ratings</button>
@@ -613,6 +753,11 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "940661410999",
   appId: "1:940661410999:web:b557cf468a338669821132"
 };
+
+// ── HEIGHT THRESHOLDS ──
+// The discrete "up to X inches" options in the dropdown.
+// A ride is rideable if the person's height >= ride.height (or ride.height is null = no restriction).
+const HEIGHT_OPTIONS = [999, 48, 46, 42, 40, 38, 35, 32, 0];
 
 // height: minimum inches to ride. height2: second tier (ride alone, drive alone, etc.)
 // heightNote / height2Note: short label shown in the badge tooltip/text
@@ -672,7 +817,8 @@ const RIDES = [
 ];
 
 // ── STATE ──
-let db, currentTripId, currentTripData, currentRespondents = {}, currentRatings = {}, activeName = '', unsubscribe = null;
+let db, currentTripId, currentTripData, currentRespondents = {}, currentRatings = {}, activeName = '', activeHeightLimit = 999, unsubscribe = null;
+let selectedParks = 'both'; // for creation form
 const isConfigured = FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY';
 
 // ── INIT ──
@@ -691,13 +837,21 @@ function showView(v) {
   document.getElementById('view-' + v).classList.add('active');
 }
 
+// ── PARK TOGGLE (creation form) ──
+window.setParkToggle = function(val) {
+  selectedParks = val;
+  document.getElementById('ptog-both').className = 'park-toggle-btn' + (val === 'both' ? ' active-both' : '');
+  document.getElementById('ptog-DL').className   = 'park-toggle-btn' + (val === 'DL'   ? ' active-dl'   : '');
+  document.getElementById('ptog-DCA').className  = 'park-toggle-btn' + (val === 'DCA'  ? ' active-dca'  : '');
+};
+
 // ── TRIP CREATION ──
 window.createTrip = async function() {
   const name = document.getElementById('trip-name-input').value.trim();
   if (!name) { toast('Please enter a trip name'); return; }
   const date = document.getElementById('trip-date-input').value;
   const id = Math.random().toString(36).slice(2, 9).toUpperCase();
-  await setDoc(doc(db, 'trips', id), { name, date, createdAt: serverTimestamp() });
+  await setDoc(doc(db, 'trips', id), { name, date, parks: selectedParks, createdAt: serverTimestamp() });
   window.history.pushState({}, '', `?trip=${id}`);
   loadTrip(id);
 };
@@ -729,6 +883,12 @@ async function loadTrip(id) {
     const d = new Date(currentTripData.date + 'T12:00:00');
     document.getElementById('trip-banner-date').textContent = d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   }
+  // Park pills in banner
+  const parks = currentTripData.parks || 'both';
+  const parksEl = document.getElementById('trip-banner-parks');
+  if (parks === 'DL' || parks === 'both')  parksEl.innerHTML += `<span class="park-pill park-pill-dl">Disneyland</span>`;
+  if (parks === 'DCA' || parks === 'both') parksEl.innerHTML += `<span class="park-pill park-pill-dca">DCA</span>`;
+
   document.getElementById('modal-share-url').textContent = location.href.split('?')[0] + '?trip=' + id;
   document.getElementById('modal-trip-code').textContent = id;
   subscribeToResponses();
@@ -739,37 +899,66 @@ function subscribeToResponses() {
   if (unsubscribe) unsubscribe();
   unsubscribe = onSnapshot(collection(db, 'trips', currentTripId, 'responses'), snap => {
     currentRespondents = {};
-    snap.forEach(d => { currentRespondents[d.id] = d.data().ratings || {}; });
+    snap.forEach(d => { currentRespondents[d.id] = d.data(); });
     renderRespondentBar();
     if (document.getElementById('panel-results').classList.contains('active')) buildResults();
   });
 }
+
+// ── NAME → HEIGHT FLOW ──
+window.proceedToHeight = function() {
+  const name = document.getElementById('survey-name').value.trim();
+  if (!name) { toast('Enter your name first'); return; }
+  document.getElementById('name-form').style.display = 'none';
+  document.getElementById('height-form').style.display = 'block';
+};
+
+window.backToName = function() {
+  document.getElementById('name-form').style.display = 'flex';
+  document.getElementById('height-form').style.display = 'none';
+};
 
 // ── SURVEY ──
 window.startSurvey = function() {
   const name = document.getElementById('survey-name').value.trim();
   if (!name) { toast('Enter your name first'); return; }
   activeName = name;
+  activeHeightLimit = parseInt(document.getElementById('height-select').value, 10);
 
-  if (currentRespondents[name]) {
-    currentRatings = { ...currentRespondents[name] };
+  const existing = currentRespondents[name];
+  if (existing) {
+    currentRatings = { ...(existing.ratings || {}) };
     document.getElementById('survey-already-done').style.display = 'block';
   } else {
     currentRatings = {};
     document.getElementById('survey-already-done').style.display = 'none';
   }
 
-  document.getElementById('name-form').style.display = 'none';
+  document.getElementById('name-form-wrap').style.display = 'none';
   document.getElementById('survey-body').style.display = 'block';
   document.getElementById('submit-bar').style.display = 'flex';
   document.getElementById('submit-bar-name').textContent = name;
+
+  // Height label in submit bar
+  const heightLabel = document.getElementById('submit-bar-height');
+  if (activeHeightLimit >= 999) {
+    heightLabel.textContent = '';
+  } else if (activeHeightLimit === 0) {
+    heightLabel.textContent = 'Height-restricted rides shown as locked';
+  } else {
+    heightLabel.textContent = `Showing rides up to ${activeHeightLimit}" minimum`;
+  }
+
   buildRideList();
 };
 
 window.cancelRating = function() {
   activeName = '';
   currentRatings = {};
+  activeHeightLimit = 999;
+  document.getElementById('name-form-wrap').style.display = 'block';
   document.getElementById('name-form').style.display = 'flex';
+  document.getElementById('height-form').style.display = 'none';
   document.getElementById('survey-body').style.display = 'none';
   document.getElementById('survey-already-done').style.display = 'none';
   document.getElementById('submit-bar').style.display = 'none';
@@ -777,10 +966,27 @@ window.cancelRating = function() {
   document.getElementById('ride-list').innerHTML = '';
 };
 
+// Returns true if this person can ride this ride (based on the *minimum* height requirement only)
+function canRide(ride) {
+  if (activeHeightLimit >= 999) return true;
+  if (!ride.height) return true; // no minimum
+  return activeHeightLimit >= ride.height;
+}
+
 function buildRideList() {
   const container = document.getElementById('ride-list');
-  const parks = { DL: {}, DCA: {} };
-  RIDES.forEach(r => { if (!parks[r.park][r.land]) parks[r.park][r.land] = []; parks[r.park][r.land].push(r); });
+  const tripParks = currentTripData.parks || 'both';
+
+  // Filter rides to only the parks on this trip
+  const ridesForTrip = RIDES.filter(r => tripParks === 'both' || r.park === tripParks);
+
+  const parks = {};
+  ridesForTrip.forEach(r => {
+    if (!parks[r.park]) parks[r.park] = {};
+    if (!parks[r.park][r.land]) parks[r.park][r.land] = [];
+    parks[r.park][r.land].push(r);
+  });
+
   const parkMeta = { DL: { label:'Disneyland Park', cls:'park-dl' }, DCA: { label:'Disney California Adventure', cls:'park-dca' } };
   let html = '';
   for (const [pk, lands] of Object.entries(parks)) {
@@ -788,6 +994,7 @@ function buildRideList() {
     for (const [land, rides] of Object.entries(lands)) {
       html += `<div class="land-label">${land}</div>`;
       rides.forEach(r => {
+        const rideable = canRide(r);
         const tc = r.type === 'thrill' ? 'tag-thrill' : r.type === 'kiddie' ? 'tag-kiddie' : 'tag-family';
         const tl = r.type === 'thrill' ? 'Thrill' : r.type === 'kiddie' ? 'Kiddie' : 'Family';
         let hb = '';
@@ -796,14 +1003,29 @@ function buildRideList() {
         } else if (r.height) {
           hb = `<span class="height-badge">↕ ${r.height}"</span>`;
         }
-        html += `<div class="ride-row"><div class="ride-name">${r.name}</div><span class="ride-tag ${tc}">${tl}</span>${hb}<div class="rating-btns">`;
-        for (let i = 0; i <= 5; i++) html += `<button class="r-btn" id="rb-${r.id}-${i}" onclick="setRating('${r.id}',${i})">${i}</button>`;
-        html += `</div></div>`;
+
+        if (!rideable) {
+          // Locked — greyed out, no rating buttons
+          html += `<div class="ride-row too-tall">
+            <div class="ride-name">${r.name}</div>
+            <span class="ride-tag ${tc}">${tl}</span>
+            ${hb}
+            <span class="cant-ride-label">🔒 Can't ride</span>
+          </div>`;
+        } else {
+          html += `<div class="ride-row"><div class="ride-name">${r.name}</div><span class="ride-tag ${tc}">${tl}</span>${hb}<div class="rating-btns">`;
+          for (let i = 0; i <= 5; i++) html += `<button class="r-btn" id="rb-${r.id}-${i}" onclick="setRating('${r.id}',${i})">${i}</button>`;
+          html += `</div></div>`;
+        }
       });
     }
   }
   container.innerHTML = html;
-  RIDES.forEach(r => { if (currentRatings[r.id] !== undefined) applyRatingUI(r.id, currentRatings[r.id]); });
+
+  // Restore previous ratings for rideable rides
+  ridesForTrip.forEach(r => {
+    if (canRide(r) && currentRatings[r.id] !== undefined) applyRatingUI(r.id, currentRatings[r.id]);
+  });
 }
 
 window.setRating = function(rid, val) {
@@ -820,7 +1042,12 @@ function applyRatingUI(rid, val) {
 
 window.submitRatings = async function() {
   if (!activeName) return;
-  await setDoc(doc(db, 'trips', currentTripId, 'responses', activeName), { ratings: currentRatings, updatedAt: serverTimestamp() });
+  // Store ratings + height limit so results can note it
+  await setDoc(doc(db, 'trips', currentTripId, 'responses', activeName), {
+    ratings: currentRatings,
+    heightLimit: activeHeightLimit,
+    updatedAt: serverTimestamp()
+  });
   toast(`${activeName}'s ratings saved!`);
   cancelRating();
 };
@@ -851,11 +1078,19 @@ function buildResults() {
     return;
   }
 
-  const scored = RIDES.map(r => {
-    const vals = names.map(n => currentRespondents[n][r.id]).filter(v => v !== undefined);
-    if (!vals.length) return { ...r, avg: null, has5: 0, has0: 0, ratedBy: 0 };
+  const tripParks = currentTripData.parks || 'both';
+  const ridesForTrip = RIDES.filter(r => tripParks === 'both' || r.park === tripParks);
+
+  const scored = ridesForTrip.map(r => {
+    const vals = names.map(n => (currentRespondents[n].ratings || {})[r.id]).filter(v => v !== undefined);
+    // Count how many respondents were height-blocked from this ride
+    const blockedBy = names.filter(n => {
+      const hl = currentRespondents[n].heightLimit ?? 999;
+      return r.height && hl < r.height;
+    });
+    if (!vals.length) return { ...r, avg: null, has5: 0, has0: 0, ratedBy: 0, blockedBy: blockedBy.length };
     const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-    return { ...r, avg, has5: vals.filter(v => v === 5).length, has0: vals.filter(v => v === 0).length, ratedBy: vals.length };
+    return { ...r, avg, has5: vals.filter(v => v === 5).length, has0: vals.filter(v => v === 0).length, ratedBy: vals.length, blockedBy: blockedBy.length };
   }).sort((a, b) => {
     if (a.avg === null && b.avg === null) return 0;
     if (a.avg === null) return 1;
@@ -877,11 +1112,14 @@ function buildResults() {
 
   let html = `<div class="section-title">Respondents</div>`;
   names.forEach(n => {
-    const ratedCount = Object.keys(currentRespondents[n]).length;
+    const resp = currentRespondents[n];
+    const ratedCount = Object.keys(resp.ratings || {}).length;
+    const hl = resp.heightLimit ?? 999;
+    const hlText = hl >= 999 ? 'No height restriction' : hl === 0 ? 'No height minimums met' : `Up to ${hl}" minimum`;
     html += `<div class="resp-result-row">
       <div>
         <div class="resp-result-name">${n}</div>
-        <div class="resp-result-meta">${ratedCount} ride${ratedCount !== 1 ? 's' : ''} rated</div>
+        <div class="resp-result-meta">${ratedCount} ride${ratedCount !== 1 ? 's' : ''} rated · ${hlText}</div>
       </div>
       <div class="resp-result-actions">
         <button class="btn btn-outline btn-sm" onclick="reloadForEdit('${n}')">Edit ratings</button>
@@ -911,21 +1149,23 @@ function buildResults() {
     const scoreText = r.avg !== null ? r.avg.toFixed(1) : '—';
     const mustBadge = r.has5 ? `<span class="badge badge-must">★ ${r.has5} must-do</span>` : '';
     const skipBadge = r.has0 ? `<span class="badge badge-skip">✕ ${r.has0} skip</span>` : '';
-    const partialNote = r.ratedBy > 0 && r.ratedBy < names.length ? ` · rated by ${r.ratedBy}/${names.length}` : '';
-    const unratedNote = r.avg === null ? `<span style="font-size:11px;color:rgba(253,248,239,0.3);">not yet rated</span>` : '';
-        const heightText = r.height && r.height2
-          ? ` · ↕ ${r.height}" / ${r.height2}"`
-          : r.height ? ` · ↕ ${r.height}"` : '';
-        html += `<div class="result-row">
+    const blockedBadge = r.blockedBy ? `<span class="badge badge-blocked">🔒 ${r.blockedBy} can't ride</span>` : '';
+    const partialNote = r.ratedBy > 0 && r.ratedBy < names.length ? ` · rated by ${r.ratedBy}/${names.length - r.blockedBy || names.length}` : '';
+    const unratedNote = r.avg === null && r.blockedBy < names.length ? `<span style="font-size:11px;color:rgba(253,248,239,0.3);">not yet rated</span>` : '';
+    const allBlocked = r.blockedBy >= names.length && names.length > 0;
+    const heightText = r.height && r.height2
+      ? ` · ↕ ${r.height}" / ${r.height2}"`
+      : r.height ? ` · ↕ ${r.height}"` : '';
+    html += `<div class="result-row" ${allBlocked ? 'style="opacity:0.35;"' : ''}>
       <span class="result-rank">${i + 1}</span>
       <div style="flex:1;min-width:0;">
         <div class="result-name">${r.name}</div>
         <div class="result-meta">${r.land} · ${r.park === 'DL' ? 'Disneyland' : 'DCA'}${heightText}${partialNote}</div>
-        ${mustBadge || skipBadge || unratedNote ? `<div class="result-badges">${mustBadge}${skipBadge}${unratedNote}</div>` : ''}
+        ${mustBadge || skipBadge || blockedBadge || unratedNote ? `<div class="result-badges">${mustBadge}${skipBadge}${blockedBadge}${unratedNote}</div>` : ''}
       </div>
       <div class="result-right">
         <div class="result-bar-wrap"><div class="result-bar" style="width:${pct}%;background:${barColor};"></div></div>
-        <span class="result-score">${scoreText}</span>
+        <span class="result-score">${allBlocked ? '🔒' : scoreText}</span>
       </div>
     </div>`;
   });
@@ -942,7 +1182,7 @@ window.deleteRespondent = async function(name) {
 window.reloadForEdit = function(name) {
   switchTab('survey');
   document.getElementById('survey-name').value = name;
-  startSurvey();
+  proceedToHeight();
 };
 
 // ── SHARE ──
