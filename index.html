@@ -183,6 +183,103 @@ font-family: 'Cormorant Garamond', serif; font-style: italic;
 font-size: clamp(9px, 2vw, 11px);
 color: rgba(201,168,76,0.6); letter-spacing: 0.06em;
 }
+/* ── SHOW BANNER ── */
+#show-banner {
+position: fixed;
+bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+left: 0; right: 0;
+z-index: 102;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 0 16px;
+pointer-events: none;
+/* starts hidden below the menu bar */
+transform: translateY(100%);
+transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#show-banner.visible {
+transform: translateY(0);
+pointer-events: auto;
+}
+#show-banner-inner {
+display: flex;
+align-items: center;
+gap: 10px;
+background: linear-gradient(135deg, rgba(14,38,52,0.97) 0%, rgba(10,28,42,0.99) 100%);
+border: 1px solid rgba(201,168,76,0.55);
+border-radius: 6px;
+padding: 10px 16px 10px 14px;
+box-shadow: 0 -4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,168,76,0.1);
+max-width: 520px;
+width: 100%;
+}
+#show-banner-sparkle {
+font-size: 18px;
+animation: banner-twinkle 2s ease-in-out infinite;
+flex-shrink: 0;
+}
+@keyframes banner-twinkle {
+0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+50%       { opacity: 0.6; transform: scale(0.85) rotate(15deg); }
+}
+#show-banner-text {
+display: flex;
+flex-direction: column;
+gap: 1px;
+flex: 1;
+min-width: 0;
+}
+#show-banner-label {
+font-family: 'Raleway', sans-serif;
+font-weight: 200;
+font-size: clamp(8px, 1.8vw, 9px);
+letter-spacing: 0.32em;
+color: rgba(201,168,76,0.65);
+text-transform: uppercase;
+}
+#show-banner-name {
+font-family: 'Cinzel', serif;
+font-weight: 600;
+font-size: clamp(11px, 3vw, 14px);
+letter-spacing: 0.06em;
+color: var(--warm-white);
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+#show-banner-link {
+font-family: 'Cinzel', serif;
+font-weight: 600;
+font-size: clamp(9px, 2vw, 11px);
+letter-spacing: 0.14em;
+color: var(--gold-light);
+text-decoration: none;
+white-space: nowrap;
+flex-shrink: 0;
+padding: 6px 12px;
+border: 1px solid rgba(201,168,76,0.4);
+border-radius: 4px;
+background: rgba(201,168,76,0.08);
+transition: background 0.2s, border-color 0.2s, color 0.2s;
+text-transform: uppercase;
+}
+#show-banner-link:hover {
+background: rgba(201,168,76,0.2);
+border-color: rgba(201,168,76,0.75);
+color: #fff8ee;
+}
+#show-banner-dismiss {
+font-size: 13px;
+color: rgba(255,248,238,0.25);
+cursor: pointer;
+flex-shrink: 0;
+padding: 4px;
+transition: color 0.2s;
+line-height: 1;
+margin-left: 2px;
+}
+#show-banner-dismiss:hover { color: rgba(255,248,238,0.6); }
 /* ── BOTTOM MENU BAR ── */
 #menu-bar {
 position: fixed;
@@ -383,10 +480,8 @@ transform: translateY(-50%);
 z-index: 100;
 width: 240px;
 pointer-events: auto;
-/* slide in/out by translating left */
 transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
 }
-/* collapsed: slide box off-screen, leave only the tab visible */
 #today-widget.collapsed {
 transform: translateY(-50%) translateX(calc(-240px + 18px));
 }
@@ -398,7 +493,6 @@ box-shadow: 4px 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.07);
 overflow: visible;
 position: relative;
 }
-/* pull tab on right edge */
 #today-toggle {
 position: absolute;
 right: -18px; top: 50%;
@@ -421,7 +515,6 @@ user-select: none;
 transform: scaleX(-1);
 }
 #today-toggle:hover { background: rgba(201,168,76,0.12); }
-/* header */
 #today-box-header {
 display: flex; align-items: center; gap: 8px;
 padding: 10px 14px 9px;
@@ -449,7 +542,6 @@ font-family: 'Raleway', sans-serif; font-weight: 200;
 font-size: 8px; letter-spacing: 0.12em;
 color: rgba(201,168,76,0.38);
 }
-/* card viewport */
 #today-scroll-outer { overflow: hidden; }
 #today-cards {
 display: flex;
@@ -473,7 +565,6 @@ font-size: 9px; letter-spacing: 0.13em; text-transform: uppercase;
 color: rgba(255,248,238,0.35);
 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-/* hours card variant */
 .today-card-hours-title {
 font-family: 'Cinzel', serif; font-weight: 600;
 font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
@@ -498,7 +589,6 @@ padding: 3px 9px; border-radius: 2px;
 .pill-open { background: rgba(80,160,100,0.2); color:#7fd88a; border:1px solid rgba(80,160,100,0.3); }
 .pill-closed { background: rgba(180,80,60,0.18); color:#e07060; border:1px solid rgba(180,80,60,0.25); }
 .pill-soon { background: rgba(201,168,76,0.15); color:var(--gold-light); border:1px solid rgba(201,168,76,0.25); }
-/* progress bar */
 #today-progress {
 height: 2px; background: rgba(201,168,76,0.07); position: relative;
 }
@@ -507,7 +597,6 @@ position: absolute; top:0; left:0; height:100%;
 background: linear-gradient(90deg, var(--gold), var(--gold-light));
 width: 0%;
 }
-/* dots */
 #today-dots {
 display: flex; justify-content: center; gap: 5px;
 padding: 7px 0 8px;
@@ -518,7 +607,6 @@ width: 5px; height: 5px; border-radius: 50%;
 background: rgba(201,168,76,0.18); cursor: pointer; transition: all 0.3s;
 }
 .t-dot.active { background: var(--gold); width: 14px; border-radius: 3px; }
-/* mobile: slightly smaller, still left-anchored */
 @media (max-width: 480px) {
 #today-widget { width: 210px; }
 #today-widget.collapsed { transform: translateY(-50%) translateX(calc(-210px + 18px)); }
@@ -573,6 +661,19 @@ oncanplay="document.getElementById('bg-fallback').style.opacity='0'"></video>
 </div>
 </div>
 
+<!-- ── SHOW BANNER ── -->
+<div id="show-banner">
+  <div id="show-banner-inner">
+    <span id="show-banner-sparkle">✨</span>
+    <div id="show-banner-text">
+      <div id="show-banner-label">Now Showing</div>
+      <div id="show-banner-name">Wondrous Journeys</div>
+    </div>
+    <a id="show-banner-link" href="#" target="_blank" rel="noopener">Watch Now ▶</a>
+    <span id="show-banner-dismiss" onclick="dismissBanner()" title="Dismiss">✕</span>
+  </div>
+</div>
+
 <!-- TODAY IN PARKS WIDGET -->
 <div id="today-widget">
 <div id="today-box">
@@ -590,7 +691,6 @@ oncanplay="document.getElementById('bg-fallback').style.opacity='0'"></video>
 </div>
 <div id="today-progress"><div id="today-progress-fill"></div></div>
 <div id="today-dots"></div>
-<!-- pull tab -->
 <div id="today-toggle" onclick="todayToggle()" title="Collapse">
 <span id="today-toggle-icon">‹</span>
 </div>
@@ -629,32 +729,23 @@ oncanplay="document.getElementById('bg-fallback').style.opacity='0'"></video>
 </div>
 <div class="menu-divider"></div>
 
-<!-- 3. Ride Predictor — Madam Leota crystal ball -->
+<!-- 3. Ride Predictor -->
 <div class="menu-item" onclick="window.location.href='predict.html'">
 <div class="menu-icon">
 <svg viewBox="0 0 36 36" fill="none">
-<!-- Base / stand -->
 <rect x="13" y="30" width="10" height="3" rx="1.5" fill="rgba(20,50,65,0.9)"/>
 <rect x="15" y="27" width="6" height="4" rx="1" fill="rgba(20,50,65,0.9)"/>
-<!-- Glow ring around ball -->
 <circle cx="18" cy="16" r="12" fill="rgba(20,50,65,0.15)" stroke="rgba(20,50,65,0.4)" stroke-width="1"/>
-<!-- Crystal ball -->
 <circle cx="18" cy="16" r="10" fill="rgba(20,50,65,0.9)"/>
-<!-- Mystic glow inside -->
 <circle cx="18" cy="16" r="10" fill="rgba(20,50,65,0)" stroke="rgba(20,50,65,0.9)" stroke-width="0"/>
-<!-- Leota face — eyes -->
 <ellipse cx="15" cy="15" rx="2" ry="2.5" fill="rgba(180,138,42,0.9)"/>
 <ellipse cx="21" cy="15" rx="2" ry="2.5" fill="rgba(180,138,42,0.9)"/>
-<!-- Pupils -->
 <ellipse cx="15.5" cy="15.5" rx="1" ry="1.2" fill="rgba(20,50,65,0.9)"/>
 <ellipse cx="21.5" cy="15.5" rx="1" ry="1.2" fill="rgba(20,50,65,0.9)"/>
-<!-- Mouth — slight smile -->
 <path d="M15 20 Q18 22.5 21 20" stroke="rgba(180,138,42,0.9)" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-<!-- Wispy hair lines -->
 <path d="M14 9 Q13 6 15 5" stroke="rgba(180,138,42,0.6)" stroke-width="1" stroke-linecap="round" fill="none"/>
 <path d="M18 8 Q18 5 18 4" stroke="rgba(180,138,42,0.6)" stroke-width="1" stroke-linecap="round" fill="none"/>
 <path d="M22 9 Q23 6 21 5" stroke="rgba(180,138,42,0.6)" stroke-width="1" stroke-linecap="round" fill="none"/>
-<!-- Highlight on ball -->
 <ellipse cx="13.5" cy="11" rx="2.5" ry="1.5" fill="rgba(255,248,238,0.12)" transform="rotate(-20 13.5 11)"/>
 </svg>
 </div>
@@ -779,6 +870,118 @@ allow="autoplay">
 </iframe>
 
 <script>
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  SHOW SCHEDULE — edit this list to add / remove shows           ║
+// ║                                                                  ║
+// ║  Each entry:                                                     ║
+// ║    name        — display name on the banner                     ║
+// ║    youtubeUrl  — full YouTube URL (opens in new tab)            ║
+// ║    emoji       — icon shown on the banner                       ║
+// ║    startH      — start hour in 24-hour Anaheim local time       ║
+// ║    startM      — start minute                                    ║
+// ║    durationMins— how long the banner stays visible (default 30) ║
+// ║                                                                  ║
+// ║  Days of week filter (optional):                                 ║
+// ║    days: [0,1,2,3,4,5,6]  — 0=Sun … 6=Sat                      ║
+// ║    Omit to show every day.                                       ║
+// ╚══════════════════════════════════════════════════════════════════╝
+const SHOWS = [
+  {
+    name: 'Wondrous Journeys',
+    youtubeUrl: 'https://www.youtube.com/watch?v=QeuhMBRYoa0',
+    emoji: '✨',
+    startH: 21, startM: 30,
+    durationMins: 30,
+    // days: [5, 6]  // uncomment to limit to Fri & Sat only
+  },
+  {
+    name: 'Fantasmic!',
+    youtubeUrl: 'https://www.youtube.com/watch?v=5uF_e215aCo',
+    emoji: '🎆',
+    startH: 21, startM: 0,
+    durationMins: 30,
+  },
+  {
+    name: 'World of Color – Happiness!',
+    youtubeUrl: 'https://www.youtube.com/watch?v=ZhD7-LxmJkk',
+    emoji: '🌊',
+    startH: 21, startM: 0,
+    durationMins: 30,
+  },
+  // Add more shows here — copy any block above and change the values
+];
+
+// ── Banner state ──
+let bannerDismissedUntil = 0; // epoch ms — user can snooze it
+let bannerCycleIdx = 0;
+let bannerCycleTimer = null;
+
+function getActiveShows() {
+  const now = new Date();
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  const dayOfWeek = now.getDay();
+  return SHOWS.filter(show => {
+    // day-of-week filter
+    if (show.days && !show.days.includes(dayOfWeek)) return false;
+    const startMins = show.startH * 60 + show.startM;
+    const endMins = startMins + (show.durationMins || 30);
+    return nowMins >= startMins && nowMins < endMins;
+  });
+}
+
+function showBanner(show) {
+  document.getElementById('show-banner-sparkle').textContent = show.emoji || '✨';
+  document.getElementById('show-banner-name').textContent = show.name;
+  const link = document.getElementById('show-banner-link');
+  link.href = show.youtubeUrl;
+  document.getElementById('show-banner').classList.add('visible');
+}
+
+function hideBanner() {
+  document.getElementById('show-banner').classList.remove('visible');
+  if (bannerCycleTimer) { clearInterval(bannerCycleTimer); bannerCycleTimer = null; }
+}
+
+window.dismissBanner = function() {
+  // Snooze for 35 minutes so it won't re-appear mid-show by accident
+  bannerDismissedUntil = Date.now() + 35 * 60 * 1000;
+  hideBanner();
+};
+
+function updateShowBanner() {
+  // Don't show if user dismissed recently
+  if (Date.now() < bannerDismissedUntil) return;
+
+  const active = getActiveShows();
+
+  if (!active.length) {
+    hideBanner();
+    return;
+  }
+
+  // If multiple shows active, cycle through them every 8 seconds
+  if (active.length > 1) {
+    if (!bannerCycleTimer) {
+      bannerCycleIdx = 0;
+      showBanner(active[0]);
+      bannerCycleTimer = setInterval(() => {
+        const current = getActiveShows();
+        if (!current.length) { hideBanner(); return; }
+        bannerCycleIdx = (bannerCycleIdx + 1) % current.length;
+        showBanner(current[bannerCycleIdx]);
+      }, 8000);
+    }
+  } else {
+    if (bannerCycleTimer) { clearInterval(bannerCycleTimer); bannerCycleTimer = null; }
+    showBanner(active[0]);
+  }
+}
+
+// Check every 60 seconds; also run immediately on load
+updateShowBanner();
+setInterval(updateShowBanner, 60000);
+
+// ── SETTINGS ──
 const LS_KEY = 'dh_tv_settings';
 function loadSettings() { try { const raw = localStorage.getItem(LS_KEY); if (raw) return JSON.parse(raw); } catch(e) {} return { name: '', trip: '' }; }
 function persistSettings(name, trip) { try { localStorage.setItem(LS_KEY, JSON.stringify({ name, trip })); } catch(e) {} }
@@ -800,126 +1003,44 @@ let fireworksFired = false;
 function launchFireworks() {
   if (fireworksFired) return;
   fireworksFired = true;
-
   const canvas = document.getElementById('fireworks-canvas');
   const ctx = canvas.getContext('2d');
-
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
   resize();
   window.addEventListener('resize', resize);
-
   canvas.style.opacity = '1';
-
-  const COLORS = [
-    '#e8cc7a','#c9a84c','#fff8ee','#7fd8fa',
-    '#f5b8d4','#a8e6cf','#ffd700','#ffffff'
-  ];
-
+  const COLORS = ['#e8cc7a','#c9a84c','#fff8ee','#7fd8fa','#f5b8d4','#a8e6cf','#ffd700','#ffffff'];
   const particles = [];
-
   function spawnBurst(x, y) {
     const color = COLORS[Math.floor(Math.random() * COLORS.length)];
     const count = 60 + Math.floor(Math.random() * 40);
     for (let i = 0; i < count; i++) {
       const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.3;
       const speed = 2.5 + Math.random() * 5;
-      particles.push({
-        x, y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        alpha: 1,
-        decay: 0.012 + Math.random() * 0.01,
-        radius: 2 + Math.random() * 2,
-        color,
-        trail: [],
-      });
+      particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, alpha: 1, decay: 0.012 + Math.random() * 0.01, radius: 2 + Math.random() * 2, color, trail: [] });
     }
   }
-
-  // Schedule bursts spread across 10 seconds
   const W = () => canvas.width, H = () => canvas.height;
-  const burstTimes = [
-    [0,    () => [W()*0.5,  H()*0.35]],
-    [400,  () => [W()*0.25, H()*0.40]],
-    [700,  () => [W()*0.75, H()*0.38]],
-    [1200, () => [W()*0.5,  H()*0.25]],
-    [1600, () => [W()*0.3,  H()*0.50]],
-    [1900, () => [W()*0.7,  H()*0.45]],
-    [2400, () => [W()*0.5,  H()*0.35]],
-    [2800, () => [W()*0.2,  H()*0.35]],
-    [3100, () => [W()*0.8,  H()*0.40]],
-    [3500, () => [W()*0.55, H()*0.28]],
-    [4000, () => [W()*0.5,  H()*0.35]],
-    [4500, () => [W()*0.35, H()*0.42]],
-    [5000, () => [W()*0.65, H()*0.38]],
-    [5600, () => [W()*0.5,  H()*0.30]],
-    [6200, () => [W()*0.25, H()*0.45]],
-    [6700, () => [W()*0.75, H()*0.42]],
-    [7200, () => [W()*0.5,  H()*0.35]],
-    [7800, () => [W()*0.4,  H()*0.32]],
-    [8300, () => [W()*0.6,  H()*0.38]],
-    [9000, () => [W()*0.5,  H()*0.28]],
-  ];
-
-  burstTimes.forEach(([delay, pos]) => {
-    setTimeout(() => {
-      const [x, y] = pos();
-      spawnBurst(x, y);
-      // twin burst nearby for density
-      setTimeout(() => spawnBurst(x + (Math.random()-0.5)*80, y + (Math.random()-0.5)*60), 120);
-    }, delay);
-  });
-
+  const burstTimes = [[0,()=>[W()*0.5,H()*0.35]],[400,()=>[W()*0.25,H()*0.40]],[700,()=>[W()*0.75,H()*0.38]],[1200,()=>[W()*0.5,H()*0.25]],[1600,()=>[W()*0.3,H()*0.50]],[1900,()=>[W()*0.7,H()*0.45]],[2400,()=>[W()*0.5,H()*0.35]],[2800,()=>[W()*0.2,H()*0.35]],[3100,()=>[W()*0.8,H()*0.40]],[3500,()=>[W()*0.55,H()*0.28]],[4000,()=>[W()*0.5,H()*0.35]],[4500,()=>[W()*0.35,H()*0.42]],[5000,()=>[W()*0.65,H()*0.38]],[5600,()=>[W()*0.5,H()*0.30]],[6200,()=>[W()*0.25,H()*0.45]],[6700,()=>[W()*0.75,H()*0.42]],[7200,()=>[W()*0.5,H()*0.35]],[7800,()=>[W()*0.4,H()*0.32]],[8300,()=>[W()*0.6,H()*0.38]],[9000,()=>[W()*0.5,H()*0.28]]];
+  burstTimes.forEach(([delay, pos]) => { setTimeout(() => { const [x, y] = pos(); spawnBurst(x, y); setTimeout(() => spawnBurst(x + (Math.random()-0.5)*80, y + (Math.random()-0.5)*60), 120); }, delay); });
   let running = true;
   function draw() {
     if (!running) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.trail.push({ x: p.x, y: p.y, alpha: p.alpha });
       if (p.trail.length > 5) p.trail.shift();
-
-      // draw trail
-      for (let t = 0; t < p.trail.length; t++) {
-        const tr = p.trail[t];
-        ctx.globalAlpha = tr.alpha * 0.25 * (t / p.trail.length);
-        ctx.beginPath();
-        ctx.arc(tr.x, tr.y, p.radius * 0.6, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.fill();
-      }
-
-      ctx.globalAlpha = p.alpha;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fillStyle = p.color;
-      ctx.fill();
-
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.06; // gravity
-      p.vx *= 0.98;
-      p.vy *= 0.98;
-      p.alpha -= p.decay;
-
+      for (let t = 0; t < p.trail.length; t++) { const tr = p.trail[t]; ctx.globalAlpha = tr.alpha * 0.25 * (t / p.trail.length); ctx.beginPath(); ctx.arc(tr.x, tr.y, p.radius * 0.6, 0, Math.PI * 2); ctx.fillStyle = p.color; ctx.fill(); }
+      ctx.globalAlpha = p.alpha; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fillStyle = p.color; ctx.fill();
+      p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.vx *= 0.98; p.vy *= 0.98; p.alpha -= p.decay;
       if (p.alpha <= 0) particles.splice(i, 1);
     }
-
     ctx.globalAlpha = 1;
     requestAnimationFrame(draw);
   }
   draw();
-
-  // Fade out canvas after 11s, stop loop after fade
-  setTimeout(() => {
-    canvas.style.transition = 'opacity 2s';
-    canvas.style.opacity = '0';
-    setTimeout(() => { running = false; ctx.clearRect(0, 0, canvas.width, canvas.height); }, 2100);
-  }, 10000);
+  setTimeout(() => { canvas.style.transition = 'opacity 2s'; canvas.style.opacity = '0'; setTimeout(() => { running = false; ctx.clearRect(0, 0, canvas.width, canvas.height); }, 2100); }, 10000);
 }
 
 function updateCountdown() {
@@ -936,7 +1057,6 @@ function updateCountdown() {
   else if (diff === 1) { textEl.textContent = 'Trip is'; numEl.textContent = 'Tomorrow'; unitEl.textContent = ''; labelEl.textContent = ''; }
   else { const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; textEl.textContent = 'Trip in'; numEl.textContent = diff; unitEl.textContent = 'days'; labelEl.textContent = '· ' + months[tripDate.getMonth()] + ' ' + tripDate.getDate(); }
 }
-
 updateCountdown();
 
 function updateClock() {
@@ -990,10 +1110,7 @@ scScript.onload = function() { scWidget = SC.Widget(document.getElementById('sc-
 function handleMusicBtn() { const btn = document.getElementById('music-btn'); if (!scReady) return; if (scPlaying) { scWidget.pause(); btn.textContent = '♪ Play Music'; } else { scWidget.play(); btn.textContent = '♪ Pause Music'; } }
 
 // ── TODAY IN PARKS WIDGET ──
-// Shows all entertainment scheduled today (no time filter).
-// If none found → falls back to cycling DL / DCA park hours.
 (function() {
-  // Fallback IDs — overwritten at runtime by resolveParkIds()
   let PARK_IDS = {
     dl: '7340550b-c14d-4def-80bb-acbe51cd9ab2',
     dca: '832fcd51-ea19-4e77-85c7-75d5843b127c'
@@ -1005,7 +1122,6 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
   let widgetIdx = 0;
   let widgetTimer = null;
 
-  // Resolve real entity IDs from the ThemeParks.wiki destinations list
   async function resolveParkIds() {
     try {
       const d = await fetchT('https://api.themeparks.wiki/v1/destinations');
@@ -1020,25 +1136,18 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
       const dca = parks.find(p => (p.name||'').toLowerCase().includes('california'));
       if (dl) PARK_IDS.dl = dl.id;
       if (dca) PARK_IDS.dca = dca.id;
-    } catch(e) { /* keep fallback IDs */ }
+    } catch(e) {}
   }
 
-  // ── collapse / expand ──
   let collapsed = false;
   window.todayToggle = function() {
     collapsed = !collapsed;
     document.getElementById('today-widget').classList.toggle('collapsed', collapsed);
   };
 
-  // ── helpers ──
-  // Parse h and m directly from the LOCAL part of the ISO string (before any tz offset)
-  // e.g. "2026-05-05T22:00:00-07:00" → h=22, m=0 (Anaheim local time, no conversion)
-  // This avoids JS Date() converting to browser timezone and showing wrong hours.
   function parseLocalHM(t) {
     if (!t) return null;
     try {
-      // Match HH:MM at the start of the time portion, ignoring any tz offset
-      // Works for: "2026-05-05T22:00:00-07:00", "2026-05-05T08:00:00Z", "08:00"
       const m = t.match(/T(\d{2}):(\d{2})/);
       if (m) return { h: +m[1], m: +m[2] };
       const p = t.match(/^(\d{1,2}):(\d{2})/);
@@ -1046,19 +1155,13 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
       return null;
     } catch { return null; }
   }
-
-  function toMins(t) {
-    const hm = parseLocalHM(t);
-    return hm ? hm.h*60 + hm.m : null;
-  }
-
+  function toMins(t) { const hm = parseLocalHM(t); return hm ? hm.h*60 + hm.m : null; }
   function fmt12(t) {
     const hm = parseLocalHM(t);
     if (!hm) return '';
     const { h, m } = hm;
     return (h%12||12)+':'+String(m).padStart(2,'0')+' '+(h>=12?'PM':'AM');
   }
-
   function inferType(name, entityType) {
     const n = (name||'').toLowerCase();
     if (entityType==='CHARACTER') return 'character';
@@ -1067,7 +1170,6 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
     if (n.includes('meet')||n.includes('greeting')||n.includes('character')) return 'character';
     return 'show';
   }
-
   function inferLoc(name, park) {
     const n = (name||'').toLowerCase();
     if (n.includes('fantasmic')) return 'Rivers of America';
@@ -1081,25 +1183,18 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
     if (n.includes('lion king')) return 'Fantasyland Theatre';
     return PARK_LABELS[park];
   }
-
   async function fetchT(url, ms=8000) {
     const c = new AbortController();
     const t = setTimeout(() => c.abort(), ms);
-    try {
-      const r = await fetch(url, { signal: c.signal });
-      clearTimeout(t);
-      if (!r.ok) throw new Error(r.status);
-      return await r.json();
-    } catch(e) { clearTimeout(t); throw e; }
+    try { const r = await fetch(url, { signal: c.signal }); clearTimeout(t); if (!r.ok) throw new Error(r.status); return await r.json(); }
+    catch(e) { clearTimeout(t); throw e; }
   }
-
   function buildHoursCard(label, hours) {
     if (!hours) return null;
     const open = hours.openingTime || hours.open || '';
     const close = hours.closingTime || hours.close || '';
     if (!open && !close) return null;
-    const openMins = toMins(open);
-    const closeMins = toMins(close);
+    const openMins = toMins(open), closeMins = toMins(close);
     const nowMins = new Date().getHours()*60 + new Date().getMinutes();
     let pill = '';
     if (openMins !== null && closeMins !== null) {
@@ -1107,15 +1202,9 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
       else if (nowMins >= closeMins) pill = '<span class="today-status-pill pill-closed">Closed</span>';
       else pill = '<span class="today-status-pill pill-open">Open Now</span>';
     }
-    return `<div class="today-card">
-      <div class="today-card-hours-title">${label}</div>
-      <div class="today-card-hours-time">${fmt12(open)} – ${fmt12(close)}</div>
-      <div class="today-card-hours-sub">Park Hours</div>
-      ${pill}
-    </div>`;
+    return `<div class="today-card"><div class="today-card-hours-title">${label}</div><div class="today-card-hours-time">${fmt12(open)} – ${fmt12(close)}</div><div class="today-card-hours-sub">Park Hours</div>${pill}</div>`;
   }
-
-  async function fetchSchedule(parkId, parkKey) {
+  async function fetchSchedule(parkId) {
     try {
       const data = await fetchT(`https://api.themeparks.wiki/v1/entity/${parkId}/schedule`);
       const today = new Date().toISOString().slice(0,10);
@@ -1123,25 +1212,7 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
       return { hours: todayEntry || null };
     } catch(e) { return { hours: null }; }
   }
-
-  // Only show confirmed, currently-running Disneyland Resort entertainment.
-  // Add to this list when new shows open; remove when they close.
-  const SHOW_ALLOWLIST = [
-    'fantasmic',
-    'world of color',
-    'wondrous journeys',
-    'celebrate! a street party',       // Happy is the name variant
-    'better together',                 // WDW crossover, keep just in case
-    'magic happens',                   // parade
-    'soundsational',                   // parade
-    'paint the night',                 // parade
-    'mickey and friends band-to-band', // cavalcade variant
-    'celebrate happy cavalcade',
-    'mickeys happy cavalcade',
-    'mickey\'s happy cavalcade',
-   
-  ];
-
+  const SHOW_ALLOWLIST = ['fantasmic','world of color','wondrous journeys','celebrate! a street party','better together','magic happens','soundsational','paint the night','mickey and friends band-to-band','celebrate happy cavalcade','mickeys happy cavalcade','mickey\'s happy cavalcade'];
   async function fetchLive(parkId, parkKey) {
     try {
       const data = await fetchT(`https://api.themeparks.wiki/v1/entity/${parkId}/live`);
@@ -1153,38 +1224,23 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
       return shows.map(e => {
         const times = (e.showtimes || []).map(s => s.startTime || s.time || '').filter(Boolean);
         const type = inferType(e.name, e.entityType);
-        return {
-          emoji: TYPE_EMOJI[type] || '🎬',
-          name: e.name,
-          loc: inferLoc(e.name, parkKey),
-          times,
-        };
+        return { emoji: TYPE_EMOJI[type] || '🎬', name: e.name, loc: inferLoc(e.name, parkKey), times };
       });
     } catch(e) { return []; }
   }
-
   function renderCards(cards) {
-    widgetCards = cards;
-    widgetIdx = 0;
+    widgetCards = cards; widgetIdx = 0;
     const container = document.getElementById('today-cards');
     const dotsEl = document.getElementById('today-dots');
     const counter = document.getElementById('today-card-counter');
-    if (!cards.length) {
-      container.innerHTML = '<div class="today-card"><div class="today-card-name" style="opacity:0.28;font-size:9px;">No events found today</div></div>';
-      dotsEl.innerHTML = '';
-      counter.textContent = '';
-      return;
-    }
+    if (!cards.length) { container.innerHTML = '<div class="today-card"><div class="today-card-name" style="opacity:0.28;font-size:9px;">No events found today</div></div>'; dotsEl.innerHTML = ''; counter.textContent = ''; return; }
     container.innerHTML = cards.join('');
-    // dots
     dotsEl.innerHTML = cards.map((_, i) => `<div class="t-dot${i===0?' active':''}" onclick="goCard(${i})"></div>`).join('');
     counter.textContent = '1 / ' + cards.length;
-    // size cards
     const w = document.getElementById('today-widget').offsetWidth;
     document.querySelectorAll('.today-card').forEach(c => c.style.width = w + 'px');
     startAutoAdvance();
   }
-
   function goCard(idx) {
     if (!widgetCards.length) return;
     widgetIdx = ((idx % widgetCards.length) + widgetCards.length) % widgetCards.length;
@@ -1196,47 +1252,32 @@ function handleMusicBtn() { const btn = document.getElementById('music-btn'); if
     fill.style.transition = 'none'; fill.style.width = '0%';
     requestAnimationFrame(() => { fill.style.transition = `width ${ADVANCE_MS}ms linear`; fill.style.width = '100%'; });
   }
-
   window.goCard = goCard;
-
   function startAutoAdvance() {
     if (widgetTimer) clearInterval(widgetTimer);
     const fill = document.getElementById('today-progress-fill');
     fill.style.transition = `width ${ADVANCE_MS}ms linear`; fill.style.width = '100%';
     widgetTimer = setInterval(() => goCard(widgetIdx + 1), ADVANCE_MS);
   }
-
   async function init() {
     await resolveParkIds();
     const [dlSched, dcaSched, dlShows, dcaShows] = await Promise.all([
-      fetchSchedule(PARK_IDS.dl, 'dl'),
-      fetchSchedule(PARK_IDS.dca, 'dca'),
+      fetchSchedule(PARK_IDS.dl),
+      fetchSchedule(PARK_IDS.dca),
       fetchLive(PARK_IDS.dl, 'dl'),
       fetchLive(PARK_IDS.dca, 'dca'),
     ]);
-
     const cards = [];
-    // hours cards first
     const dlHoursCard = buildHoursCard('Disneyland', dlSched.hours);
     const dcaHoursCard = buildHoursCard('California Adventure', dcaSched.hours);
     if (dlHoursCard) cards.push(dlHoursCard);
     if (dcaHoursCard) cards.push(dcaHoursCard);
-
-    // show cards
     [...dlShows, ...dcaShows].forEach(e => {
       const timesStr = e.times.length ? e.times.slice(0,3).map(fmt12).join(' · ') : '';
-      cards.push(`<div class="today-card">
-        <div class="today-card-emoji">${e.emoji}</div>
-        <div class="today-card-name">${e.name}</div>
-        <div class="today-card-loc">${e.loc}${timesStr ? ' · ' + timesStr : ''}</div>
-      </div>`);
+      cards.push(`<div class="today-card"><div class="today-card-emoji">${e.emoji}</div><div class="today-card-name">${e.name}</div><div class="today-card-loc">${e.loc}${timesStr ? ' · ' + timesStr : ''}</div></div>`);
     });
-
-    renderCards(cards.length ? cards : [
-      dlHoursCard || '<div class="today-card"><div class="today-card-name" style="opacity:0.4;font-size:10px;">Schedule unavailable</div></div>',
-    ].filter(Boolean));
+    renderCards(cards.length ? cards : [dlHoursCard || '<div class="today-card"><div class="today-card-name" style="opacity:0.4;font-size:10px;">Schedule unavailable</div></div>'].filter(Boolean));
   }
-
   init();
 })();
 </script>
