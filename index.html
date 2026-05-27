@@ -113,7 +113,6 @@ body { animation: fadeIn 1.5s ease-out; }
 }
 #show-banner.visible {
   pointer-events: auto;
-  /* top is set to header.offsetHeight by positionBanner() */
 }
 #show-banner-inner {
   background: linear-gradient(135deg, rgba(14,36,50,0.97) 0%, rgba(22,52,68,0.98) 100%);
@@ -554,9 +553,6 @@ function handleMusicBtn(){const btn=document.getElementById('music-btn'); if(!sc
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SHOW BANNER
-// To add a show: copy a row in SHOW_SCHEDULE and fill in name, url, location,
-// times (Anaheim / Pacific local 24h), and durationMins.
-// To remove a show: delete its row.
 // ─────────────────────────────────────────────────────────────────────────────
 const SHOW_SCHEDULE = [
   // Disneyland Park
@@ -606,15 +602,13 @@ function updateShowBanner() {
 }
 
 function dismissShowBanner() {
-  // Snooze longer than any show window so it won't reappear for the same showing
   bannerDismissedUntil = Date.now() + 35 * 60 * 1000;
   document.getElementById('show-banner').classList.remove('visible');
 }
 
-// Run immediately and again once fonts/layout have settled
 positionBanner();
 updateShowBanner();
-setTimeout(positionBanner, 500); // re-measure after font load shifts layout
+setTimeout(positionBanner, 500);
 setInterval(updateShowBanner, 60000);
 window.addEventListener('resize', positionBanner);
 
@@ -654,7 +648,33 @@ window.addEventListener('resize', positionBanner);
 
   async function fetchT(url,ms=8000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(url,{signal:c.signal});clearTimeout(t);if(!r.ok)throw new Error(r.status);return await r.json();}catch(e){clearTimeout(t);throw e;}}
 
-  function buildHoursCard(label,hours){if(!hours)return null;const open=hours.openingTime||hours.open||'',close=hours.closingTime||hours.close||'';if(!open&&!close)return null;const openMins=toMins(open),closeMins=toMins(close),nowMins=new Date().getHours()*60+new Date().getMinutes();let pill='';if(openMins!==null&&closeMins!==null){if(nowMins<openMins)pill='<span class="today-status-pill pill-soon">Opens '+fmt12(open)+'</span>';else if(nowMins>=closeMins)pill='<span class="today-status-pill pill-closed">Closed</span>';else pill='<span class="today-status-pill pill-open">Open Now</span>';}return`<div class="today-card"><div class="today-card-hours-title">${label}</div><div class="today-card-hours-time">${fmt12(open)} – ${fmt12(close)}</div><div class="today-card-hours-sub">Park Hours</div>${pill}</div>`;}
+  // ── FIXED: handles closing times at/past midnight (closeMins < openMins) ──
+  function buildHoursCard(label, hours) {
+    if (!hours) return null;
+    const open = hours.openingTime || hours.open || '';
+    const close = hours.closingTime || hours.close || '';
+    if (!open && !close) return null;
+
+    const openMins = toMins(open), closeMins = toMins(close);
+    const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+
+    let pill = '';
+    if (openMins !== null && closeMins !== null) {
+      // If closeMins < openMins the park closes past midnight — shift into the next day
+      const effectiveCloseMins = closeMins < openMins ? closeMins + 1440 : closeMins;
+      // If we're past midnight but before opening, shift now into the next day too
+      const effectiveNowMins = nowMins < openMins ? nowMins + 1440 : nowMins;
+
+      if (effectiveNowMins < openMins)
+        pill = '<span class="today-status-pill pill-soon">Opens ' + fmt12(open) + '</span>';
+      else if (effectiveNowMins >= effectiveCloseMins)
+        pill = '<span class="today-status-pill pill-closed">Closed</span>';
+      else
+        pill = '<span class="today-status-pill pill-open">Open Now</span>';
+    }
+
+    return `<div class="today-card"><div class="today-card-hours-title">${label}</div><div class="today-card-hours-time">${fmt12(open)} – ${fmt12(close)}</div><div class="today-card-hours-sub">Park Hours</div>${pill}</div>`;
+  }
 
   async function fetchSchedule(parkId){try{const data=await fetchT('https://api.themeparks.wiki/v1/entity/'+parkId+'/schedule');const today=new Date().toISOString().slice(0,10);const todayEntry=(data.schedule||[]).find(s=>(s.date||'').slice(0,10)===today&&s.type==='OPERATING');return{hours:todayEntry||null};}catch(e){return{hours:null};}}
 
