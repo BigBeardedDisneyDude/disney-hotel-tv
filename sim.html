@@ -405,10 +405,11 @@ function updateGuest(g, dt) {
 }
 
 function spawnGuest(id) {
-  const startNode = NODES[Math.floor(Math.random() * NODES.length)];
+  // All guests enter from the Main Street entrance
+  const entrance = NODES.find(n => n.id === 0);
   const g = {
     id, name: NAMES[id % NAMES.length],
-    x: startNode.x + rand(-4,4), y: startNode.y + rand(-4,4),
+    x: entrance.x + rand(-12, 12), y: entrance.y + rand(-6, 6),
     tx: 0, ty: 0, state: 'walking', waitLeft: 0, rideLeft: 0,
     target: null, isMe: false, ridesDone: 0, trail: [], waypoints: [], wpIdx: 0
   };
@@ -636,7 +637,16 @@ canvas.onclick = e => {
   }
 };
 
-for (let i = 0; i < 60; i++) guests.push(spawnGuest(i));
+// Stagger initial guests along Main Street so park feels lived-in at start
+for (let i = 0; i < 60; i++) {
+  const g = spawnGuest(i);
+  // Spread initial guests across Main Street nodes (0-5) so park isn't empty
+  const msNodes = NODES.filter(n => n.id <= 5);
+  const startNode = msNodes[i % msNodes.length];
+  g.x = startNode.x + rand(-15, 15);
+  g.y = startNode.y + rand(-8, 8);
+  guests.push(g);
+}
 fetchWaits();
 requestAnimationFrame(loop);
 
