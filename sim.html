@@ -536,10 +536,29 @@ async function showDebug() {
   overlay.style.display = 'block';
   content.innerHTML = 'Fetching from Supabase...';
   try {
-    const h = new Date().getHours(), dow = new Date().getDay();
+    // Try without park filter first to see what's in the table at all
+    const urlAll = `${SUPABASE_URL}/rest/v1/wait_times?select=park,ride_name,wait_time&limit=10`;
+    const resAll = await fetch(urlAll, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+    const sampleRows = await resAll.json();
+    
+    // Now fetch with park filter
     const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.16&select=ride_name,wait_time&limit=500`;
     const res = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
     const rows = await res.json();
+    
+    // Show diagnostic info
+    let diagHtml = `<p style="color:#e67e22;margin-bottom:8px">── Raw sample (no filter, first 10 rows) ──</p>`;
+    if (Array.isArray(sampleRows) && sampleRows.length > 0) {
+      sampleRows.forEach(r => {
+        diagHtml += `<div style="color:#aaa;margin:2px 0">park=${r.park} | ${r.ride_name} | ${r.wait_time}min</div>`;
+      });
+    } else {
+      diagHtml += `<div style="color:#e05050">Response: ${JSON.stringify(sampleRows)}</div>`;
+    }
+    diagHtml += `<br><p style="color:#e67e22;margin-bottom:8px">── With park=eq.16 filter: ${Array.isArray(rows) ? rows.length : 'error'} rows ──</p>`;
+    content.innerHTML = diagHtml + '<br><div id="debug-names"></div>';
+    
+    if (!Array.isArray(rows)) { document.getElementById('debug-names').innerHTML = `<span style="color:#e05050">Error: ${JSON.stringify(rows)}</span>`; return; }
     const names = [...new Set(rows.map(r => r.ride_name))].sort();
     const simDbs = RIDES.map(r => r.db);
     let html = `<p style="color:#9a9080;margin-bottom:12px">${rows.length} rows, ${names.length} unique names. Green = matched in sim, red = unmatched.</p>`;
@@ -554,7 +573,7 @@ async function showDebug() {
         html += `<div style="color:#e67e22;margin:2px 0">⚠ ${d}</div>`;
       }
     });
-    content.innerHTML = html;
+    document.getElementById('debug-names').innerHTML = html;
   } catch(e) {
     content.innerHTML = `<span style="color:#e05050">Error: ${e.message}</span>`;
   }
@@ -637,16 +656,7 @@ canvas.onclick = e => {
   }
 };
 
-// Stagger initial guests along Main Street so park feels lived-in at start
-for (let i = 0; i < 60; i++) {
-  const g = spawnGuest(i);
-  // Spread initial guests across Main Street nodes (0-5) so park isn't empty
-  const msNodes = NODES.filter(n => n.id <= 5);
-  const startNode = msNodes[i % msNodes.length];
-  g.x = startNode.x + rand(-15, 15);
-  g.y = startNode.y + rand(-8, 8);
-  guests.push(g);
-}
+for (let i = 0; i < 60; i++) guests.push(spawnGuest(i));
 fetchWaits();
 requestAnimationFrame(loop);
 
