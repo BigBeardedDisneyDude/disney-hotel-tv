@@ -162,7 +162,7 @@ const RIDES = [
   { n: 'GADGETcoaster',   x:  670, y:   68, db: "Chip 'n' Dale's GADGETcoaster" },
   { n: 'Roger Rabbit',    x:  686, y:  110, db: "Roger Rabbit's Car Toon Spin" },
   // Fantasyland
-  { n: 'Small World',     x:  725, y:  201, db: "it's a small world" },
+  { n: 'Small World',     x:  725, y:  201, db: '"it\'s a small world"' },
   { n: 'Casey Jr.',       x:  553, y:  321, db: 'Casey Jr. Circus Train' },
   { n: 'Storybook',       x:  683, y:  327, db: 'Storybook Land Canal Boats' },
   { n: 'Peter Pan',       x:  544, y:  368, db: "Peter Pan's Flight" },
@@ -192,7 +192,7 @@ const RIDES = [
   { n: 'Pirates',         x:  220, y:  629, db: 'Pirates of the Caribbean' },
   { n: 'Haunted Mansion', x:  353, y:  678, db: 'Haunted Mansion' },
   // Adventureland
-  { n: 'Indiana Jones',   x:  467, y:  661, db: 'Indiana Jones Adventure' },
+  { n: 'Indiana Jones',   x:  467, y:  661, db: 'Indiana Jones™ Adventure' },
   { n: 'Jungle Cruise',   x:  217, y:  694, db: 'Jungle Cruise' },
 ];
 
@@ -404,12 +404,17 @@ function updateGuest(g, dt) {
   }
 }
 
+// Three entry points at the bottom of Main Street (center, left, right gates)
+const ENTRY_POINTS = [
+  { x: 468, y: 912 },  // left turnstile
+  { x: 542, y: 912 },  // right turnstile
+];
+
 function spawnGuest(id) {
-  // All guests enter from the Main Street entrance
-  const entrance = NODES.find(n => n.id === 0);
+  const entry = ENTRY_POINTS[Math.floor(Math.random() * ENTRY_POINTS.length)];
   const g = {
     id, name: NAMES[id % NAMES.length],
-    x: entrance.x + rand(-12, 12), y: entrance.y + rand(-6, 6),
+    x: entry.x + rand(-8, 8), y: entry.y + rand(-4, 4),
     tx: 0, ty: 0, state: 'walking', waitLeft: 0, rideLeft: 0,
     target: null, isMe: false, ridesDone: 0, trail: [], waypoints: [], wpIdx: 0
   };
@@ -433,17 +438,21 @@ function rideWait(db) { return waitData[db] ?? 25; }
 async function fetchWaits() {
   const h = new Date().getHours(), dow = new Date().getDay();
   document.getElementById('data-badge').textContent = 'Fetching...';
-  const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.16&hour_of_day=eq.${h}&day_of_week=eq.${dow}&select=ride_name,wait_time&order=recorded_at.desc&limit=500`;
+  const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.dl&select=ride_name,wait_time&order=recorded_at.desc&limit=500`;
   try {
     const res = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
     if (!res.ok) throw new Error(res.status);
     const rows = await res.json();
     const agg = {}, cnt = {};
     rows.forEach(r => {
+      if (r.wait_time === null) return; // skip nulls
       if (!agg[r.ride_name]) { agg[r.ride_name] = 0; cnt[r.ride_name] = 0; }
       agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
     });
     Object.keys(agg).forEach(k => { waitData[k] = Math.round(agg[k] / cnt[k]); });
+    // For rides with rows but all-null wait times, mark as open with 0 wait
+    const allNames = [...new Set(rows.map(r => r.ride_name))];
+    allNames.forEach(k => { if (waitData[k] === undefined) waitData[k] = 0; });
     const matched = RIDES.filter(r => waitData[r.db] !== undefined).length;
     const badge = document.getElementById('data-badge');
     badge.textContent = `Live data — ${matched}/${RIDES.length} rides`;
@@ -537,12 +546,12 @@ async function showDebug() {
   content.innerHTML = 'Fetching from Supabase...';
   try {
     // Try without park filter first to see what's in the table at all
-    const urlAll = `${SUPABASE_URL}/rest/v1/wait_times?select=park,ride_name,wait_time&limit=10`;
+    const urlAll = `${SUPABASE_URL}/rest/v1/wait_times?select=*&limit=10`;
     const resAll = await fetch(urlAll, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
     const sampleRows = await resAll.json();
     
     // Now fetch with park filter
-    const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.16&select=ride_name,wait_time&limit=500`;
+    const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.dl&select=ride_name,wait_time&limit=500`;
     const res = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
     const rows = await res.json();
     
@@ -550,7 +559,7 @@ async function showDebug() {
     let diagHtml = `<p style="color:#e67e22;margin-bottom:8px">── Raw sample (no filter, first 10 rows) ──</p>`;
     if (Array.isArray(sampleRows) && sampleRows.length > 0) {
       sampleRows.forEach(r => {
-        diagHtml += `<div style="color:#aaa;margin:2px 0">park=${r.park} | ${r.ride_name} | ${r.wait_time}min</div>`;
+        diagHtml += `<div style="color:#aaa;margin:2px 0;font-size:10px">${JSON.stringify(r)}</div>`;
       });
     } else {
       diagHtml += `<div style="color:#e05050">Response: ${JSON.stringify(sampleRows)}</div>`;
