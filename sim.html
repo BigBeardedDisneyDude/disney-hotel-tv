@@ -71,6 +71,7 @@
   <button class="btn gold" id="btn-addme">+ Add Me</button>
   <button class="btn" id="btn-refresh">↻ Refresh data</button>
   <button class="btn" id="btn-debug" onclick="showDebug()">🔍 Debug names</button>
+  <button class="btn" id="btn-paths" onclick="togglePaths()">Show Paths</button>
   <div id="status-bar">
     <span id="st-guests">—</span>
     <span id="st-me" class="highlight"></span>
@@ -187,6 +188,7 @@ const RIDES = [
   // Train Stations (no wait time data but real park landmarks)
   { n: 'Main St Station', x:  583, y:  848, db: 'Disneyland Railroad - Main Street' },
   { n: 'FL Station',      x:  620, y:  165, db: 'Disneyland Railroad - Fantasyland' },
+  { n: 'TL Station',      x:  956, y:  523, db: 'Disneyland Railroad - Tomorrowland' },
   // Bayou / New Orleans Square
   { n: "Tiana's Bayou",   x:  158, y:  535, db: "Tiana's Bayou Adventure" },
   { n: 'Winnie Pooh',    x:   79, y:  532, db: "The Many Adventures of Winnie the Pooh" },
@@ -197,133 +199,202 @@ const RIDES = [
   { n: 'Jungle Cruise',   x:  217, y:  694, db: 'Jungle Cruise' },
 ];
 
+
 const NODES = [
-  // Main Street entrance → hub
-  { id:  0, x: 535, y: 900 },  // park entrance
-  { id:  1, x: 535, y: 848 },  // train station level
-  { id:  2, x: 535, y: 780 },
-  { id:  3, x: 535, y: 710 },
-  { id:  4, x: 535, y: 640 },
-  { id:  5, x: 535, y: 570 },
-  { id:  6, x: 535, y: 500 },  // hub center
+  // ── ENTRANCES ──
+  { id:  0, x: 544, y: 895 },  // left gate
+  { id:100, x: 623, y: 899 },  // right gate
 
-  // Hub spokes
-  { id:  7, x: 455, y: 510 },  // hub west
-  { id:  8, x: 380, y: 515 },  // toward Frontierland/NOS
-  { id:  9, x: 398, y: 504 },  // Big Thunder
-  { id: 10, x: 620, y: 508 },  // hub east
-  { id: 11, x: 680, y: 520 },  // TL entrance
-  { id: 12, x: 535, y: 440 },  // hub north → Fantasyland
+  // ── MAIN STREET ──
+  { id:  1, x: 544, y: 848 },  // MS south (left lane)
+  { id:101, x: 608, y: 848 },  // MS south (right lane)
+  { id:  2, x: 544, y: 800 },
+  { id:102, x: 600, y: 800 },
+  { id:  3, x: 544, y: 750 },
+  { id:103, x: 596, y: 750 },
+  { id:  4, x: 544, y: 700 },
+  { id:104, x: 592, y: 700 },
+  { id:  5, x: 544, y: 650 },
+  { id:105, x: 588, y: 650 },
+  { id:  6, x: 544, y: 600 },
+  { id:106, x: 584, y: 600 },
+  { id:  7, x: 544, y: 560 },  // MS north / hub south
+  { id:107, x: 580, y: 560 },
 
-  // NOS / Adventureland / Bayou
-  { id: 13, x: 440, y: 565 },  // NOS junction
-  { id: 14, x: 380, y: 600 },  // NOS path
-  { id: 15, x: 353, y: 640 },  // toward HM
-  { id: 16, x: 353, y: 678 },  // Haunted Mansion
-  { id: 17, x: 300, y: 655 },  // NOS/AL crossroads
-  { id: 18, x: 467, y: 661 },  // Indiana Jones
-  { id: 19, x: 360, y: 700 },  // AL south path
-  { id: 20, x: 217, y: 694 },  // Jungle Cruise
-  { id: 21, x: 220, y: 629 },  // Pirates of Caribbean
-  { id: 22, x: 175, y: 578 },  // Bayou path
-  { id: 23, x:  78, y: 526 },  // Tiana's Bayou
+  // ── HUB ──
+  { id:  8, x: 555, y: 510 },  // hub center
+  { id:  9, x: 490, y: 520 },  // hub west arm
+  { id: 10, x: 430, y: 530 },  // hub far west → Adventureland
+  { id: 11, x: 610, y: 515 },  // hub east arm
+  { id: 12, x: 660, y: 520 },  // hub far east → Tomorrowland
+  { id: 13, x: 555, y: 470 },  // hub north → Fantasyland/castle
 
-  // Frontierland
-  { id: 24, x: 370, y: 540 },  // FL main path
-  { id: 25, x: 340, y: 510 },  // FL north
+  // ── ADVENTURELAND / NOS CORRIDOR ──
+  // From hub west down the left side
+  { id: 20, x: 420, y: 560 },  // AL/NOS top junction
+  { id: 21, x: 400, y: 590 },
+  { id: 22, x: 385, y: 620 },
+  { id: 23, x: 370, y: 650 },  // NOS crossroads
+  { id: 24, x: 353, y: 678 },  // Haunted Mansion
+  { id: 25, x: 340, y: 660 },  // path continues west
+  { id: 26, x: 310, y: 660 },
+  { id: 27, x: 280, y: 660 },
+  { id: 28, x: 250, y: 660 },  // NOS west path
+  { id: 29, x: 220, y: 640 },
+  { id: 30, x: 220, y: 629 },  // Pirates of Caribbean
+  { id: 31, x: 200, y: 610 },
+  { id: 32, x: 175, y: 580 },  // bayou path
+  { id: 33, x: 158, y: 555 },
+  { id: 34, x: 158, y: 535 },  // Tiana's Bayou
+  // Adventureland east path
+  { id: 35, x: 400, y: 660 },
+  { id: 36, x: 420, y: 670 },
+  { id: 37, x: 440, y: 665 },
+  { id: 38, x: 467, y: 661 },  // Indiana Jones
+  { id: 39, x: 430, y: 695 },  // AL south path
+  { id: 40, x: 340, y: 694 },  // Jungle Cruise area
+  { id: 41, x: 260, y: 694 },
+  { id: 42, x: 217, y: 694 },  // Jungle Cruise
 
-  // Galaxy's Edge
-  { id: 26, x: 390, y: 460 },  // GE/FL junction
-  { id: 27, x: 330, y: 420 },  // GE east entrance
-  { id: 28, x: 270, y: 370 },  // GE main path
-  { id: 29, x: 215, y: 310 },  // GE inner path
-  { id: 30, x: 170, y: 245 },  // Rise of Resistance
-  { id: 31, x: 248, y: 285 },  // Smugglers Run
+  // ── FRONTIERLAND ──
+  { id: 50, x: 400, y: 530 },  // FL entrance from hub
+  { id: 51, x: 400, y: 505 },  // Big Thunder approach
+  { id: 52, x: 398, y: 504 },  // Big Thunder
+  { id: 53, x: 380, y: 490 },  // FL north path
+  { id: 54, x: 360, y: 475 },
 
-  // Fantasyland paths
-  { id: 32, x: 535, y: 440 },  // FL entrance (=12)
-  { id: 33, x: 555, y: 400 },  // FL central west
-  { id: 34, x: 575, y: 385 },  // FL central
-  { id: 35, x: 555, y: 360 },  // FL north path
-  { id: 36, x: 575, y: 340 },  // toward Small World
-  { id: 37, x: 552, y: 324 },  // Small World
-  { id: 38, x: 620, y: 340 },  // FL northeast path
-  { id: 39, x: 670, y: 325 },  // Casey Jr / Storybook path
-  { id: 40, x: 681, y: 322 },  // Casey Jr
-  { id: 41, x: 688, y: 330 },  // Storybook
-  { id: 42, x: 610, y: 390 },  // FL east path
-  { id: 43, x: 559, y: 396 },  // Carrousel
-  { id: 44, x: 597, y: 404 },  // Mr Toad
-  { id: 45, x: 611, y: 410 },  // Pinocchio
-  { id: 46, x: 544, y: 368 },  // Peter Pan
-  { id: 47, x: 581, y: 380 },  // Dumbo
-  { id: 48, x: 620, y: 380 },  // Snow White
-  { id: 49, x: 650, y: 375 },  // east FL path
-  { id: 50, x: 667, y: 389 },  // Matterhorn
-  { id: 51, x: 710, y: 370 },  // far east FL / Alice area
-  { id: 52, x: 739, y: 374 },  // Alice in Wonderland
+  // ── GALAXY'S EDGE ──
+  { id: 60, x: 370, y: 420 },  // GE entrance from Frontierland
+  { id: 61, x: 375, y: 380 },
+  { id: 62, x: 370, y: 340 },
+  { id: 63, x: 355, y: 305 },
+  { id: 64, x: 325, y: 280 },
+  { id: 65, x: 290, y: 255 },
+  { id: 66, x: 245, y: 230 },  // Rise area
+  { id: 67, x:  61, y: 294 },  // Rise of Resistance
+  { id: 68, x: 185, y: 255 },  // GE interior
+  { id: 72, x: 185, y: 320 },  // GE south exit path
+  { id: 73, x: 175, y: 400 },  // GE south exit mid
+  { id: 74, x: 163, y: 480 },  // GE south exit near Bayou
+  { id: 69, x: 220, y: 220 },
+  { id: 70, x: 260, y: 185 },
+  { id: 71, x: 289, y: 154 },  // Smugglers Run
 
-  // Toontown
-  { id: 53, x: 615, y: 285 },  // Toontown entrance from FL
-  { id: 54, x: 610, y: 240 },  // TT path south
-  { id: 55, x: 595, y: 190 },  // TT central
-  { id: 56, x: 570, y: 140 },  // toward Runaway Railway
-  { id: 57, x: 545, y:  98 },  // Runaway Railway
-  { id: 58, x: 660, y: 115 },  // GADGETcoaster area
-  { id: 59, x: 670, y:  68 },  // GADGETcoaster
-  { id: 60, x: 686, y: 110 },  // Roger Rabbit
+  // ── FANTASYLAND ──
+  { id: 80, x: 555, y: 440 },  // castle / FL entrance
+  { id: 81, x: 540, y: 410 },  // FL west path
+  { id: 82, x: 540, y: 385 },
+  { id: 83, x: 544, y: 368 },  // Peter Pan
+  { id: 84, x: 555, y: 350 },
+  { id: 85, x: 553, y: 321 },  // Casey Jr
+  { id: 86, x: 570, y: 310 },  // Small World approach
+  { id: 87, x: 600, y: 295 },
+  { id: 88, x: 640, y: 285 },
+  { id: 89, x: 683, y: 327 },  // Storybook
+  { id: 90, x: 725, y: 201 },  // Small World (far NE)
+  { id: 91, x: 560, y: 395 },  // FL center
+  { id: 92, x: 559, y: 410 },  // Carrousel area
+  { id: 93, x: 586, y: 336 },  // Dumbo
+  { id: 94, x: 600, y: 360 },  // FL east path
+  { id: 95, x: 610, y: 375 },
+  { id: 96, x: 620, y: 380 },  // Snow White
+  { id: 97, x: 604, y: 404 },  // Mr Toad / Pinocchio
+  { id: 98, x: 630, y: 390 },
+  { id: 99, x: 650, y: 380 },
+  { id:110, x: 667, y: 389 },  // Matterhorn
+  { id:111, x: 700, y: 375 },
+  { id:112, x: 720, y: 374 },
+  { id:113, x: 739, y: 374 },  // Alice
 
-  // Tomorrowland
-  { id: 61, x: 700, y: 548 },  // TL main path
-  { id: 62, x: 719, y: 548 },  // Star Tours
-  { id: 63, x: 740, y: 515 },  // TL north path
-  { id: 64, x: 795, y: 500 },  // TL central
-  { id: 65, x: 823, y: 479 },  // Buzz Lightyear
-  { id: 66, x: 860, y: 500 },  // TL northeast
-  { id: 67, x: 891, y: 518 },  // Space Mountain
-  { id: 68, x: 964, y: 506 },  // Autopia
-  { id: 69, x: 845, y: 580 },  // TL south path
-  { id: 70, x: 801, y: 642 },  // Finding Nemo
+  // ── TOONTOWN ──
+  { id:120, x: 680, y: 320 },  // TT entrance from FL
+  { id:121, x: 680, y: 280 },
+  { id:122, x: 660, y: 240 },
+  { id:123, x: 640, y: 210 },
+  { id:124, x: 620, y: 190 },
+  { id:125, x: 600, y: 165 },  // FL Train Station
+  { id:126, x: 590, y: 140 },
+  { id:127, x: 575, y: 115 },
+  { id:128, x: 545, y:  98 },  // Runaway Railway
+  { id:129, x: 650, y: 150 },
+  { id:130, x: 670, y: 110 },
+  { id:131, x: 670, y:  68 },  // GADGETcoaster
+  { id:132, x: 686, y: 110 },  // Roger Rabbit
+
+  // ── TOMORROWLAND ──
+  { id:140, x: 670, y: 540 },  // TL entrance path
+  { id:141, x: 685, y: 555 },
+  { id:142, x: 700, y: 560 },
+  { id:143, x: 703, y: 584 },  // Star Tours
+  { id:144, x: 715, y: 540 },
+  { id:145, x: 730, y: 520 },
+  { id:146, x: 750, y: 505 },
+  { id:147, x: 775, y: 495 },
+  { id:148, x: 801, y: 479 },  // Finding Nemo (moved)
+  { id:149, x: 823, y: 479 },  // Buzz
+  { id:150, x: 853, y: 477 },  // Monorail
+  { id:151, x: 878, y: 519 },  // Autopia
+  { id:152, x: 795, y: 530 },
+  { id:153, x: 795, y: 560 },
+  { id:154, x: 795, y: 600 },
+  { id:155, x: 795, y: 660 },  // Space Mountain
+  { id:156, x: 956, y: 523 },  // TL Train Station
 ];
 
 const EDGES = [
-  // Main Street
-  [0,1],[1,2],[2,3],[3,4],[4,5],[5,6],
-  // Hub spokes
-  [6,7],[6,10],[6,12],[6,13],
-  [7,8],[8,9],[8,24],[8,25],
-  // NOS / Adventureland / Bayou
-  [13,14],[13,17],[13,18],
-  [14,15],[14,17],[14,21],
-  [15,16],[15,21],
-  [17,18],[17,19],[17,21],
-  [19,20],[19,18],
-  [20,21],[21,22],[22,23],
-  // Frontierland
-  [24,25],[25,8],[24,7],
-  // Galaxy's Edge
-  [8,26],[26,27],[27,28],[28,29],[29,30],[29,31],[28,31],
-  // Fantasyland
-  [12,32],[32,33],[32,35],[32,46],
-  [33,34],[33,43],[33,46],[34,47],[34,48],[34,36],
-  [35,36],[35,37],[35,46],
-  [36,37],[36,38],
-  [38,39],[38,42],[38,49],
-  [39,40],[39,41],
-  [42,43],[42,44],[42,48],[42,50],
-  [44,43],[44,48],[44,45],
-  [46,47],[47,48],
-  [49,50],[49,51],[50,51],
-  [51,52],
-  // Toontown (connect from FL northeast)
-  [38,53],[53,54],[54,55],
-  [55,56],[56,57],[55,58],[58,59],[58,60],
+  // Entrances → Main Street
+  [0,1],[100,101],
+  // Main Street left lane
+  [1,2],[2,3],[3,4],[4,5],[5,6],[6,7],
+  // Main Street right lane
+  [101,102],[102,103],[103,104],[104,105],[105,106],[106,107],
+  // Cross-connect MS lanes at intervals
+  [1,101],[2,102],[3,103],[4,104],[5,105],[6,106],[7,107],
+  // MS → Hub
+  [7,8],[107,8],
+  // Hub internal
+  [8,9],[8,11],[8,13],[9,10],[11,12],
+  // Hub → Adventureland/NOS corridor (west side)
+  [10,20],[20,21],[21,22],[22,23],
+  // NOS east (toward HM)
+  [23,24],[23,25],
+  // NOS west path (along river, toward Pirates + Bayou)
+  [25,26],[26,27],[27,28],[28,29],[29,30],[30,31],[31,32],[32,33],[33,34],
+  // Adventureland east path (Indiana Jones + Jungle Cruise loop)
+  // Connect from NOS crossroads AND from hub path so it's not a dead end
+  [22,35],[23,35],[35,36],[36,37],[37,38],  // → Indiana Jones
+  [37,39],[38,39],                           // IJ → Jungle Cruise path
+  [39,40],[40,41],[41,42],                   // → Jungle Cruise
+  [42,28],[41,29],                           // JC loops back into NOS west — closes the loop!
+  // Frontierland (north of NOS, south of GE)
+  [9,50],[50,51],[51,52],[50,53],[53,54],
+  // Galaxy's Edge — goes NORTH along east bank, enters GE from top
+  [54,60],[53,60],          // FL north → start climbing east bank
+  [60,61],[61,62],[62,63],  // north along east bank (staying right of river)
+  [63,64],[64,65],[65,66],  // enter GE from the north corridor
+  [66,67],[66,68],          // GE west branch → Rise / interior
+  [68,69],[69,70],[70,71],  // GE inner loop → Smugglers Run
+  [71,69],[70,65],          // GE internal connections
+  // GE south exit — follows the west bank of the river down to NOS/Bayou
+  [68,72],[72,73],[73,74],[74,33],  // GE south exit to Bayou/NOS
+  // Hub → Fantasyland
+  [13,80],[80,81],[81,82],[82,83],[82,91],
+  [83,84],[84,85],[85,86],[86,87],[87,88],[88,89],[89,90],
+  [87,93],[93,85],
+  [91,92],[91,94],[92,97],
+  [94,95],[94,96],[95,96],[95,98],[96,97],[97,98],
+  [98,99],[99,110],[110,111],[111,112],[112,113],
+  // Toontown from FL
+  [88,120],[120,121],[121,122],[122,123],[123,124],[124,125],
+  [125,126],[126,127],[127,128],
+  [124,129],[129,130],[130,131],[130,132],
   // Tomorrowland
-  [10,11],[11,61],[61,62],[61,63],
-  [63,64],[63,65],[64,65],[64,66],
-  [65,66],[66,67],[66,68],[67,69],
-  [69,70],
+  [12,140],[140,141],[141,142],[142,143],[142,144],
+  [144,145],[145,146],[146,147],[147,148],[148,149],[149,150],[150,151],[150,156],
+  [147,152],[152,153],[153,154],[154,155],
+  [149,152],
 ];
+
 
 
 const ADJ = {};
@@ -407,8 +478,8 @@ function updateGuest(g, dt) {
 
 // Three entry points at the bottom of Main Street (center, left, right gates)
 const ENTRY_POINTS = [
-  { x: 468, y: 912 },  // left turnstile
-  { x: 542, y: 912 },  // right turnstile
+  { x: 544, y: 895 },  // left entrance
+  { x: 623, y: 899 },  // right entrance
 ];
 
 function spawnGuest(id) {
@@ -461,7 +532,9 @@ async function fetchWaits() {
   } catch (e) {
     document.getElementById('data-badge').textContent = 'Estimated waits';
     document.getElementById('data-badge').style.color = '#e67e22';
-    RIDES.forEach(r => { waitData[r.db] = Math.round(10 + Math.random() * 55); });
+    if (showPaths) drawPaths();
+
+  RIDES.forEach(r => { waitData[r.db] = Math.round(10 + Math.random() * 55); });
   }
 }
 
@@ -587,6 +660,39 @@ async function showDebug() {
   } catch(e) {
     content.innerHTML = `<span style="color:#e05050">Error: ${e.message}</span>`;
   }
+}
+
+let showPaths = false;
+function togglePaths() {
+  showPaths = !showPaths;
+  document.getElementById('btn-paths').textContent = showPaths ? 'Hide Paths' : 'Show Paths';
+  document.getElementById('btn-paths').className = showPaths ? 'btn active' : 'btn';
+}
+
+function drawPaths() {
+  // Draw edges
+  ctx.lineWidth = 1.5;
+  EDGES.forEach(([a,b]) => {
+    const na = NODES.find(n => n.id === a);
+    const nb = NODES.find(n => n.id === b);
+    if (!na || !nb) return;
+    ctx.beginPath();
+    ctx.moveTo(sx(na.x), sy(na.y));
+    ctx.lineTo(sx(nb.x), sy(nb.y));
+    ctx.strokeStyle = 'rgba(255,220,0,0.6)';
+    ctx.stroke();
+  });
+  // Draw nodes
+  NODES.forEach(n => {
+    ctx.beginPath();
+    ctx.arc(sx(n.x), sy(n.y), sw(4), 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,80,80,0.85)';
+    ctx.fill();
+    ctx.font = `${sw(7)}px monospace`;
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'left';
+    ctx.fillText(n.id, sx(n.x)+sw(5), sy(n.y)+sw(3));
+  });
 }
 
 function loop(ts) {
