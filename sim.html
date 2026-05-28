@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magic Key TV — Park Sim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Lato:wght@300;400;700&family=Raleway:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #c9a84c;
+    --gold-dim: #c9a84c44;
+    --teal: #0f6e56;
+    --teal-dark: #085041;
+    --bg: #0a0f0a;
+    --bg2: #111811;
+    --bg3: #1a2a1a;
+    --text: #e8e0c8;
+    --text-dim: #9a9080;
+    --border: #c9a84c22;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lato', sans-serif;
+    overflow: hidden;
+  }
+
+  /* TOP BAR */
+  #topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 20px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    height: 48px;
+  }
+  #topbar h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+  #topbar .sep { width: 1px; height: 20px; background: var(--border); }
+  #topbar .sub {
+    font-family: 'Raleway', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  #clock {
+    margin-left: auto;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+  #data-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  /* CONTROLS */
+  #controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 20px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: 'Raleway', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 5px 14px;
+    border-radius: 5px;
+    border: 1px solid #c9a84c44;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: #c9a84c11; color: var(--text); }
+  .btn.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .btn.gold { color: var(--gold); border-color: #c9a84c55; }
+  .btn.gold:hover { background: #c9a84c22; }
+  .btn.gold.placed { background: var(--gold); color: #1a1200; border-color: var(--gold); }
+
+  #status-bar {
+    display: flex;
+    gap: 20px;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-left: auto;
+    font-family: 'Raleway', sans-serif;
+    letter-spacing: 0.3px;
+  }
+  #status-bar span { white-space: nowrap; }
+  #status-bar .highlight { color: var(--gold); }
+
+  /* CANVAS AREA */
+  #canvas-wrap {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+  }
+  #c { display: block; width: 100%; height: 100%; }
+
+  /* LEGEND */
+  #legend {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 6px 20px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .leg { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-dim); font-family: 'Raleway', sans-serif; }
+  .ld { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* BOTTOM NAV */
+  #nav {
+    display: flex;
+    align-items: stretch;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    height: 40px;
+  }
+  #nav a {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Raleway', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    border-right: 1px solid var(--border);
+    transition: all 0.15s;
+  }
+  #nav a:last-child { border-right: none; }
+  #nav a:hover { color: var(--gold); background: #c9a84c0a; }
+  #nav a.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+
+  /* NAME MODAL */
+  #modal-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: #00000099;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  #modal-overlay.show { display: flex; }
+  #modal-card {
+    background: #0d1f0d;
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    min-width: 260px;
+  }
+  #modal-card .modal-title {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 14px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  #modal-card .modal-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    font-family: 'Raleway', sans-serif;
+    letter-spacing: 0.5px;
+  }
+  #name-input {
+    background: #1a2a1a;
+    border: 1px solid #c9a84c55;
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 15px;
+    padding: 8px 14px;
+    width: 100%;
+    outline: none;
+    font-family: 'Lato', sans-serif;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+  #name-input:focus { border-color: var(--gold); }
+  .modal-btns { display: flex; gap: 10px; width: 100%; }
+  #btn-confirm {
+    flex: 2;
+    padding: 8px;
+    background: var(--gold);
+    color: #1a1200;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+  #btn-confirm:hover { background: #d4b060; }
+  #btn-cancel {
+    flex: 1;
+    padding: 8px;
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid #c9a84c33;
+    border-radius: 6px;
+    font-family: 'Raleway', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  #btn-cancel:hover { color: var(--text); }
+
+  /* TOOLTIP */
+  #tooltip {
+    position: absolute;
+    background: #0a1a0a;
+    border: 1px solid #c9a84c66;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 11px;
+    pointer-events: none;
+    display: none;
+    z-index: 50;
+    color: var(--text);
+    min-width: 140px;
+    font-family: 'Raleway', sans-serif;
+  }
+  #tooltip b { font-family: 'Cinzel', serif; color: var(--gold); font-size: 12px; }
+  #tooltip .t-row { display: flex; justify-content: space-between; gap: 12px; margin-top: 3px; }
+  #tooltip .t-label { color: var(--text-dim); }
+
+  /* LAYOUT */
+  body { display: flex; flex-direction: column; }
+  #canvas-wrap { flex: 1; min-height: 0; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>MAGIC KEY TV</h1>
+  <div class="sep"></div>
+  <div class="sub">Park Simulation</div>
+  <div id="data-badge">Loading wait times...</div>
+  <div id="clock">8:00 AM</div>
+</div>
+
+<div id="controls">
+  <button class="btn active" id="btn-play">⏸ Pause</button>
+  <button class="btn" id="btn-speed">1× speed</button>
+  <button class="btn gold" id="btn-addme">+ Add Me</button>
+  <button class="btn" id="btn-refresh">↻ Refresh data</button>
+  <div id="status-bar">
+    <span id="st-guests">—</span>
+    <span id="st-me" class="highlight"></span>
+  </div>
+</div>
+
+<div id="canvas-wrap">
+  <canvas id="c"></canvas>
+  <div id="modal-overlay">
+    <div id="modal-card">
+      <div class="modal-title">Welcome, Guest</div>
+      <div class="modal-sub">What name shall we put on your lanyard?</div>
+      <input id="name-input" type="text" maxlength="16" placeholder="Your name..." autocomplete="off">
+      <div class="modal-btns">
+        <button id="btn-cancel">Cancel</button>
+        <button id="btn-confirm">Enter the Park ✦</button>
+      </div>
+    </div>
+  </div>
+  <div id="tooltip"></div>
+</div>
+
+<div id="legend">
+  <div class="leg"><div class="ld" style="background:#4a9fd4"></div>Walking</div>
+  <div class="leg"><div class="ld" style="background:#e05050"></div>In queue</div>
+  <div class="leg"><div class="ld" style="background:#9b59b6"></div>On ride</div>
+  <div class="leg"><div class="ld" style="background:#c9a84c"></div>You</div>
+  <div class="leg" style="margin-left:12px"><div class="ld" style="background:#2ecc71"></div>≤20 min</div>
+  <div class="leg"><div class="ld" style="background:#e67e22"></div>21–45 min</div>
+  <div class="leg"><div class="ld" style="background:#e74c3c"></div>45+ min</div>
+</div>
+
+<nav id="nav">
+  <a href="index.html">Home</a>
+  <a href="waittimes.html">Wait Times</a>
+  <a href="predict.html">Predictor</a>
+  <a href="sim.html" class="active">Park Sim</a>
+  <a href="updates.html">Updates</a>
+  <a href="streams.html">Streams</a>
+  <a href="survey.html">Survey</a>
+  <a href="mapview.html">Map</a>
+</nav>
+
+<script>
+const SUPABASE_URL = 'https://qumvjdwimpvnaijjwght.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_V522lbOqhx6QZ_jyENXAxQ_HUmBOWvi';
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+  const wrap = document.getElementById('canvas-wrap');
+  W = canvas.width = wrap.clientWidth;
+  H = canvas.height = wrap.clientHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ── PARK GEOMETRY (normalized to 680×460 logical, scaled at draw time) ──
+const LW = 680, LH = 460;
+
+const LANDS = [
+  { n: "Galaxy's Edge",  x: 30,  y: 42,  w: 195, h: 100, c: '#0a0a20' },
+  { n: "Bayou Country",  x: 30,  y: 144, w: 100, h: 85,  c: '#1a3010' },
+  { n: "New Orleans Sq", x: 30,  y: 231, w: 155, h: 65,  c: '#250a30' },
+  { n: "Adventureland",  x: 30,  y: 298, w: 135, h: 70,  c: '#1a3010' },
+  { n: "Frontierland",   x: 132, y: 144, w: 93,  h: 90,  c: '#2a1800' },
+  { n: "Main Street",    x: 167, y: 370, w: 115, h: 72,  c: '#3a2800' },
+  { n: "Fantasyland",    x: 227, y: 144, w: 130, h: 95,  c: '#2a1540' },
+  { n: "Tomorrowland",   x: 300, y: 248, w: 120, h: 120, c: '#1a2540' },
+  { n: "Toontown",       x: 300, y: 42,  w: 120, h: 100, c: '#2a0a18' },
+];
+
+const RIDES = [
+  { n: 'Rise of Resistance', x: 80,  y: 78,  db: 'Star Wars: Rise of the Resistance' },
+  { n: 'Smugglers Run',      x: 170, y: 92,  db: 'Millennium Falcon: Smugglers Run' },
+  { n: "Tiana's Bayou",      x: 68,  y: 182, db: "Tiana's Bayou Adventure" },
+  { n: 'Pirates',            x: 62,  y: 252, db: 'Pirates of the Caribbean' },
+  { n: 'Haunted Mansion',    x: 152, y: 258, db: 'Haunted Mansion' },
+  { n: 'Indiana Jones',      x: 62,  y: 322, db: 'Indiana Jones Adventure' },
+  { n: 'Jungle Cruise',      x: 130, y: 335, db: 'Jungle Cruise' },
+  { n: 'Big Thunder',        x: 172, y: 182, db: 'Big Thunder Mountain Railroad' },
+  { n: "Small World",        x: 258, y: 178, db: "it's a small world" },
+  { n: 'Matterhorn',         x: 318, y: 210, db: 'Matterhorn Bobsleds' },
+  { n: 'Space Mountain',     x: 342, y: 296, db: 'Space Mountain' },
+  { n: 'Finding Nemo',       x: 312, y: 350, db: 'Finding Nemo Submarine Voyage' },
+  { n: 'Roger Rabbit',       x: 336, y: 82,  db: "Roger Rabbit's Car Toon Spin" },
+];
+
+let waitData = {}, guests = [], myChar = null;
+let running = true, speed = 1, simMins = 8 * 60, lastTs = null;
+let pendingPlace = false, playerName = '';
+const SPEEDS = [1, 2, 4, 8]; let speedIdx = 0;
+
+function waitColor(m) {
+  if (m == null) return '#555';
+  if (m <= 20) return '#2ecc71';
+  if (m <= 45) return '#e67e22';
+  return '#e74c3c';
+}
+function rideWait(db) { return waitData[db] ?? 25; }
+
+async function fetchWaits() {
+  const h = new Date().getHours(), dow = new Date().getDay();
+  document.getElementById('data-badge').textContent = 'Fetching...';
+  const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.16&hour_of_day=eq.${h}&day_of_week=eq.${dow}&select=ride_name,wait_time&order=recorded_at.desc&limit=500`;
+  try {
+    const res = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+    if (!res.ok) throw new Error(res.status);
+    const rows = await res.json();
+    const agg = {}, cnt = {};
+    rows.forEach(r => {
+      if (!agg[r.ride_name]) { agg[r.ride_name] = 0; cnt[r.ride_name] = 0; }
+      agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
+    });
+    Object.keys(agg).forEach(k => { waitData[k] = Math.round(agg[k] / cnt[k]); });
+    const matched = RIDES.filter(r => waitData[r.db] !== undefined).length;
+    const badge = document.getElementById('data-badge');
+    badge.textContent = `Live data — ${matched}/${RIDES.length} rides`;
+    badge.style.color = matched > 4 ? '#2ecc71' : '#e67e22';
+  } catch (e) {
+    document.getElementById('data-badge').textContent = 'Estimated waits';
+    document.getElementById('data-badge').style.color = '#e67e22';
+    RIDES.forEach(r => { waitData[r.db] = Math.round(10 + Math.random() * 55); });
+  }
+}
+
+// Scale logical coords to canvas
+function sx(x) { return x * W / LW; }
+function sy(y) { return y * H / LH; }
+function sw(w) { return w * W / LW; }
+function sh(h) { return h * H / LH; }
+
+const NAMES = ['Alex','Jordan','Taylor','Morgan','Casey','Riley','Sam','Dana','Avery','Quinn','Blake','Skyler','Peyton','Jamie','Drew','Reese','Parker','Sage'];
+function rand(a, b) { return a + Math.random() * (b - a); }
+
+function pickTarget(g) {
+  const weights = RIDES.map(r => 1 / (rideWait(r.db) + 5));
+  const total = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * total, chosen = RIDES[RIDES.length - 1];
+  for (let i = 0; i < RIDES.length; i++) { r -= weights[i]; if (r <= 0) { chosen = RIDES[i]; break; } }
+  g.target = chosen;
+  g.tx = chosen.x + rand(-4, 4); g.ty = chosen.y + rand(-4, 4);
+  g.state = 'walking';
+}
+
+function spawnGuest(id) {
+  const g = {
+    id, name: NAMES[id % NAMES.length],
+    x: rand(32, LW - 80), y: rand(44, LH - 40),
+    tx: 0, ty: 0, state: 'walking',
+    waitLeft: 0, rideLeft: 0, target: null,
+    isMe: false, ridesDone: 0, trail: []
+  };
+  pickTarget(g); return g;
+}
+
+function updateGuest(g, dt) {
+  if (g.state === 'walking') {
+    const dx = g.tx - g.x, dy = g.ty - g.y, d = Math.hypot(dx, dy);
+    if (d < 2) {
+      g.x = g.tx; g.y = g.ty; g.state = 'queuing';
+      g.waitLeft = rideWait(g.target?.db) * rand(0.8, 1.2);
+    } else {
+      const spd = 18 * dt;
+      g.x += dx / d * spd; g.y += dy / d * spd;
+      if (g.isMe) { g.trail.push({ x: g.x, y: g.y }); if (g.trail.length > 16) g.trail.shift(); }
+    }
+  } else if (g.state === 'queuing') {
+    g.waitLeft -= dt;
+    if (g.waitLeft <= 0) { g.state = 'riding'; g.rideLeft = rand(3, 6); }
+  } else if (g.state === 'riding') {
+    g.rideLeft -= dt;
+    if (g.rideLeft <= 0) { g.ridesDone++; pickTarget(g); }
+  }
+}
+
+function drawFrame() {
+  ctx.fillStyle = '#0a0f0a'; ctx.fillRect(0, 0, W, H);
+
+  // Park boundary
+  ctx.strokeStyle = '#c9a84c33'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.roundRect(sx(24), sy(34), sw(424), sh(414), sw(8)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#c9a84c66'; ctx.font = `bold ${sw(14)}px Cinzel,serif`; ctx.textAlign = 'center';
+  ctx.fillText('DISNEYLAND', sx(236), sy(22));
+
+  // Lands
+  LANDS.forEach(l => {
+    ctx.fillStyle = l.c + 'ee';
+    ctx.beginPath(); ctx.roundRect(sx(l.x), sy(l.y), sw(l.w), sh(l.h), sw(4)); ctx.fill();
+    ctx.strokeStyle = '#ffffff15'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.roundRect(sx(l.x), sy(l.y), sw(l.w), sh(l.h), sw(4)); ctx.stroke();
+    ctx.fillStyle = '#ffffff55'; ctx.font = `${sw(9)}px Lato,sans-serif`; ctx.textAlign = 'center';
+    ctx.fillText(l.n, sx(l.x + l.w / 2), sy(l.y + l.h / 2) + sh(3));
+  });
+
+  // Hub
+  ctx.beginPath(); ctx.arc(sx(228), sy(310), sw(22), 0, Math.PI * 2);
+  ctx.fillStyle = '#3a2800cc'; ctx.fill();
+  ctx.strokeStyle = '#c9a84c44'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = '#c9a84c77'; ctx.font = `${sw(7)}px Lato,sans-serif`; ctx.textAlign = 'center';
+  ctx.fillText('Hub', sx(228), sy(313));
+
+  // Rides
+  RIDES.forEach(r => {
+    const w = waitData[r.db], col = waitColor(w);
+    ctx.beginPath(); ctx.arc(sx(r.x), sy(r.y), sw(5.5), 0, Math.PI * 2);
+    ctx.fillStyle = col + '77'; ctx.fill();
+    ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.stroke();
+    if (w !== undefined) {
+      ctx.fillStyle = '#ffffffbb'; ctx.font = `${sw(7.5)}px Lato,sans-serif`; ctx.textAlign = 'center';
+      ctx.fillText(w + 'm', sx(r.x), sy(r.y) - sh(9));
+    }
+  });
+
+  // Guests
+  [...guests].sort((a, b) => (a.isMe ? 1 : 0) - (b.isMe ? 1 : 0)).forEach(g => {
+    if (g.isMe && g.trail.length > 1) {
+      ctx.beginPath(); ctx.moveTo(sx(g.trail[0].x), sy(g.trail[0].y));
+      g.trail.forEach(p => ctx.lineTo(sx(p.x), sy(p.y)));
+      ctx.strokeStyle = '#c9a84c33'; ctx.lineWidth = 2; ctx.stroke();
+    }
+    const r = g.isMe ? sw(8) : sw(4.5);
+    const col = g.isMe ? '#c9a84c' : g.state === 'queuing' ? '#e05050' : g.state === 'riding' ? '#9b59b6' : '#4a9fd4';
+    ctx.beginPath(); ctx.arc(sx(g.x), sy(g.y), r, 0, Math.PI * 2);
+    ctx.fillStyle = col; ctx.fill();
+    if (g.isMe) { ctx.strokeStyle = '#1a1200'; ctx.lineWidth = 1.5; ctx.stroke(); }
+    if (g.state !== 'walking') {
+      ctx.beginPath(); ctx.arc(sx(g.x), sy(g.y), r + sw(3), 0, Math.PI * 2);
+      ctx.strokeStyle = col + '44'; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    if (g.isMe) {
+      ctx.fillStyle = '#c9a84c'; ctx.font = `bold ${sw(9)}px Cinzel,serif`; ctx.textAlign = 'center';
+      ctx.fillText(playerName, sx(g.x), sy(g.y) - sh(13));
+    }
+  });
+}
+
+function updateHUD() {
+  const w = guests.filter(g => g.state === 'walking').length;
+  const q = guests.filter(g => g.state === 'queuing').length;
+  const r = guests.filter(g => g.state === 'riding').length;
+  document.getElementById('st-guests').textContent = `${guests.length} guests — ${w} walking · ${q} queuing · ${r} riding`;
+  if (myChar) {
+    const next = myChar.target ? myChar.target.n : '—';
+    document.getElementById('st-me').textContent = `${playerName}: ${myChar.ridesDone} rides · next → ${next}`;
+  }
+}
+
+function formatTime(m) {
+  const h = Math.floor(m / 60) % 24, mn = Math.floor(m % 60);
+  const ap = h >= 12 ? 'PM' : 'AM', hh = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  return `${hh}:${mn.toString().padStart(2, '0')} ${ap}`;
+}
+
+function loop(ts) {
+  requestAnimationFrame(loop);
+  if (!lastTs) lastTs = ts;
+  const dt = (ts - lastTs) / 1000 * speed; lastTs = ts;
+  if (!running) { drawFrame(); updateHUD(); document.getElementById('clock').textContent = formatTime(simMins); return; }
+  simMins += dt * 0.3;
+  guests.forEach(g => updateGuest(g, dt));
+  if (guests.length < 75 && Math.random() < 0.008 * speed) guests.push(spawnGuest(guests.length));
+  drawFrame(); updateHUD();
+  document.getElementById('clock').textContent = formatTime(simMins);
+}
+
+// Controls
+document.getElementById('btn-play').onclick = () => {
+  running = !running;
+  const b = document.getElementById('btn-play');
+  b.textContent = running ? '⏸ Pause' : '▶ Play';
+  b.className = running ? 'btn active' : 'btn';
+};
+document.getElementById('btn-speed').onclick = () => {
+  speedIdx = (speedIdx + 1) % SPEEDS.length; speed = SPEEDS[speedIdx];
+  document.getElementById('btn-speed').textContent = speed + '× speed';
+};
+document.getElementById('btn-refresh').onclick = fetchWaits;
+
+// Add Me modal
+const modal = document.getElementById('modal-overlay');
+const nameInput = document.getElementById('name-input');
+
+document.getElementById('btn-addme').onclick = () => {
+  nameInput.value = playerName || '';
+  modal.classList.add('show');
+  setTimeout(() => nameInput.focus(), 50);
+};
+document.getElementById('btn-cancel').onclick = () => modal.classList.remove('show');
+
+function confirmName() {
+  const n = nameInput.value.trim();
+  if (!n) return;
+  playerName = n;
+  modal.classList.remove('show');
+  pendingPlace = true;
+  canvas.style.cursor = 'crosshair';
+  document.getElementById('btn-addme').textContent = 'Click to place yourself';
+  document.getElementById('btn-addme').className = 'btn gold';
+}
+document.getElementById('btn-confirm').onclick = confirmName;
+nameInput.onkeydown = e => { if (e.key === 'Enter') confirmName(); if (e.key === 'Escape') modal.classList.remove('show'); };
+
+// Canvas click
+canvas.onclick = e => {
+  const rect = canvas.getBoundingClientRect();
+  const lx = (e.clientX - rect.left) * LW / rect.width;
+  const ly = (e.clientY - rect.top) * LH / rect.height;
+
+  if (pendingPlace && playerName) {
+    if (myChar) { myChar.x = lx; myChar.y = ly; myChar.trail = []; pickTarget(myChar); }
+    else {
+      myChar = { id: 9999, name: playerName, x: lx, y: ly, tx: lx, ty: ly, state: 'walking', waitLeft: 0, rideLeft: 0, target: null, isMe: true, ridesDone: 0, trail: [] };
+      guests.push(myChar); pickTarget(myChar);
+    }
+    pendingPlace = false;
+    canvas.style.cursor = 'default';
+    document.getElementById('btn-addme').textContent = '✦ ' + playerName;
+    document.getElementById('btn-addme').className = 'btn gold placed';
+    return;
+  }
+
+  // Tooltip on click
+  let nearest = null, nd = Infinity;
+  guests.forEach(g => { const d = Math.hypot(g.x - lx, g.y - ly); if (d < nd) { nd = d; nearest = g; } });
+  if (nearest && nd < 12) {
+    const tt = document.getElementById('tooltip');
+    const w = nearest.target ? waitData[nearest.target.db] : null;
+    tt.innerHTML = `<b>${nearest.isMe ? playerName : nearest.name}</b>
+      <div class="t-row"><span class="t-label">Status</span><span>${nearest.state}</span></div>
+      ${nearest.target ? `<div class="t-row"><span class="t-label">Heading to</span><span>${nearest.target.n}</span></div>` : ''}
+      ${w != null ? `<div class="t-row"><span class="t-label">Wait time</span><span style="color:${waitColor(w)}">${w} min</span></div>` : ''}
+      <div class="t-row"><span class="t-label">Rides done</span><span>${nearest.ridesDone}</span></div>`;
+    const cx = sx(nearest.x), cy = sy(nearest.y);
+    tt.style.left = Math.min(cx + 12, W - 160) + 'px';
+    tt.style.top = Math.max(cy - 70, 4) + 'px';
+    tt.style.display = 'block';
+    setTimeout(() => tt.style.display = 'none', 3500);
+  }
+};
+
+for (let i = 0; i < 55; i++) guests.push(spawnGuest(i));
+fetchWaits();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
