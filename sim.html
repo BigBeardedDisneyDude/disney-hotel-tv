@@ -70,6 +70,7 @@
   <button class="btn" id="btn-speed">1× speed</button>
   <button class="btn gold" id="btn-addme">+ Add Me</button>
   <button class="btn" id="btn-refresh">↻ Refresh data</button>
+  <button class="btn" id="btn-debug" onclick="showDebug()">🔍 Debug names</button>
   <div id="status-bar">
     <span id="st-guests">—</span>
     <span id="st-me" class="highlight"></span>
@@ -89,6 +90,11 @@
     </div>
   </div>
   <div id="tooltip"></div>
+  <div id="debug-overlay" style="display:none;position:absolute;inset:0;background:#000000cc;z-index:200;overflow-y:auto;padding:20px;font-family:monospace;font-size:12px;color:#e8e0c8;">
+    <button onclick="document.getElementById('debug-overlay').style.display='none'" style="position:sticky;top:0;float:right;background:#c9a84c;border:none;padding:6px 12px;cursor:pointer;font-weight:bold;border-radius:4px;">✕ Close</button>
+    <h3 style="color:#c9a84c;margin-bottom:12px;font-family:Cinzel,serif;">Supabase ride_name values</h3>
+    <div id="debug-content">Loading...</div>
+  </div>
 </div>
 <div id="legend">
   <div class="leg"><div class="ld" style="background:#4a9fd4"></div>Walking</div>
@@ -174,7 +180,7 @@ const RIDES = [
   { n: 'Space Mtn',       x:  795, y:  660, db: 'Space Mountain' },
   { n: 'Finding Nemo',    x:  810, y:  479, db: 'Finding Nemo Submarine Voyage' },
   { n: 'Buzz Lightyear',  x:  701, y:  543, db: 'Buzz Lightyear Astro Blasters' },
-  { n: 'Autopia',         x:  964, y:  506, db: 'Autopia' },
+  { n: 'Autopia',         x:  878, y:  519, db: 'Autopia' },
   // Frontierland
   { n: 'Big Thunder',     x:  398, y:  504, db: 'Big Thunder Mountain Railroad' },
   // Main Street
@@ -521,6 +527,36 @@ function formatTime(m) {
   const h = Math.floor(m / 60) % 24, mn = Math.floor(m % 60);
   const ap = h >= 12 ? 'PM' : 'AM', hh = h > 12 ? h - 12 : h === 0 ? 12 : h;
   return `${hh}:${mn.toString().padStart(2, '0')} ${ap}`;
+}
+
+async function showDebug() {
+  const overlay = document.getElementById('debug-overlay');
+  const content = document.getElementById('debug-content');
+  overlay.style.display = 'block';
+  content.innerHTML = 'Fetching from Supabase...';
+  try {
+    const h = new Date().getHours(), dow = new Date().getDay();
+    const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.16&select=ride_name,wait_time&limit=500`;
+    const res = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+    const rows = await res.json();
+    const names = [...new Set(rows.map(r => r.ride_name))].sort();
+    const simDbs = RIDES.map(r => r.db);
+    let html = `<p style="color:#9a9080;margin-bottom:12px">${rows.length} rows, ${names.length} unique names. Green = matched in sim, red = unmatched.</p>`;
+    html += '<p style="color:#c9a84c;margin-bottom:8px">── Supabase names ──</p>';
+    names.forEach(n => {
+      const matched = simDbs.includes(n);
+      html += `<div style="color:${matched?'#2ecc71':'#e05050'};margin:2px 0">${matched?'✓':'✗'} ${n}</div>`;
+    });
+    html += '<br><p style="color:#c9a84c;margin-bottom:8px">── Sim db names with no Supabase match ──</p>';
+    simDbs.forEach(d => {
+      if (!names.includes(d)) {
+        html += `<div style="color:#e67e22;margin:2px 0">⚠ ${d}</div>`;
+      }
+    });
+    content.innerHTML = html;
+  } catch(e) {
+    content.innerHTML = `<span style="color:#e05050">Error: ${e.message}</span>`;
+  }
 }
 
 function loop(ts) {
