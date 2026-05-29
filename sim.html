@@ -161,8 +161,8 @@ const RIDES = [
   { n: 'Rise',            x:   61, y:  294, db: 'Star Wars: Rise of the Resistance' },
   { n: 'Smugglers Run',   x:  289, y:  154, db: 'Millennium Falcon: Smugglers Run' },
   // Toontown
-  { n: 'Runaway Railway', x:  545, y:   98, db: "Mickey & Minnie's Runaway Railway" },
-  { n: 'GADGETcoaster',   x:  670, y:   68, db: "Chip 'n' Dale's GADGETcoaster" },
+  { n: 'Runaway Railway', x:  670, y:   68, db: "Mickey & Minnie's Runaway Railway" },
+  { n: 'GADGETcoaster',   x:  545, y:   98, db: "Chip 'n' Dale's GADGETcoaster" },
   { n: 'Roger Rabbit',    x:  686, y:  110, db: "Roger Rabbit's Car Toon Spin" },
   // Fantasyland
   { n: 'Small World',     x:  725, y:  201, db: '"it\'s a small world"' },
@@ -320,10 +320,10 @@ const NODES = [
   { id:125, x: 600, y: 165 },  // FL Train Station
   { id:126, x: 610, y: 155 },
   { id:127, x: 575, y: 115 },
-  { id:128, x: 545, y:  98 },  // Runaway Railway
+  { id:128, x: 545, y:  98 },  // GADGETcoaster
   { id:129, x: 650, y: 150 },
   { id:130, x: 670, y: 110 },
-  { id:131, x: 670, y:  68 },  // GADGETcoaster
+  { id:131, x: 670, y:  68 },  // Runaway Railway
   { id:132, x: 686, y: 110 },  // Roger Rabbit
   { id:205, x: 668, y: 192 },  // Toontown upper path
 
@@ -391,7 +391,7 @@ const EDGES = [
   [98,99],[99,110],[110,111],[111,112],[112,113],
   // Toontown from FL — node 120 connects to Storybook area (89)
   [89,120],[120,121],[121,122],[122,123],[123,124],[124,125],
-  [125,126],[126,127],[127,128],
+  [125,126],[128,127],[130,128],[129,130],[129,124],
   [124,129],[129,130],[130,131],[130,132],
   // Extra connections
   [67,72],
