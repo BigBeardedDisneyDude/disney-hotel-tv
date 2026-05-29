@@ -70,6 +70,7 @@
   <button class="btn" id="btn-speed">1× speed</button>
   <button class="btn gold" id="btn-addme">+ Add Me</button>
   <button class="btn" id="btn-refresh">↻ Refresh data</button>
+  <button class="btn" id="btn-heatmap" onclick="toggleHeatmap()">🌡 Heat Map</button>
   <button class="btn" id="btn-debug" onclick="showDebug()">🔍 Debug names</button>
   <button class="btn" id="btn-paths" onclick="togglePaths()">Show Paths</button>
   <div id="status-bar">
@@ -105,6 +106,7 @@
   <div class="leg" style="margin-left:12px"><div class="ld" style="background:#2ecc71"></div>≤20 min</div>
   <div class="leg"><div class="ld" style="background:#e67e22"></div>21–45 min</div>
   <div class="leg"><div class="ld" style="background:#e74c3c"></div>45+ min</div>
+  <div class="leg" id="heat-legend" style="display:none;margin-left:12px;color:var(--gold)">🌡 Heat map on</div>
 </div>
 <nav id="nav">
   <a href="index.html">Home</a>
@@ -566,6 +568,8 @@ function drawFrame() {
 
   if (showPaths) drawPaths();
 
+  if (showHeatmap) drawHeatmap();
+
   RIDES.forEach(r => {
     const w = waitData[r.db], col = waitColor(w);
     ctx.beginPath(); ctx.arc(sx(r.x), sy(r.y), sw(8), 0, Math.PI * 2);
@@ -629,6 +633,76 @@ function togglePaths() {
   showPaths = !showPaths;
   document.getElementById('btn-paths').textContent = showPaths ? 'Hide Paths' : 'Show Paths';
   document.getElementById('btn-paths').className = showPaths ? 'btn active' : 'btn';
+}
+
+let showHeatmap = false;
+function toggleHeatmap() {
+  showHeatmap = !showHeatmap;
+  const btn = document.getElementById('btn-heatmap');
+  btn.textContent = showHeatmap ? '🌡 Hide Heat' : '🌡 Heat Map';
+  btn.className = showHeatmap ? 'btn active' : 'btn';
+  document.getElementById('heat-legend').style.display = showHeatmap ? 'flex' : 'none';
+}
+
+// Offscreen canvas for heat overlay
+const heatCanvas = document.createElement('canvas');
+const heatCtx = heatCanvas.getContext('2d');
+
+function drawHeatmap() {
+  // Keep offscreen canvas in sync with main canvas size
+  if (heatCanvas.width !== W || heatCanvas.height !== H) {
+    heatCanvas.width = W;
+    heatCanvas.height = H;
+  }
+  heatCtx.clearRect(0, 0, W, H);
+
+  RIDES.forEach(r => {
+    const w = waitData[r.db];
+    if (w == null) return;
+
+    const cx = sx(r.x);
+    const cy = sy(r.y);
+
+    // Radius scales with wait time: 5 min → small bloom, 90+ min → big bloom
+    const minR = sw(18);
+    const maxR = sw(90);
+    const t = Math.min(w / 75, 1); // normalise 0–75 min → 0–1
+    const radius = minR + t * (maxR - minR);
+
+    // Color: green (low) → orange → red (high)
+    // We blend in the gradient from hot core to transparent edge
+    let r1, g1, b1;
+    if (w <= 20) {
+      r1 = 46; g1 = 204; b1 = 113;   // green
+    } else if (w <= 45) {
+      const tt = (w - 20) / 25;
+      r1 = Math.round(46 + tt * (230 - 46));
+      g1 = Math.round(204 + tt * (126 - 204));
+      b1 = Math.round(113 + tt * (34 - 113));
+    } else {
+      const tt = Math.min((w - 45) / 45, 1);
+      r1 = Math.round(230 + tt * (231 - 230));
+      g1 = Math.round(126 + tt * (76 - 126));
+      b1 = Math.round(34 + tt * (60 - 34));
+    }
+
+    const grad = heatCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    const alpha = 0.18 + t * 0.22; // more opaque for longer waits
+    grad.addColorStop(0,   `rgba(${r1},${g1},${b1},${alpha})`);
+    grad.addColorStop(0.35,`rgba(${r1},${g1},${b1},${(alpha * 0.6).toFixed(3)})`);
+    grad.addColorStop(1,   `rgba(${r1},${g1},${b1},0)`);
+
+    heatCtx.beginPath();
+    heatCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+    heatCtx.fillStyle = grad;
+    heatCtx.fill();
+  });
+
+  // Composite the heat canvas onto main canvas
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.drawImage(heatCanvas, 0, 0);
+  ctx.restore();
 }
 
 function drawPaths() {
