@@ -734,12 +734,12 @@ function loop(ts) {
   requestAnimationFrame(loop);
   if (!lastTs) lastTs = ts;
   const dt = Math.min((ts - lastTs) / 1000, 0.1) * speed; lastTs = ts;
-  if (!running) { drawFrame(); updateHUD(); document.getElementById('clock').textContent = formatTime(simMins); return; }
+  if (!running) { drawFrame(); updateHUD(); document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true}); return; }
   simMins += dt * 0.3;
   guests.forEach(g => updateGuest(g, dt));
   if (guests.length < 80 && Math.random() < 0.006 * speed) guests.push(spawnGuest(guests.length));
   drawFrame(); updateHUD();
-  document.getElementById('clock').textContent = formatTime(simMins);
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true});
 }
 
 document.getElementById('btn-play').onclick = () => {
