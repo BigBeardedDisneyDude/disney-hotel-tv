@@ -244,8 +244,10 @@ const NODES = [
   { id: 30, x: 220, y: 629 },  // Pirates of Caribbean
   { id: 31, x: 200, y: 610 },
   { id: 32, x: 175, y: 580 },  // bayou path
-  { id: 33, x: 158, y: 555 },
+  { id: 33, x: 200, y: 535 },
   { id: 34, x: 158, y: 535 },  // Tiana's Bayou
+  { id: 203, x: 662, y: 474 },  // hub connector FL/TL
+  { id: 204, x:  78, y: 546 },  // far left Bayou path
   // Adventureland east path
   { id: 35, x: 400, y: 660 },
   { id: 36, x: 420, y: 670 },
@@ -266,8 +268,8 @@ const NODES = [
   // ── GALAXY'S EDGE ──
   { id: 60, x: 370, y: 420 },  // GE entrance from Frontierland
   { id: 61, x: 375, y: 380 },
-  { id: 62, x: 370, y: 340 },
-  { id: 63, x: 355, y: 305 },
+  { id: 62, x: 339, y: 360 },
+  { id: 63, x: 326, y: 300 },
   { id: 64, x: 325, y: 280 },
   { id: 65, x: 290, y: 255 },
   { id: 66, x: 245, y: 230 },  // Rise area
@@ -288,8 +290,6 @@ const NODES = [
   { id: 84, x: 555, y: 350 },
   { id: 85, x: 553, y: 321 },  // Casey Jr
   { id: 86, x: 570, y: 310 },  // Small World approach
-  { id: 87, x: 600, y: 295 },
-  { id: 88, x: 640, y: 285 },
   { id: 89, x: 683, y: 327 },  // Storybook
   { id: 200, x: 446, y: 323 },  // FL/GE connector path
   { id: 201, x: 406, y: 279 },  // FL/GE path mid
@@ -323,6 +323,7 @@ const NODES = [
   { id:130, x: 670, y: 110 },
   { id:131, x: 670, y:  68 },  // GADGETcoaster
   { id:132, x: 686, y: 110 },  // Roger Rabbit
+  { id:205, x: 668, y: 192 },  // Toontown upper path
 
   // ── TOMORROWLAND ──
   { id:140, x: 670, y: 540 },  // TL entrance path
@@ -360,7 +361,7 @@ const EDGES = [
   // NOS east (toward HM)
   [23,24],[23,25],
   // NOS west path (along river, toward Pirates + Bayou)
-  [25,26],[26,27],[27,28],[28,29],[29,30],[30,31],[31,32],[32,33],[33,34],
+  [25,26],[26,27],[27,28],[28,29],[29,30],[30,31],[31,32],[32,33],
   [6,38],  // MS shortcut to Adventureland
   // Adventureland east path (Indiana Jones + Jungle Cruise loop)
   // Connect from NOS crossroads AND from hub path so it's not a dead end
@@ -381,18 +382,24 @@ const EDGES = [
   [68,72],[72,73],[73,74],[74,33],  // GE south exit to Bayou/NOS
   // Hub → Fantasyland
   [13,80],[80,81],[81,82],[82,83],[82,91],
-  [83,84],[84,85],[85,86],[86,87],[87,88],[88,89],[89,90],
-  [87,93],[93,85],
+  [83,84],[84,85],[89,90],
+  
   [91,92],[91,94],[92,97],
   [94,95],[94,96],[95,96],[95,98],[96,97],[97,98],
   [98,99],[99,110],[110,111],[111,112],[112,113],
   // Toontown from FL
-  [88,120],[120,121],[121,122],[122,123],[123,124],[124,125],
+  [120,121],[121,122],[122,123],[123,124],[124,125],
   [125,126],[127,128],
-  [124,129],[129,130],[130,131],[130,132],
+  [129,130],[130,131],[130,132],
   // Extra connections
+  [67,72],
+  [74,34],
+  [203,110],
+  [205,123],[205,122],[205,129],[131,128],
+  [203,11],[203,10],[204,74],[33,74],
+  [89,94],
   [200,62],[200,85],[201,200],[202,201],[202,71],[89,113],[155,151],
-  [113,147],[11,110],[11,147],[85,62],
+  [113,147],[11,147],[85,62],
   // Tomorrowland
   [12,140],[140,141],[141,142],[142,143],[142,144],
   [144,153],[147,148],[148,149],[149,150],[150,151],[150,156],
@@ -487,6 +494,7 @@ const ENTRY_POINTS = [
   { x: 623, y: 899 },  // right entrance
 ];
 
+
 function spawnGuest(id) {
   const entry = ENTRY_POINTS[Math.floor(Math.random() * ENTRY_POINTS.length)];
   const g = {
@@ -497,7 +505,6 @@ function spawnGuest(id) {
   };
   pickTarget(g); return g;
 }
-
 
 let waitData = {}, guests = [], myChar = null;
 let running = true, speed = 1, simMins = 8 * 60, lastTs = null;
@@ -522,12 +529,11 @@ async function fetchWaits() {
     const rows = await res.json();
     const agg = {}, cnt = {};
     rows.forEach(r => {
-      if (r.wait_time === null) return; // skip nulls
+      if (r.wait_time === null) return;
       if (!agg[r.ride_name]) { agg[r.ride_name] = 0; cnt[r.ride_name] = 0; }
       agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
     });
     Object.keys(agg).forEach(k => { waitData[k] = Math.round(agg[k] / cnt[k]); });
-    // For rides with rows but all-null wait times, mark as open with 0 wait
     const allNames = [...new Set(rows.map(r => r.ride_name))];
     allNames.forEach(k => { if (waitData[k] === undefined) waitData[k] = 0; });
     const matched = RIDES.filter(r => waitData[r.db] !== undefined).length;
@@ -537,8 +543,7 @@ async function fetchWaits() {
   } catch (e) {
     document.getElementById('data-badge').textContent = 'Estimated waits';
     document.getElementById('data-badge').style.color = '#e67e22';
-
-  RIDES.forEach(r => { waitData[r.db] = Math.round(10 + Math.random() * 55); });
+    RIDES.forEach(r => { waitData[r.db] = Math.round(10 + Math.random() * 55); });
   }
 }
 
@@ -619,55 +624,6 @@ function formatTime(m) {
   return `${hh}:${mn.toString().padStart(2, '0')} ${ap}`;
 }
 
-async function showDebug() {
-  const overlay = document.getElementById('debug-overlay');
-  const content = document.getElementById('debug-content');
-  overlay.style.display = 'block';
-  content.innerHTML = 'Fetching from Supabase...';
-  try {
-    // Try without park filter first to see what's in the table at all
-    const urlAll = `${SUPABASE_URL}/rest/v1/wait_times?select=*&limit=10`;
-    const resAll = await fetch(urlAll, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
-    const sampleRows = await resAll.json();
-    
-    // Now fetch with park filter
-    const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.dl&select=ride_name,wait_time&limit=500`;
-    const res = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
-    const rows = await res.json();
-    
-    // Show diagnostic info
-    let diagHtml = `<p style="color:#e67e22;margin-bottom:8px">── Raw sample (no filter, first 10 rows) ──</p>`;
-    if (Array.isArray(sampleRows) && sampleRows.length > 0) {
-      sampleRows.forEach(r => {
-        diagHtml += `<div style="color:#aaa;margin:2px 0;font-size:10px">${JSON.stringify(r)}</div>`;
-      });
-    } else {
-      diagHtml += `<div style="color:#e05050">Response: ${JSON.stringify(sampleRows)}</div>`;
-    }
-    diagHtml += `<br><p style="color:#e67e22;margin-bottom:8px">── With park=eq.16 filter: ${Array.isArray(rows) ? rows.length : 'error'} rows ──</p>`;
-    content.innerHTML = diagHtml + '<br><div id="debug-names"></div>';
-    
-    if (!Array.isArray(rows)) { document.getElementById('debug-names').innerHTML = `<span style="color:#e05050">Error: ${JSON.stringify(rows)}</span>`; return; }
-    const names = [...new Set(rows.map(r => r.ride_name))].sort();
-    const simDbs = RIDES.map(r => r.db);
-    let html = `<p style="color:#9a9080;margin-bottom:12px">${rows.length} rows, ${names.length} unique names. Green = matched in sim, red = unmatched.</p>`;
-    html += '<p style="color:#c9a84c;margin-bottom:8px">── Supabase names ──</p>';
-    names.forEach(n => {
-      const matched = simDbs.includes(n);
-      html += `<div style="color:${matched?'#2ecc71':'#e05050'};margin:2px 0">${matched?'✓':'✗'} ${n}</div>`;
-    });
-    html += '<br><p style="color:#c9a84c;margin-bottom:8px">── Sim db names with no Supabase match ──</p>';
-    simDbs.forEach(d => {
-      if (!names.includes(d)) {
-        html += `<div style="color:#e67e22;margin:2px 0">⚠ ${d}</div>`;
-      }
-    });
-    document.getElementById('debug-names').innerHTML = html;
-  } catch(e) {
-    content.innerHTML = `<span style="color:#e05050">Error: ${e.message}</span>`;
-  }
-}
-
 let showPaths = false;
 function togglePaths() {
   showPaths = !showPaths;
@@ -676,7 +632,6 @@ function togglePaths() {
 }
 
 function drawPaths() {
-  // Draw edges
   ctx.lineWidth = 1.5;
   EDGES.forEach(([a,b]) => {
     const na = NODES.find(n => n.id === a);
@@ -688,7 +643,6 @@ function drawPaths() {
     ctx.strokeStyle = 'rgba(255,220,0,0.6)';
     ctx.stroke();
   });
-  // Draw nodes
   NODES.forEach(n => {
     ctx.beginPath();
     ctx.arc(sx(n.x), sy(n.y), sw(4), 0, Math.PI*2);
