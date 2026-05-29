@@ -208,11 +208,11 @@ const NODES = [
   // ── MAIN STREET ──
   { id:  1, x: 544, y: 848 },  // MS south (left lane)
   { id:101, x: 608, y: 848 },  // MS south (right lane)
-  { id:  2, x: 544, y: 800 },
+  { id:  2, x: 576, y: 657 },
   { id:102, x: 600, y: 800 },
-  { id:  3, x: 544, y: 750 },
+  { id:  3, x: 578, y: 727 },
   { id:103, x: 596, y: 750 },
-  { id:  4, x: 544, y: 700 },
+  { id:  4, x: 579, y: 788 },
   { id:104, x: 592, y: 700 },
   { id:  5, x: 544, y: 650 },
   { id:105, x: 588, y: 650 },
@@ -273,9 +273,9 @@ const NODES = [
   { id: 66, x: 245, y: 230 },  // Rise area
   { id: 67, x:  61, y: 294 },  // Rise of Resistance
   { id: 68, x: 185, y: 255 },  // GE interior
-  { id: 72, x: 185, y: 320 },  // GE south exit path
-  { id: 73, x: 175, y: 400 },  // GE south exit mid
-  { id: 74, x: 163, y: 480 },  // GE south exit near Bayou
+  { id: 72, x: 57, y: 344 },  // GE south exit path
+  { id: 73, x: 107, y: 413 },  // GE south exit mid
+  { id: 74, x: 175, y: 490 },  // GE south exit near Bayou
   { id: 69, x: 220, y: 220 },
   { id: 70, x: 260, y: 185 },
   { id: 71, x: 289, y: 154 },  // Smugglers Run
@@ -291,6 +291,9 @@ const NODES = [
   { id: 87, x: 600, y: 295 },
   { id: 88, x: 640, y: 285 },
   { id: 89, x: 683, y: 327 },  // Storybook
+  { id: 200, x: 446, y: 323 },  // FL/GE connector path
+  { id: 201, x: 406, y: 279 },  // FL/GE path mid
+  { id: 202, x: 392, y: 253 },  // FL/GE path north → GE
   { id: 90, x: 725, y: 201 },  // Small World (far NE)
   { id: 91, x: 560, y: 395 },  // FL center
   { id: 92, x: 559, y: 410 },  // Carrousel area
@@ -313,7 +316,7 @@ const NODES = [
   { id:123, x: 640, y: 210 },
   { id:124, x: 620, y: 190 },
   { id:125, x: 600, y: 165 },  // FL Train Station
-  { id:126, x: 590, y: 140 },
+  { id:126, x: 610, y: 155 },
   { id:127, x: 575, y: 115 },
   { id:128, x: 545, y:  98 },  // Runaway Railway
   { id:129, x: 650, y: 150 },
@@ -327,8 +330,6 @@ const NODES = [
   { id:142, x: 700, y: 560 },
   { id:143, x: 703, y: 584 },  // Star Tours
   { id:144, x: 715, y: 540 },
-  { id:145, x: 730, y: 520 },
-  { id:146, x: 750, y: 505 },
   { id:147, x: 775, y: 495 },
   { id:148, x: 801, y: 479 },  // Finding Nemo (moved)
   { id:149, x: 823, y: 479 },  // Buzz
@@ -360,11 +361,12 @@ const EDGES = [
   [23,24],[23,25],
   // NOS west path (along river, toward Pirates + Bayou)
   [25,26],[26,27],[27,28],[28,29],[29,30],[30,31],[31,32],[32,33],[33,34],
+  [6,38],  // MS shortcut to Adventureland
   // Adventureland east path (Indiana Jones + Jungle Cruise loop)
   // Connect from NOS crossroads AND from hub path so it's not a dead end
   [22,35],[23,35],[35,36],[36,37],[37,38],  // → Indiana Jones
   [37,39],[38,39],                           // IJ → Jungle Cruise path
-  [39,40],[40,41],[41,42],                   // → Jungle Cruise
+  [40,41],[41,42],                   // → Jungle Cruise
   [42,28],[41,29],                           // JC loops back into NOS west — closes the loop!
   // Frontierland (north of NOS, south of GE)
   [9,50],[50,51],[51,52],[50,53],[53,54],
@@ -386,11 +388,14 @@ const EDGES = [
   [98,99],[99,110],[110,111],[111,112],[112,113],
   // Toontown from FL
   [88,120],[120,121],[121,122],[122,123],[123,124],[124,125],
-  [125,126],[126,127],[127,128],
+  [125,126],[127,128],
   [124,129],[129,130],[130,131],[130,132],
+  // Extra connections
+  [200,62],[200,85],[201,200],[202,201],[202,71],[89,113],[155,151],
+  [113,147],[11,110],[11,147],[85,62],
   // Tomorrowland
   [12,140],[140,141],[141,142],[142,143],[142,144],
-  [144,145],[145,146],[146,147],[147,148],[148,149],[149,150],[150,151],[150,156],
+  [144,153],[147,148],[148,149],[149,150],[150,151],[150,156],
   [147,152],[152,153],[153,154],[154,155],
   [149,152],
 ];
@@ -532,7 +537,6 @@ async function fetchWaits() {
   } catch (e) {
     document.getElementById('data-badge').textContent = 'Estimated waits';
     document.getElementById('data-badge').style.color = '#e67e22';
-    if (showPaths) drawPaths();
 
   RIDES.forEach(r => { waitData[r.db] = Math.round(10 + Math.random() * 55); });
   }
@@ -554,6 +558,8 @@ function drawFrame() {
   } else {
     ctx.fillStyle = '#0a0f0a'; ctx.fillRect(0, 0, W, H);
   }
+
+  if (showPaths) drawPaths();
 
   RIDES.forEach(r => {
     const w = waitData[r.db], col = waitColor(w);
