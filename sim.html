@@ -733,7 +733,7 @@ function drawPaths() {
 function loop(ts) {
   requestAnimationFrame(loop);
   if (!lastTs) lastTs = ts;
-  const dt = (ts - lastTs) / 1000 * speed; lastTs = ts;
+  const dt = Math.min((ts - lastTs) / 1000, 0.1) * speed; lastTs = ts;
   if (!running) { drawFrame(); updateHUD(); document.getElementById('clock').textContent = formatTime(simMins); return; }
   simMins += dt * 0.3;
   guests.forEach(g => updateGuest(g, dt));
