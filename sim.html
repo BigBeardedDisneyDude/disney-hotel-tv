@@ -177,9 +177,9 @@ const RIDES = [
   { n: 'Autopia',         x:  878, y:  519, db: 'Autopia' },
   { n: 'Big Thunder',     x:  398, y:  504, db: 'Big Thunder Mountain Railroad' },
   { n: 'Main St Station', x:  583, y:  848, db: 'Disneyland Railroad - Main Street' },
-  { n: 'NOS Station',     x:  227, y:  702, db: 'Disneyland Railroad - New Orleans Square' },
-  { n: 'FL Station',      x:  620, y:  165, db: 'Disneyland Railroad - Fantasyland' },
-  { n: 'TL Station',      x:  956, y:  523, db: 'Disneyland Railroad - Tomorrowland' },
+  { n: 'NOS Station',     x:  227, y:  702, db: 'Disneyland Railroad - Main Street' },
+  { n: 'FL Station',      x:  620, y:  165, db: 'Disneyland Railroad - Main Street' },
+  { n: 'TL Station',      x:  956, y:  523, db: 'Disneyland Railroad - Main Street' },
   { n: "Tiana's Bayou",   x:  158, y:  535, db: "Tiana's Bayou Adventure" },
   { n: 'Winnie Pooh',     x:   79, y:  532, db: "The Many Adventures of Winnie the Pooh" },
   { n: 'Pirates',         x:  353, y:  682, db: 'Pirates of the Caribbean' },
@@ -635,6 +635,8 @@ function drawFrame() {
     // A ride is "closed" if live data has loaded but returned no row for it.
     // Stations never have wait data and are not considered closed — skip their label.
     const isStation = r.n.includes('Station');
+    // A ride is "closed" only if: live data has loaded, it has no wait data,
+    // AND it's not a station (stations share one key and are always valid if the railroad runs)
     const isClosed  = hasLiveData && w === undefined && !isStation;
 
     // Base glow — dimmed grey for closed rides
@@ -644,8 +646,8 @@ function drawFrame() {
     ctx.beginPath(); ctx.arc(cx, cy, sw(5), 0, Math.PI*2);
     ctx.fillStyle = isClosed ? 'rgba(100,100,100,0.6)' : col + 'bb'; ctx.fill();
     ctx.strokeStyle = isClosed ? '#555' : col; ctx.lineWidth = 1.5; ctx.stroke();
-    // Label — wait time, "CLOSED", or nothing for stations
-    if (!isStation) {
+    // Label — wait time or "CLOSED" for all rides including stations
+    {
       const lx = cx, ly = cy - sw(11);
       ctx.font = `bold ${sw(7.5)}px Lato,sans-serif`; ctx.textAlign = 'center';
       if (isClosed) {
