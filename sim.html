@@ -857,12 +857,30 @@ function showDebug() {
   document.getElementById('debug-overlay').style.display = 'block';
   const dc = document.getElementById('debug-content');
   dc.textContent = 'Loading...';
-  fetch(`${SUPABASE_URL}/rest/v1/wait_times?park=eq.dl&select=ride_name&limit=1000`, {
+  fetch(`${SUPABASE_URL}/rest/v1/wait_times?park=eq.dl&select=ride_name&order=ride_name.asc&limit=5000`, {
     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
   }).then(r => r.json()).then(rows => {
-    const names = [...new Set(rows.map(r => r.ride_name))].sort();
-    dc.innerHTML = names.map(n => `<div style="padding:2px 0;border-bottom:1px solid #333">${n}</div>`).join('');
-  }).catch(() => { dc.textContent = 'Failed to load'; });
+    const supaNames = [...new Set(rows.map(r => r.ride_name))].sort();
+    const rideDbNames = new Set(RIDES.map(r => r.db));
+    const matched   = supaNames.filter(n => rideDbNames.has(n));
+    const unmatched = supaNames.filter(n => !rideDbNames.has(n));
+    const missing   = [...rideDbNames].filter(n => !supaNames.includes(n)).sort();
+    dc.innerHTML = `
+      <div style="margin-bottom:10px;color:#c9a84c;font-family:Cinzel,serif">
+        ${supaNames.length} unique names in Supabase &nbsp;·&nbsp; ${matched.length} matched &nbsp;·&nbsp; ${unmatched.length} unmatched
+      </div>
+      <div style="color:#2ecc71;margin-bottom:6px;font-weight:bold">✓ MATCHED (${matched.length})</div>
+      ${matched.map(n => `<div style="padding:2px 0;border-bottom:1px solid #1a3a1a;color:#a8d8a8">${n}</div>`).join('')}
+      ${unmatched.length ? `
+        <div style="color:#e67e22;margin:10px 0 6px;font-weight:bold">⚠ IN SUPABASE, NOT IN RIDES (${unmatched.length})</div>
+        ${unmatched.map(n => `<div style="padding:2px 0;border-bottom:1px solid #3a2a1a;color:#e8c8a8">${n}</div>`).join('')}
+      ` : ''}
+      ${missing.length ? `
+        <div style="color:#e05050;margin:10px 0 6px;font-weight:bold">✗ IN RIDES, NOT IN SUPABASE (${missing.length})</div>
+        ${missing.map(n => `<div style="padding:2px 0;border-bottom:1px solid #3a1a1a;color:#e8a8a8">${n}</div>`).join('')}
+      ` : ''}
+    `;
+  }).catch(e => { dc.textContent = 'Failed to load: ' + e; });
 }
 
 // Spike alerts on by default — show legend item
