@@ -326,6 +326,7 @@ function nearestNode(x, y) {
 // predictedData: Supabase historical averages for the NEXT hour window
 //   used only for the spike-alert visual overlay, not for guest decisions
 let waitData = {}, predictedData = {};
+let hasLiveData = false; // flips true after first successful fetchWaits()
 
 // Spike threshold: predicted wait must be this many minutes higher than
 // live wait before we show the alert ring. Keeps noise low.
@@ -349,10 +350,10 @@ function pickTarget(g) {
   //    Queue-Times didn't return it, meaning it's closed or not currently operating.
   //    Guests won't target it. Falls back to all non-station rides if waitData is
   //    still empty (first load / fallback mode).
-  const hasLiveData = Object.keys(waitData).length > 0;
+  const hasLiveData_local = Object.keys(waitData).length > 0;
   const rideable = RIDES.filter(r => {
     if (r.n.includes('Station')) return false;
-    if (hasLiveData && waitData[r.db] === undefined) return false;
+    if (hasLiveData_local && waitData[r.db] === undefined) return false;
     return true;
   });
 
@@ -444,6 +445,7 @@ async function fetchWaits() {
       agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
     });
     Object.keys(agg).forEach(k => { waitData[k] = Math.round((agg[k] / cnt[k]) / 5) * 5; });
+    hasLiveData = true;
     const matched = RIDES.filter(r => waitData[r.db] !== undefined).length;
     const badge = document.getElementById('data-badge');
     badge.textContent = `Live data — ${matched}/${RIDES.length} rides`;
@@ -630,19 +632,29 @@ function drawFrame() {
       }
     }
 
-    // Base glow
+    // A ride is "closed" if live data has loaded but returned no row for it.
+    // Stations never have wait data and are not considered closed — skip their label.
+    const isStation = r.n.includes('Station');
+    const isClosed  = hasLiveData && w === undefined && !isStation;
+
+    // Base glow — dimmed grey for closed rides
     ctx.beginPath(); ctx.arc(cx, cy, sw(8), 0, Math.PI*2);
-    ctx.fillStyle = col + '22'; ctx.fill();
+    ctx.fillStyle = isClosed ? 'rgba(80,80,80,0.18)' : col + '22'; ctx.fill();
     // Core dot
     ctx.beginPath(); ctx.arc(cx, cy, sw(5), 0, Math.PI*2);
-    ctx.fillStyle = col + 'bb'; ctx.fill();
-    ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.stroke();
-    // Wait time label
-    if (w !== undefined) {
+    ctx.fillStyle = isClosed ? 'rgba(100,100,100,0.6)' : col + 'bb'; ctx.fill();
+    ctx.strokeStyle = isClosed ? '#555' : col; ctx.lineWidth = 1.5; ctx.stroke();
+    // Label — wait time, "CLOSED", or nothing for stations
+    if (!isStation) {
       const lx = cx, ly = cy - sw(11);
       ctx.font = `bold ${sw(7.5)}px Lato,sans-serif`; ctx.textAlign = 'center';
-      ctx.fillStyle = '#000000aa'; ctx.fillText(w + 'm', lx+1, ly+1);
-      ctx.fillStyle = '#ffffffee'; ctx.fillText(w + 'm', lx, ly);
+      if (isClosed) {
+        ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillText('CLOSED', lx+1, ly+1);
+        ctx.fillStyle = '#888888';          ctx.fillText('CLOSED', lx, ly);
+      } else if (w !== undefined) {
+        ctx.fillStyle = '#000000aa'; ctx.fillText(w + 'm', lx+1, ly+1);
+        ctx.fillStyle = '#ffffffee'; ctx.fillText(w + 'm', lx, ly);
+      }
     }
   });
 
@@ -764,14 +776,17 @@ canvas.onclick = e => {
     const pred = predictedData[nearestRide.db];
     const spiking = isSpiking(nearestRide.db);
     const delta = (pred != null && w != null) ? pred - w : null;
+    const isRideClosed = hasLiveData && w === undefined && !nearestRide.n.includes('Station');
     tt.innerHTML = `<b>${nearestRide.n}</b>
-      ${w != null
-        ? `<div class="t-row"><span class="t-label">Wait now</span><span style="color:${waitColor(w)}">${w} min</span></div>`
-        : `<div class="t-row"><span class="t-label">Wait now</span><span style="color:#555">—</span></div>`}
-      ${pred != null
+      ${isRideClosed
+        ? `<div class="t-row"><span class="t-label" style="color:#888">Currently unavailable</span></div>`
+        : w != null
+          ? `<div class="t-row"><span class="t-label">Wait now</span><span style="color:${waitColor(w)}">${w} min</span></div>`
+          : `<div class="t-row"><span class="t-label">Wait now</span><span style="color:#555">—</span></div>`}
+      ${!isRideClosed && pred != null
         ? `<div class="t-row"><span class="t-label">Predicted</span><span style="color:${spiking ? '#c9a84c' : waitColor(pred)}">${pred} min${spiking ? ' ▲' : ''}</span></div>`
         : ''}
-      ${spiking && delta != null
+      ${!isRideClosed && spiking && delta != null
         ? `<div class="t-row"><span class="t-label">Trend</span><span style="color:#c9a84c">+${delta}m spike incoming</span></div>`
         : ''}`;
     const cx = sx(nearestRide.x), cy = sy(nearestRide.y);
