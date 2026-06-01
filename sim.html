@@ -177,6 +177,7 @@ const RIDES = [
   { n: 'Autopia',         x:  878, y:  519, db: 'Autopia' },
   { n: 'Big Thunder',     x:  398, y:  504, db: 'Big Thunder Mountain Railroad' },
   { n: 'Main St Station', x:  583, y:  848, db: 'Disneyland Railroad - Main Street' },
+  { n: 'NOS Station',     x:  227, y:  702, db: 'Disneyland Railroad - New Orleans Square' },
   { n: 'FL Station',      x:  620, y:  165, db: 'Disneyland Railroad - Fantasyland' },
   { n: 'TL Station',      x:  956, y:  523, db: 'Disneyland Railroad - Tomorrowland' },
   { n: "Tiana's Bayou",   x:  158, y:  535, db: "Tiana's Bayou Adventure" },
@@ -342,8 +343,18 @@ function isSpiking(dbName) {
 // short waits are highly attractive, long waits are avoided.
 // This mirrors real guest behavior: checking the Disneyland app or posted signs.
 function pickTarget(g) {
-  // Filter to rides that have wait data and are not train stations
-  const rideable = RIDES.filter(r => !r.n.includes('Station'));
+  // Filter to rides that:
+  // 1. Are not train stations (no wait data by design)
+  // 2. Have live wait data — if a ride isn't in waitData after a successful fetch,
+  //    Queue-Times didn't return it, meaning it's closed or not currently operating.
+  //    Guests won't target it. Falls back to all non-station rides if waitData is
+  //    still empty (first load / fallback mode).
+  const hasLiveData = Object.keys(waitData).length > 0;
+  const rideable = RIDES.filter(r => {
+    if (r.n.includes('Station')) return false;
+    if (hasLiveData && waitData[r.db] === undefined) return false;
+    return true;
+  });
 
   // Weight = 1 / (liveWait + 5): lower wait → higher weight → more guests go there
   // The +5 floor prevents division-by-zero and keeps closed/unknown rides in play at low weight
