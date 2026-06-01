@@ -73,6 +73,7 @@
   <button class="btn" id="btn-heatmap" onclick="toggleHeatmap()">🌡 Heat Map</button>
   <button class="btn" id="btn-debug" onclick="showDebug()">🔍 Debug names</button>
   <button class="btn" id="btn-paths" onclick="togglePaths()">Show Paths</button>
+  <button class="btn" id="btn-spikes" onclick="toggleSpikes()">📈 Spike Alerts</button>
   <div id="status-bar">
     <span id="st-guests">—</span>
     <span id="st-me" class="highlight"></span>
@@ -107,6 +108,7 @@
   <div class="leg"><div class="ld" style="background:#e67e22"></div>21–45 min</div>
   <div class="leg"><div class="ld" style="background:#e74c3c"></div>45+ min</div>
   <div class="leg" id="heat-legend" style="display:none;margin-left:12px;color:var(--gold)">🌡 Heat map on</div>
+  <div class="leg" id="spike-legend" style="display:none;margin-left:12px"><div class="ld" style="background:#c9a84c;border:1px solid #c9a84c;border-radius:50%;animation:none"></div>📈 Spike incoming</div>
 </div>
 <nav id="nav">
   <a href="index.html">Home</a>
@@ -130,7 +132,6 @@ const LW = 1024, LH = 986;
 const mapImg = new Image();
 mapImg.src = 'map.jpeg';
 
-// Map aspect ratio: 1024 x 986
 const MAP_AR = 1024 / 986;
 let mapOffX = 0, mapOffY = 0, mapDrawW = 0, mapDrawH = 0;
 
@@ -138,33 +139,23 @@ function resize() {
   const wrap = document.getElementById('canvas-wrap');
   W = canvas.width = wrap.clientWidth;
   H = canvas.height = wrap.clientHeight;
-  // Fit map into canvas preserving aspect ratio (letterbox/pillarbox)
   if (W / H > MAP_AR) {
-    // Canvas is wider than map ratio — pillarbox (black sides)
-    mapDrawH = H;
-    mapDrawW = H * MAP_AR;
-    mapOffX = (W - mapDrawW) / 2;
-    mapOffY = 0;
+    mapDrawH = H; mapDrawW = H * MAP_AR;
+    mapOffX = (W - mapDrawW) / 2; mapOffY = 0;
   } else {
-    // Canvas is taller than map ratio — letterbox (black top/bottom)
-    mapDrawW = W;
-    mapDrawH = W / MAP_AR;
-    mapOffX = 0;
-    mapOffY = (H - mapDrawH) / 2;
+    mapDrawW = W; mapDrawH = W / MAP_AR;
+    mapOffX = 0; mapOffY = (H - mapDrawH) / 2;
   }
 }
 resize();
 window.addEventListener('resize', resize);
 
 const RIDES = [
-  // Galaxy's Edge (estimated - no clicks in this area)
   { n: 'Rise',            x:   61, y:  294, db: 'Star Wars: Rise of the Resistance' },
   { n: 'Smugglers Run',   x:  289, y:  154, db: 'Millennium Falcon: Smugglers Run' },
-  // Toontown
   { n: 'Runaway Railway', x:  670, y:   68, db: "Mickey & Minnie's Runaway Railway" },
   { n: 'GADGETcoaster',   x:  545, y:   98, db: "Chip 'n' Dale's GADGETcoaster" },
   { n: 'Roger Rabbit',    x:  686, y:  110, db: "Roger Rabbit's Car Toon Spin" },
-  // Fantasyland
   { n: 'Small World',     x:  725, y:  201, db: '"it\'s a small world"' },
   { n: 'Casey Jr.',       x:  553, y:  321, db: 'Casey Jr. Circus Train' },
   { n: 'Storybook',       x:  683, y:  327, db: 'Storybook Land Canal Boats' },
@@ -176,241 +167,116 @@ const RIDES = [
   { n: 'Carrousel',       x:  559, y:  396, db: 'King Arthur Carrousel' },
   { n: 'Mr. Toad',        x:  597, y:  404, db: "Mr. Toad's Wild Ride" },
   { n: 'Pinocchio',       x:  611, y:  410, db: "Pinocchio's Daring Journey" },
-  // Tomorrowland
   { n: 'Star Tours',      x:  703, y:  584, db: 'Star Tours - The Adventures Continue' },
-  { n: 'Astro Orbiter',  x:  667, y:  562, db: 'Astro Orbitor' },
-  { n: 'Monorail',       x:  853, y:  477, db: 'Disneyland Monorail' },
+  { n: 'Astro Orbiter',   x:  667, y:  562, db: 'Astro Orbitor' },
+  { n: 'Monorail',        x:  853, y:  477, db: 'Disneyland Monorail' },
   { n: 'Space Mtn',       x:  795, y:  660, db: 'Hyperspace Mountain' },
   { n: 'Finding Nemo',    x:  810, y:  479, db: 'Finding Nemo Submarine Voyage' },
   { n: 'Buzz Lightyear',  x:  701, y:  543, db: 'Buzz Lightyear Astro Blasters' },
   { n: 'Autopia',         x:  878, y:  519, db: 'Autopia' },
-  // Frontierland
   { n: 'Big Thunder',     x:  398, y:  504, db: 'Big Thunder Mountain Railroad' },
-  // Main Street
-  // Train Stations (no wait time data but real park landmarks)
   { n: 'Main St Station', x:  583, y:  848, db: 'Disneyland Railroad - Main Street' },
   { n: 'FL Station',      x:  620, y:  165, db: 'Disneyland Railroad - Fantasyland' },
   { n: 'TL Station',      x:  956, y:  523, db: 'Disneyland Railroad - Tomorrowland' },
-  // Bayou / New Orleans Square
   { n: "Tiana's Bayou",   x:  158, y:  535, db: "Tiana's Bayou Adventure" },
-  { n: 'Winnie Pooh',    x:   79, y:  532, db: "The Many Adventures of Winnie the Pooh" },
+  { n: 'Winnie Pooh',     x:   79, y:  532, db: "The Many Adventures of Winnie the Pooh" },
   { n: 'Pirates',         x:  220, y:  629, db: 'Pirates of the Caribbean' },
   { n: 'Haunted Mansion', x:  353, y:  678, db: 'Haunted Mansion' },
-  // Adventureland
   { n: 'Indiana Jones',   x:  467, y:  661, db: 'Indiana Jones™ Adventure' },
   { n: 'Jungle Cruise',   x:  217, y:  694, db: 'Jungle Cruise' },
 ];
 
-
 const NODES = [
-  // ── ENTRANCES ──
-  { id:  0, x: 544, y: 895 },  // left gate
-  { id:100, x: 623, y: 899 },  // right gate
-
-  // ── MAIN STREET ──
-  { id:  1, x: 544, y: 848 },  // MS south (left lane)
-  { id:101, x: 608, y: 848 },  // MS south (right lane)
-  { id:  2, x: 576, y: 657 },
-  { id:102, x: 600, y: 800 },
-  { id:  3, x: 578, y: 727 },
-  { id:103, x: 596, y: 750 },
-  { id:  4, x: 579, y: 788 },
-  { id:104, x: 592, y: 700 },
-  { id:  5, x: 544, y: 650 },
-  { id:105, x: 588, y: 650 },
-  { id:  6, x: 544, y: 600 },
-  { id:106, x: 584, y: 600 },
-  { id:  7, x: 544, y: 560 },  // MS north / hub south
-  { id:107, x: 580, y: 560 },
-
-  // ── HUB ──
-  { id:  8, x: 555, y: 510 },  // hub center
-  { id:  9, x: 490, y: 520 },  // hub west arm
-  { id: 10, x: 430, y: 530 },  // hub far west → Adventureland
-  { id: 11, x: 610, y: 515 },  // hub east arm
-  { id: 12, x: 660, y: 520 },  // hub far east → Tomorrowland
-  { id: 13, x: 555, y: 470 },  // hub north → Fantasyland/castle
-
-  // ── ADVENTURELAND / NOS CORRIDOR ──
-  // From hub west down the left side
-  { id: 20, x: 420, y: 560 },  // AL/NOS top junction
-  { id: 21, x: 400, y: 590 },
-  { id: 22, x: 385, y: 620 },
-  { id: 23, x: 370, y: 650 },  // NOS crossroads
-  { id: 24, x: 353, y: 678 },  // Haunted Mansion
-  { id: 25, x: 340, y: 660 },  // path continues west
-  { id: 26, x: 310, y: 660 },
-  { id: 27, x: 280, y: 660 },
-  { id: 28, x: 250, y: 660 },  // NOS west path
-  { id: 29, x: 220, y: 640 },
-  { id: 30, x: 220, y: 629 },  // Pirates of Caribbean
-  { id: 31, x: 200, y: 610 },
-  { id: 32, x: 175, y: 580 },  // bayou path
-  { id: 33, x: 200, y: 535 },
-  { id: 34, x: 158, y: 535 },  // Tiana's Bayou
-  { id: 203, x: 662, y: 474 },  // hub connector FL/TL
-  { id: 204, x:  78, y: 546 },  // far left Bayou path
-  // Adventureland east path
-  { id: 35, x: 400, y: 660 },
-  { id: 36, x: 420, y: 670 },
-  { id: 37, x: 440, y: 665 },
-  { id: 38, x: 467, y: 661 },  // Indiana Jones
-  { id: 39, x: 430, y: 695 },  // AL south path
-  { id: 40, x: 340, y: 694 },  // Jungle Cruise area
-  { id: 41, x: 260, y: 694 },
-  { id: 42, x: 217, y: 694 },  // Jungle Cruise
-
-  // ── FRONTIERLAND ──
-  { id: 50, x: 400, y: 530 },  // FL entrance from hub
-  { id: 51, x: 400, y: 505 },  // Big Thunder approach
-  { id: 52, x: 398, y: 504 },  // Big Thunder
-  { id: 53, x: 380, y: 490 },  // FL north path
-  { id: 54, x: 360, y: 475 },
-
-  // ── GALAXY'S EDGE ──
-  { id: 60, x: 370, y: 420 },  // GE entrance from Frontierland
-  { id: 61, x: 375, y: 380 },
-  { id: 62, x: 339, y: 360 },
-  { id: 63, x: 326, y: 300 },
-  { id: 64, x: 325, y: 280 },
-  { id: 65, x: 290, y: 255 },
-  { id: 66, x: 245, y: 230 },  // Rise area
-  { id: 67, x:  61, y: 294 },  // Rise of Resistance
-  { id: 68, x: 185, y: 255 },  // GE interior
-  { id: 72, x: 57, y: 344 },  // GE south exit path
-  { id: 73, x: 107, y: 413 },  // GE south exit mid
-  { id: 74, x: 175, y: 490 },  // GE south exit near Bayou
-  { id: 69, x: 220, y: 220 },
-  { id: 70, x: 260, y: 185 },
-  { id: 71, x: 289, y: 154 },  // Smugglers Run
-
-  // ── FANTASYLAND ──
-  { id: 80, x: 555, y: 440 },  // castle / FL entrance
-  { id: 81, x: 540, y: 410 },  // FL west path
-  { id: 82, x: 540, y: 385 },
-  { id: 83, x: 544, y: 368 },  // Peter Pan
-  { id: 84, x: 555, y: 350 },
-  { id: 85, x: 553, y: 321 },  // Casey Jr
-  { id: 86, x: 570, y: 310 },  // Small World approach
-  { id: 89, x: 683, y: 327 },  // Storybook
-  { id: 200, x: 446, y: 323 },  // FL/GE connector path
-  { id: 201, x: 406, y: 279 },  // FL/GE path mid
-  { id: 202, x: 392, y: 253 },  // FL/GE path north → GE
-  { id: 90, x: 725, y: 201 },  // Small World (far NE)
-  { id: 91, x: 560, y: 395 },  // FL center
-  { id: 92, x: 559, y: 410 },  // Carrousel area
-  { id: 93, x: 586, y: 336 },  // Dumbo
-  { id: 94, x: 600, y: 360 },  // FL east path
-  { id: 95, x: 610, y: 375 },
-  { id: 96, x: 620, y: 380 },  // Snow White
-  { id: 97, x: 604, y: 404 },  // Mr Toad / Pinocchio
-  { id: 98, x: 630, y: 390 },
-  { id: 99, x: 650, y: 380 },
-  { id:110, x: 667, y: 389 },  // Matterhorn
-  { id:111, x: 700, y: 375 },
-  { id:112, x: 720, y: 374 },
-  { id:113, x: 739, y: 374 },  // Alice
-
-  // ── TOONTOWN ──
-  { id:120, x: 680, y: 320 },  // TT entrance from FL
-  { id:121, x: 680, y: 280 },
-  { id:122, x: 660, y: 240 },
-  { id:123, x: 640, y: 210 },
-  { id:124, x: 620, y: 190 },
-  { id:125, x: 600, y: 165 },  // FL Train Station
-  { id:126, x: 610, y: 155 },
-  { id:127, x: 575, y: 115 },
-  { id:128, x: 545, y:  98 },  // GADGETcoaster
-  { id:129, x: 650, y: 150 },
-  { id:130, x: 670, y: 110 },
-  { id:131, x: 670, y:  68 },  // Runaway Railway
-  { id:132, x: 686, y: 110 },  // Roger Rabbit
-  { id:205, x: 668, y: 192 },  // Toontown upper path
-
-  // ── TOMORROWLAND ──
-  { id:140, x: 670, y: 540 },  // TL entrance path
-  { id:141, x: 685, y: 555 },
-  { id:142, x: 700, y: 560 },
-  { id:143, x: 703, y: 584 },  // Star Tours
-  { id:144, x: 715, y: 540 },
-  { id:147, x: 775, y: 495 },
-  { id:148, x: 801, y: 479 },  // Finding Nemo (moved)
-  { id:149, x: 823, y: 479 },  // Buzz
-  { id:150, x: 853, y: 477 },  // Monorail
-  { id:151, x: 878, y: 519 },  // Autopia
-  { id:152, x: 795, y: 530 },
-  { id:153, x: 795, y: 560 },
-  { id:154, x: 795, y: 600 },
-  { id:155, x: 795, y: 660 },  // Space Mountain
-  { id:156, x: 956, y: 523 },  // TL Train Station
+  { id:  0, x: 544, y: 895 },{ id:100, x: 623, y: 899 },
+  { id:  1, x: 544, y: 848 },{ id:101, x: 608, y: 848 },
+  { id:  2, x: 576, y: 657 },{ id:102, x: 600, y: 800 },
+  { id:  3, x: 578, y: 727 },{ id:103, x: 596, y: 750 },
+  { id:  4, x: 579, y: 788 },{ id:104, x: 592, y: 700 },
+  { id:  5, x: 544, y: 650 },{ id:105, x: 588, y: 650 },
+  { id:  6, x: 544, y: 600 },{ id:106, x: 584, y: 600 },
+  { id:  7, x: 544, y: 560 },{ id:107, x: 580, y: 560 },
+  { id:  8, x: 555, y: 510 },{ id:  9, x: 490, y: 520 },
+  { id: 10, x: 430, y: 530 },{ id: 11, x: 610, y: 515 },
+  { id: 12, x: 660, y: 520 },{ id: 13, x: 555, y: 470 },
+  { id: 20, x: 420, y: 560 },{ id: 21, x: 400, y: 590 },
+  { id: 22, x: 385, y: 620 },{ id: 23, x: 370, y: 650 },
+  { id: 24, x: 353, y: 678 },{ id: 25, x: 340, y: 660 },
+  { id: 26, x: 310, y: 660 },{ id: 27, x: 280, y: 660 },
+  { id: 28, x: 250, y: 660 },{ id: 29, x: 220, y: 640 },
+  { id: 30, x: 220, y: 629 },{ id: 31, x: 200, y: 610 },
+  { id: 32, x: 175, y: 580 },{ id: 33, x: 200, y: 535 },
+  { id: 34, x: 158, y: 535 },{ id:203, x: 662, y: 474 },
+  { id:204, x:  78, y: 546 },{ id: 35, x: 400, y: 660 },
+  { id: 36, x: 420, y: 670 },{ id: 37, x: 440, y: 665 },
+  { id: 38, x: 467, y: 661 },{ id: 39, x: 430, y: 695 },
+  { id: 40, x: 340, y: 694 },{ id: 41, x: 260, y: 694 },
+  { id: 42, x: 217, y: 694 },{ id: 50, x: 400, y: 530 },
+  { id: 51, x: 400, y: 505 },{ id: 52, x: 398, y: 504 },
+  { id: 53, x: 380, y: 490 },{ id: 54, x: 360, y: 475 },
+  { id: 60, x: 370, y: 420 },{ id: 61, x: 375, y: 380 },
+  { id: 62, x: 339, y: 360 },{ id: 63, x: 326, y: 300 },
+  { id: 64, x: 325, y: 280 },{ id: 65, x: 290, y: 255 },
+  { id: 66, x: 245, y: 230 },{ id: 67, x:  61, y: 294 },
+  { id: 68, x: 185, y: 255 },{ id: 72, x:  57, y: 344 },
+  { id: 73, x: 107, y: 413 },{ id: 74, x: 175, y: 490 },
+  { id: 69, x: 220, y: 220 },{ id: 70, x: 260, y: 185 },
+  { id: 71, x: 289, y: 154 },{ id: 80, x: 555, y: 440 },
+  { id: 81, x: 540, y: 410 },{ id: 82, x: 540, y: 385 },
+  { id: 83, x: 544, y: 368 },{ id: 84, x: 555, y: 350 },
+  { id: 85, x: 553, y: 321 },{ id: 86, x: 570, y: 310 },
+  { id: 89, x: 683, y: 327 },{ id:200, x: 446, y: 323 },
+  { id:201, x: 406, y: 279 },{ id:202, x: 392, y: 253 },
+  { id: 90, x: 725, y: 201 },{ id: 91, x: 560, y: 395 },
+  { id: 92, x: 559, y: 410 },{ id: 93, x: 586, y: 336 },
+  { id: 94, x: 600, y: 360 },{ id: 95, x: 610, y: 375 },
+  { id: 96, x: 620, y: 380 },{ id: 97, x: 604, y: 404 },
+  { id: 98, x: 630, y: 390 },{ id: 99, x: 650, y: 380 },
+  { id:110, x: 667, y: 389 },{ id:111, x: 700, y: 375 },
+  { id:112, x: 720, y: 374 },{ id:113, x: 739, y: 374 },
+  { id:120, x: 680, y: 320 },{ id:121, x: 680, y: 280 },
+  { id:122, x: 660, y: 240 },{ id:123, x: 640, y: 210 },
+  { id:124, x: 620, y: 190 },{ id:125, x: 600, y: 165 },
+  { id:126, x: 610, y: 155 },{ id:127, x: 575, y: 115 },
+  { id:128, x: 545, y:  98 },{ id:129, x: 650, y: 150 },
+  { id:130, x: 670, y: 110 },{ id:131, x: 670, y:  68 },
+  { id:132, x: 686, y: 110 },{ id:205, x: 668, y: 192 },
+  { id:140, x: 670, y: 540 },{ id:141, x: 685, y: 555 },
+  { id:142, x: 700, y: 560 },{ id:143, x: 703, y: 584 },
+  { id:144, x: 715, y: 540 },{ id:147, x: 775, y: 495 },
+  { id:148, x: 801, y: 479 },{ id:149, x: 823, y: 479 },
+  { id:150, x: 853, y: 477 },{ id:151, x: 878, y: 519 },
+  { id:152, x: 795, y: 530 },{ id:153, x: 795, y: 560 },
+  { id:154, x: 795, y: 600 },{ id:155, x: 795, y: 660 },
+  { id:156, x: 956, y: 523 },
 ];
 
 const EDGES = [
-  // Entrances → Main Street
-  [0,1],[100,101],
-  // Main Street left lane
-  [1,2],[2,3],[3,4],[4,5],[5,6],[6,7],
-  // Main Street right lane
+  [0,1],[100,101],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],
   [101,102],[102,103],[103,104],[104,105],[105,106],[106,107],
-  // Cross-connect MS lanes at intervals
   [1,101],[2,102],[3,103],[4,104],[5,105],[6,106],[7,107],
-  // MS → Hub
-  [7,8],[107,8],
-  // Hub internal
-  [8,9],[8,11],[8,13],[9,10],[11,12],
-  // Hub → Adventureland/NOS corridor (west side)
-  [10,20],[20,21],[21,22],[22,23],
-  // NOS east (toward HM)
-  [23,24],[23,25],
-  // NOS west path (along river, toward Pirates + Bayou)
+  [7,8],[107,8],[8,9],[8,11],[8,13],[9,10],[11,12],
+  [10,20],[20,21],[21,22],[22,23],[23,24],[23,25],
   [25,26],[26,27],[27,28],[28,29],[29,30],[30,31],[31,32],[32,33],
-  [6,38],  // MS shortcut to Adventureland
-  // Adventureland east path (Indiana Jones + Jungle Cruise loop)
-  // Connect from NOS crossroads AND from hub path so it's not a dead end
-  [22,35],[23,35],[35,36],[36,37],[37,38],  // → Indiana Jones
-  [37,39],[38,39],                           // IJ → Jungle Cruise path
-  [40,41],[41,42],                   // → Jungle Cruise
-  [42,28],[41,29],                           // JC loops back into NOS west — closes the loop!
-  // Frontierland (north of NOS, south of GE)
+  [6,38],[22,35],[23,35],[35,36],[36,37],[37,38],[37,39],[38,39],
+  [40,41],[41,42],[42,28],[41,29],
   [9,50],[50,51],[51,52],[50,53],[53,54],
-  // Galaxy's Edge — goes NORTH along east bank, enters GE from top
-  [54,60],[53,60],          // FL north → start climbing east bank
-  [60,61],[61,62],[62,63],  // north along east bank (staying right of river)
-  [63,64],[64,65],[65,66],  // enter GE from the north corridor
-  [66,67],[66,68],          // GE west branch → Rise / interior
-  [68,69],[69,70],[70,71],  // GE inner loop → Smugglers Run
-  [71,69],[70,65],          // GE internal connections
-  // GE south exit — follows the west bank of the river down to NOS/Bayou
-  [68,72],[72,73],[73,74],[74,33],  // GE south exit to Bayou/NOS
-  // Hub → Fantasyland
-  [13,80],[80,81],[81,82],[82,83],[82,91],
-  [83,84],[84,85],[89,90],
-  
-  [91,92],[91,94],[92,97],
+  [54,60],[53,60],[60,61],[61,62],[62,63],[63,64],[64,65],[65,66],
+  [66,67],[66,68],[68,69],[69,70],[70,71],[71,69],[70,65],
+  [68,72],[72,73],[73,74],[74,33],[13,80],[80,81],[81,82],[82,83],[82,91],
+  [83,84],[84,85],[89,90],[91,92],[91,94],[92,97],
   [94,95],[94,96],[95,96],[95,98],[96,97],[97,98],
   [98,99],[99,110],[110,111],[111,112],[112,113],
-  // Toontown from FL — node 120 connects to Storybook area (89)
   [89,120],[120,121],[121,122],[122,123],[123,124],[124,125],
   [125,126],[128,127],[130,128],[129,130],[129,124],
   [124,129],[129,130],[130,131],[130,132],
-  // Extra connections
-  [67,72],
-  [74,34],
-  [203,110],
-  [205,123],[205,122],[205,129],[131,128],
-  [203,11],[203,10],[204,74],[33,74],
-  [85,86],[86,90],  // Small World approach
-  [94,93],          // Dumbo
+  [67,72],[74,34],[203,110],[205,123],[205,122],[205,129],[131,128],
+  [203,11],[203,10],[204,74],[33,74],[85,86],[86,90],[94,93],
   [200,62],[200,85],[201,200],[202,201],[202,71],[89,113],[155,151],
   [113,147],[11,147],[85,62],
-  // Tomorrowland
   [12,140],[140,141],[141,142],[142,143],[142,144],
   [144,153],[147,148],[148,149],[149,150],[150,151],[150,156],
-  [147,152],[152,153],[153,154],[154,155],
-  [149,152],
+  [147,152],[152,153],[153,154],[154,155],[149,152],
 ];
-
-
 
 const ADJ = {};
 NODES.forEach(n => ADJ[n.id] = []);
@@ -453,12 +319,43 @@ function nearestNode(x, y) {
   return best.id;
 }
 
+// ── WAIT DATA ──
+// waitData: live Queue-Times wait times (what guests can "see" in the park)
+// predictedData: Supabase historical averages for the NEXT hour window
+//   used only for the spike-alert visual overlay, not for guest decisions
+let waitData = {}, predictedData = {};
 
+// Spike threshold: predicted wait must be this many minutes higher than
+// live wait before we show the alert ring. Keeps noise low.
+const SPIKE_THRESHOLD = 15;
+
+function isSpiking(dbName) {
+  const live = waitData[dbName];
+  const pred = predictedData[dbName];
+  if (live == null || pred == null) return false;
+  return (pred - live) >= SPIKE_THRESHOLD;
+}
+
+// ── GUEST DESTINATION SELECTION ──
+// Guests pick targets weighted purely by live wait times —
+// short waits are highly attractive, long waits are avoided.
+// This mirrors real guest behavior: checking the Disneyland app or posted signs.
 function pickTarget(g) {
-  const weights = RIDES.map(r => 1 / (rideWait(r.db) + 5));
+  // Filter to rides that have wait data and are not train stations
+  const rideable = RIDES.filter(r => !r.n.includes('Station'));
+
+  // Weight = 1 / (liveWait + 5): lower wait → higher weight → more guests go there
+  // The +5 floor prevents division-by-zero and keeps closed/unknown rides in play at low weight
+  const weights = rideable.map(r => 1 / (rideWait(r.db) + 5));
   const total = weights.reduce((a, b) => a + b, 0);
-  let r = Math.random() * total, chosen = RIDES[RIDES.length - 1];
-  for (let i = 0; i < RIDES.length; i++) { r -= weights[i]; if (r <= 0) { chosen = RIDES[i]; break; } }
+
+  let rand_val = Math.random() * total;
+  let chosen = rideable[rideable.length - 1];
+  for (let i = 0; i < rideable.length; i++) {
+    rand_val -= weights[i];
+    if (rand_val <= 0) { chosen = rideable[i]; break; }
+  }
+
   g.target = chosen;
   const startNode = nearestNode(g.x, g.y);
   const goalNode  = nearestNode(chosen.x, chosen.y);
@@ -491,12 +388,10 @@ function updateGuest(g, dt) {
   }
 }
 
-// Three entry points at the bottom of Main Street (center, left, right gates)
 const ENTRY_POINTS = [
-  { x: 544, y: 895 },  // left entrance
-  { x: 623, y: 899 },  // right entrance
+  { x: 544, y: 895 },
+  { x: 623, y: 899 },
 ];
-
 
 function spawnGuest(id) {
   const entry = ENTRY_POINTS[Math.floor(Math.random() * ENTRY_POINTS.length)];
@@ -509,7 +404,7 @@ function spawnGuest(id) {
   pickTarget(g); return g;
 }
 
-let waitData = {}, guests = [], myChar = null;
+let guests = [], myChar = null;
 let running = true, speed = 1, simMins = 8 * 60, lastTs = null;
 let pendingPlace = false, playerName = '';
 const SPEEDS = [1, 2, 4, 8]; let speedIdx = 0;
@@ -522,8 +417,8 @@ function waitColor(m) {
 }
 function rideWait(db) { return waitData[db] ?? 25; }
 
+// ── LIVE DATA FETCH ──
 async function fetchWaits() {
-  const h = new Date().getHours(), dow = new Date().getDay();
   document.getElementById('data-badge').textContent = 'Fetching...';
   const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.dl&select=ride_name,wait_time&order=recorded_at.desc&limit=500`;
   try {
@@ -537,8 +432,6 @@ async function fetchWaits() {
       agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
     });
     Object.keys(agg).forEach(k => { waitData[k] = Math.round(agg[k] / cnt[k]); });
-    const allNames = [...new Set(rows.map(r => r.ride_name))];
-    allNames.forEach(k => { if (waitData[k] === undefined) waitData[k] = 0; });
     const matched = RIDES.filter(r => waitData[r.db] !== undefined).length;
     const badge = document.getElementById('data-badge');
     badge.textContent = `Live data — ${matched}/${RIDES.length} rides`;
@@ -548,6 +441,37 @@ async function fetchWaits() {
     document.getElementById('data-badge').style.color = '#e67e22';
     RIDES.forEach(r => { waitData[r.db] = Math.round(10 + Math.random() * 55); });
   }
+  // After live data is loaded, fetch predictions for spike overlay
+  fetchPredicted();
+}
+
+// ── PREDICTOR FETCH ──
+// Queries Supabase for historical averages in the NEXT hour window,
+// on the same day of week. Used only for the spike-alert visual ring —
+// guests themselves only react to live waitData above.
+async function fetchPredicted() {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const nextHour = (currentHour + 1) % 24;
+  const dow = now.getDay(); // 0=Sun … 6=Sat
+
+  // Fetch both current and next hour historical averages for this day of week.
+  // We blend them 50/50 to get a smooth look-ahead rather than a hard step.
+  const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.dl&day_of_week=eq.${dow}&hour_of_day=in.(${currentHour},${nextHour})&select=ride_name,wait_time`;
+  try {
+    const res = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+    if (!res.ok) return;
+    const rows = await res.json();
+    const agg = {}, cnt = {};
+    rows.forEach(r => {
+      if (r.wait_time === null) return;
+      if (!agg[r.ride_name]) { agg[r.ride_name] = 0; cnt[r.ride_name] = 0; }
+      agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
+    });
+    Object.keys(agg).forEach(k => { predictedData[k] = Math.round(agg[k] / cnt[k]); });
+  } catch (e) {
+    // Predicted data is optional — fail silently, spike rings just won't show
+  }
 }
 
 function sx(x) { return mapOffX + x * mapDrawW / LW; }
@@ -556,6 +480,102 @@ function sw(w) { return w * mapDrawW / LW; }
 
 const NAMES = ['Alex','Jordan','Taylor','Morgan','Casey','Riley','Sam','Dana','Avery','Quinn','Blake','Skyler','Peyton','Jamie','Drew','Reese','Parker','Sage','Chris','Cameron'];
 function rand(a, b) { return a + Math.random() * (b - a); }
+
+// Spike pulse animation: a gold ring that breathes in/out
+let spikePhase = 0; // advances each frame, drives the pulse
+
+let showPaths = false, showHeatmap = false, showSpikes = true;
+
+function togglePaths() {
+  showPaths = !showPaths;
+  document.getElementById('btn-paths').textContent = showPaths ? 'Hide Paths' : 'Show Paths';
+  document.getElementById('btn-paths').className = showPaths ? 'btn active' : 'btn';
+}
+
+function toggleHeatmap() {
+  showHeatmap = !showHeatmap;
+  const btn = document.getElementById('btn-heatmap');
+  btn.textContent = showHeatmap ? '🌡 Hide Heat' : '🌡 Heat Map';
+  btn.className = showHeatmap ? 'btn active' : 'btn';
+  document.getElementById('heat-legend').style.display = showHeatmap ? 'flex' : 'none';
+}
+
+function toggleSpikes() {
+  showSpikes = !showSpikes;
+  const btn = document.getElementById('btn-spikes');
+  btn.textContent = showSpikes ? '📈 Hide Spikes' : '📈 Spike Alerts';
+  btn.className = showSpikes ? 'btn active' : 'btn';
+  document.getElementById('spike-legend').style.display = showSpikes ? 'flex' : 'none';
+}
+
+const heatCanvas = document.createElement('canvas');
+const heatCtx = heatCanvas.getContext('2d');
+
+function drawHeatmap() {
+  if (heatCanvas.width !== W || heatCanvas.height !== H) {
+    heatCanvas.width = W; heatCanvas.height = H;
+  }
+  heatCtx.clearRect(0, 0, W, H);
+  RIDES.forEach(r => {
+    const w = waitData[r.db];
+    if (w == null) return;
+    const cx = sx(r.x), cy = sy(r.y);
+    const minR = sw(22), maxR = sw(110);
+    const t = Math.min(w / 75, 1);
+    const radius = minR + t * (maxR - minR);
+
+    // Richer, more saturated colors so they punch through the map art
+    let r1, g1, b1;
+    if (w <= 20) {
+      r1=0; g1=255; b1=120;           // vivid green
+    } else if (w <= 45) {
+      const tt=(w-20)/25;
+      r1=Math.round(tt*255); g1=Math.round(255-tt*100); b1=Math.round(120-tt*120);
+    } else {
+      const tt=Math.min((w-45)/45,1);
+      r1=255; g1=Math.round(155-tt*155); b1=0; // orange → hard red
+    }
+
+    // Core alpha is much higher now — we use 'screen' blend so it won't mud the map
+    const coreAlpha  = 0.72 + t * 0.18; // 0.72 → 0.90
+    const midAlpha   = (coreAlpha * 0.55).toFixed(3);
+
+    const grad = heatCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    grad.addColorStop(0,    `rgba(${r1},${g1},${b1},${coreAlpha})`);
+    grad.addColorStop(0.45, `rgba(${r1},${g1},${b1},${midAlpha})`);
+    grad.addColorStop(1,    `rgba(${r1},${g1},${b1},0)`);
+
+    heatCtx.beginPath(); heatCtx.arc(cx, cy, radius, 0, Math.PI*2);
+    heatCtx.fillStyle = grad; heatCtx.fill();
+
+    // Dark outline ring at the bloom edge so it reads against light map areas
+    heatCtx.beginPath(); heatCtx.arc(cx, cy, radius * 0.48, 0, Math.PI*2);
+    heatCtx.strokeStyle = `rgba(0,0,0,0.28)`;
+    heatCtx.lineWidth = sw(1.5); heatCtx.stroke();
+  });
+
+  // 'screen' blend: colors add to the map underneath — stays vivid without muddying the art
+  ctx.save();
+  ctx.globalCompositeOperation = 'screen';
+  ctx.drawImage(heatCanvas, 0, 0);
+  ctx.restore();
+}
+
+function drawPaths() {
+  ctx.lineWidth = 1.5;
+  EDGES.forEach(([a,b]) => {
+    const na = NODES.find(n => n.id === a), nb = NODES.find(n => n.id === b);
+    if (!na || !nb) return;
+    ctx.beginPath(); ctx.moveTo(sx(na.x), sy(na.y)); ctx.lineTo(sx(nb.x), sy(nb.y));
+    ctx.strokeStyle = 'rgba(255,220,0,0.6)'; ctx.stroke();
+  });
+  NODES.forEach(n => {
+    ctx.beginPath(); ctx.arc(sx(n.x), sy(n.y), sw(4), 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,80,80,0.85)'; ctx.fill();
+    ctx.font = `${sw(7)}px monospace`; ctx.fillStyle = 'white'; ctx.textAlign = 'left';
+    ctx.fillText(n.id, sx(n.x)+sw(5), sy(n.y)+sw(3));
+  });
+}
 
 function drawFrame() {
   ctx.clearRect(0, 0, W, H);
@@ -568,54 +588,83 @@ function drawFrame() {
   }
 
   if (showPaths) drawPaths();
-
   if (showHeatmap) drawHeatmap();
 
+  // ── RIDE DOTS ──
   RIDES.forEach(r => {
     const w = waitData[r.db], col = waitColor(w);
-    ctx.beginPath(); ctx.arc(sx(r.x), sy(r.y), sw(8), 0, Math.PI * 2);
+    const cx = sx(r.x), cy = sy(r.y);
+
+    // Spike alert ring — drawn BEHIND the ride dot
+    // A pulsing gold ring indicates the predictor sees a spike coming
+    if (showSpikes && isSpiking(r.db)) {
+      // Pulse: ring expands from radius 10→18 and fades, looping
+      const pulse = (Math.sin(spikePhase * 2.5 + r.x * 0.05) + 1) / 2; // 0→1, staggered per ride
+      const ringR = sw(10 + pulse * 9);
+      const ringAlpha = 0.25 + pulse * 0.45;
+      ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(201,168,76,${ringAlpha})`; // gold
+      ctx.lineWidth = sw(2.5); ctx.stroke();
+
+      // Small "📈" label above — only render as text, not emoji on canvas
+      const predW = predictedData[r.db];
+      const liveW = waitData[r.db];
+      if (predW != null && liveW != null) {
+        const delta = predW - liveW;
+        const label = `+${delta}m`;
+        ctx.font = `bold ${sw(6.5)}px Lato,sans-serif`; ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillText(label, cx+1, cy - sw(15)+1);
+        ctx.fillStyle = '#c9a84c';          ctx.fillText(label, cx,   cy - sw(15));
+      }
+    }
+
+    // Base glow
+    ctx.beginPath(); ctx.arc(cx, cy, sw(8), 0, Math.PI*2);
     ctx.fillStyle = col + '22'; ctx.fill();
-    ctx.beginPath(); ctx.arc(sx(r.x), sy(r.y), sw(5), 0, Math.PI * 2);
+    // Core dot
+    ctx.beginPath(); ctx.arc(cx, cy, sw(5), 0, Math.PI*2);
     ctx.fillStyle = col + 'bb'; ctx.fill();
     ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.stroke();
+    // Wait time label
     if (w !== undefined) {
-      const lx = sx(r.x), ly = sy(r.y) - sw(11);
+      const lx = cx, ly = cy - sw(11);
       ctx.font = `bold ${sw(7.5)}px Lato,sans-serif`; ctx.textAlign = 'center';
       ctx.fillStyle = '#000000aa'; ctx.fillText(w + 'm', lx+1, ly+1);
       ctx.fillStyle = '#ffffffee'; ctx.fillText(w + 'm', lx, ly);
     }
   });
 
-  [...guests].sort((a, b) => (a.isMe ? 1 : 0) - (b.isMe ? 1 : 0)).forEach(g => {
+  // ── GUEST DOTS ──
+  [...guests].sort((a,b) => (a.isMe?1:0)-(b.isMe?1:0)).forEach(g => {
     if (g.isMe && g.trail.length > 1) {
       ctx.beginPath(); ctx.moveTo(sx(g.trail[0].x), sy(g.trail[0].y));
       g.trail.forEach(p => ctx.lineTo(sx(p.x), sy(p.y)));
       ctx.strokeStyle = '#c9a84c55'; ctx.lineWidth = 2; ctx.stroke();
     }
     const r = g.isMe ? sw(9) : sw(4.5);
-    const col = g.isMe ? '#c9a84c' : g.state === 'queuing' ? '#e05050' : g.state === 'riding' ? '#9b59b6' : '#4a9fd4';
-    ctx.beginPath(); ctx.arc(sx(g.x)+1, sy(g.y)+1, r, 0, Math.PI * 2);
+    const col = g.isMe ? '#c9a84c' : g.state==='queuing' ? '#e05050' : g.state==='riding' ? '#9b59b6' : '#4a9fd4';
+    ctx.beginPath(); ctx.arc(sx(g.x)+1, sy(g.y)+1, r, 0, Math.PI*2);
     ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fill();
-    ctx.beginPath(); ctx.arc(sx(g.x), sy(g.y), r, 0, Math.PI * 2);
+    ctx.beginPath(); ctx.arc(sx(g.x), sy(g.y), r, 0, Math.PI*2);
     ctx.fillStyle = col; ctx.fill();
     if (g.isMe) { ctx.strokeStyle = '#1a1200'; ctx.lineWidth = 2; ctx.stroke(); }
     if (g.state !== 'walking') {
-      ctx.beginPath(); ctx.arc(sx(g.x), sy(g.y), r + sw(3.5), 0, Math.PI * 2);
-      ctx.strokeStyle = col + '55'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.beginPath(); ctx.arc(sx(g.x), sy(g.y), r+sw(3.5), 0, Math.PI*2);
+      ctx.strokeStyle = col+'55'; ctx.lineWidth = 1.5; ctx.stroke();
     }
     if (g.isMe) {
-      const lx = sx(g.x), ly = sy(g.y) - sw(14);
+      const lx = sx(g.x), ly = sy(g.y)-sw(14);
       ctx.font = `bold ${sw(9)}px Cinzel,serif`; ctx.textAlign = 'center';
       ctx.fillStyle = '#000000cc'; ctx.fillText(playerName, lx+1, ly+1);
-      ctx.fillStyle = '#c9a84c'; ctx.fillText(playerName, lx, ly);
+      ctx.fillStyle = '#c9a84c';   ctx.fillText(playerName, lx, ly);
     }
   });
 }
 
 function updateHUD() {
-  const w = guests.filter(g => g.state === 'walking').length;
-  const q = guests.filter(g => g.state === 'queuing').length;
-  const r = guests.filter(g => g.state === 'riding').length;
+  const w = guests.filter(g=>g.state==='walking').length;
+  const q = guests.filter(g=>g.state==='queuing').length;
+  const r = guests.filter(g=>g.state==='riding').length;
   document.getElementById('st-guests').textContent = `${guests.length} guests — ${w} walking · ${q} queuing · ${r} riding`;
   if (myChar) {
     const next = myChar.target ? myChar.target.n : '—';
@@ -623,118 +672,20 @@ function updateHUD() {
   }
 }
 
-function formatTime(m) {
-  const h = Math.floor(m / 60) % 24, mn = Math.floor(m % 60);
-  const ap = h >= 12 ? 'PM' : 'AM', hh = h > 12 ? h - 12 : h === 0 ? 12 : h;
-  return `${hh}:${mn.toString().padStart(2, '0')} ${ap}`;
-}
-
-let showPaths = false;
-function togglePaths() {
-  showPaths = !showPaths;
-  document.getElementById('btn-paths').textContent = showPaths ? 'Hide Paths' : 'Show Paths';
-  document.getElementById('btn-paths').className = showPaths ? 'btn active' : 'btn';
-}
-
-let showHeatmap = false;
-function toggleHeatmap() {
-  showHeatmap = !showHeatmap;
-  const btn = document.getElementById('btn-heatmap');
-  btn.textContent = showHeatmap ? '🌡 Hide Heat' : '🌡 Heat Map';
-  btn.className = showHeatmap ? 'btn active' : 'btn';
-  document.getElementById('heat-legend').style.display = showHeatmap ? 'flex' : 'none';
-}
-
-// Offscreen canvas for heat overlay
-const heatCanvas = document.createElement('canvas');
-const heatCtx = heatCanvas.getContext('2d');
-
-function drawHeatmap() {
-  // Keep offscreen canvas in sync with main canvas size
-  if (heatCanvas.width !== W || heatCanvas.height !== H) {
-    heatCanvas.width = W;
-    heatCanvas.height = H;
-  }
-  heatCtx.clearRect(0, 0, W, H);
-
-  RIDES.forEach(r => {
-    const w = waitData[r.db];
-    if (w == null) return;
-
-    const cx = sx(r.x);
-    const cy = sy(r.y);
-
-    // Radius scales with wait time: 5 min → small bloom, 90+ min → big bloom
-    const minR = sw(18);
-    const maxR = sw(90);
-    const t = Math.min(w / 75, 1); // normalise 0–75 min → 0–1
-    const radius = minR + t * (maxR - minR);
-
-    // Color: green (low) → orange → red (high)
-    // We blend in the gradient from hot core to transparent edge
-    let r1, g1, b1;
-    if (w <= 20) {
-      r1 = 46; g1 = 204; b1 = 113;   // green
-    } else if (w <= 45) {
-      const tt = (w - 20) / 25;
-      r1 = Math.round(46 + tt * (230 - 46));
-      g1 = Math.round(204 + tt * (126 - 204));
-      b1 = Math.round(113 + tt * (34 - 113));
-    } else {
-      const tt = Math.min((w - 45) / 45, 1);
-      r1 = Math.round(230 + tt * (231 - 230));
-      g1 = Math.round(126 + tt * (76 - 126));
-      b1 = Math.round(34 + tt * (60 - 34));
-    }
-
-    const grad = heatCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    const alpha = 0.18 + t * 0.22; // more opaque for longer waits
-    grad.addColorStop(0,   `rgba(${r1},${g1},${b1},${alpha})`);
-    grad.addColorStop(0.35,`rgba(${r1},${g1},${b1},${(alpha * 0.6).toFixed(3)})`);
-    grad.addColorStop(1,   `rgba(${r1},${g1},${b1},0)`);
-
-    heatCtx.beginPath();
-    heatCtx.arc(cx, cy, radius, 0, Math.PI * 2);
-    heatCtx.fillStyle = grad;
-    heatCtx.fill();
-  });
-
-  // Composite the heat canvas onto main canvas
-  ctx.save();
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.drawImage(heatCanvas, 0, 0);
-  ctx.restore();
-}
-
-function drawPaths() {
-  ctx.lineWidth = 1.5;
-  EDGES.forEach(([a,b]) => {
-    const na = NODES.find(n => n.id === a);
-    const nb = NODES.find(n => n.id === b);
-    if (!na || !nb) return;
-    ctx.beginPath();
-    ctx.moveTo(sx(na.x), sy(na.y));
-    ctx.lineTo(sx(nb.x), sy(nb.y));
-    ctx.strokeStyle = 'rgba(255,220,0,0.6)';
-    ctx.stroke();
-  });
-  NODES.forEach(n => {
-    ctx.beginPath();
-    ctx.arc(sx(n.x), sy(n.y), sw(4), 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(255,80,80,0.85)';
-    ctx.fill();
-    ctx.font = `${sw(7)}px monospace`;
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'left';
-    ctx.fillText(n.id, sx(n.x)+sw(5), sy(n.y)+sw(3));
-  });
-}
-
 function loop(ts) {
   requestAnimationFrame(loop);
   if (!lastTs) lastTs = ts;
   const dt = Math.min((ts - lastTs) / 1000, 0.1) * speed; lastTs = ts;
-  if (!running) { drawFrame(); updateHUD(); document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true}); return; }
+
+  // Advance spike pulse phase — independent of sim speed so it always looks smooth
+  spikePhase += (ts - (loop._lastRealTs || ts)) / 1000;
+  loop._lastRealTs = ts;
+
+  if (!running) {
+    drawFrame(); updateHUD();
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true});
+    return;
+  }
   simMins += dt * 0.3;
   guests.forEach(g => updateGuest(g, dt));
   if (guests.length < 150 && Math.random() < 0.006 * speed) guests.push(spawnGuest(guests.length));
@@ -749,7 +700,7 @@ document.getElementById('btn-play').onclick = () => {
   b.className = running ? 'btn active' : 'btn';
 };
 document.getElementById('btn-speed').onclick = () => {
-  speedIdx = (speedIdx + 1) % SPEEDS.length; speed = SPEEDS[speedIdx];
+  speedIdx = (speedIdx+1) % SPEEDS.length; speed = SPEEDS[speedIdx];
   document.getElementById('btn-speed').textContent = speed + '× speed';
 };
 document.getElementById('btn-refresh').onclick = fetchWaits;
@@ -771,7 +722,7 @@ function confirmName() {
   document.getElementById('btn-addme').className = 'btn gold';
 }
 document.getElementById('btn-confirm').onclick = confirmName;
-nameInput.onkeydown = e => { if (e.key === 'Enter') confirmName(); if (e.key === 'Escape') modal.classList.remove('show'); };
+nameInput.onkeydown = e => { if (e.key==='Enter') confirmName(); if (e.key==='Escape') modal.classList.remove('show'); };
 
 canvas.onclick = e => {
   const rect = canvas.getBoundingClientRect();
@@ -780,8 +731,8 @@ canvas.onclick = e => {
   if (pendingPlace && playerName) {
     if (myChar) { myChar.x = lx; myChar.y = ly; myChar.trail = []; pickTarget(myChar); }
     else {
-      myChar = { id: 9999, name: playerName, x: lx, y: ly, tx: lx, ty: ly, state: 'walking',
-        waitLeft: 0, rideLeft: 0, target: null, isMe: true, ridesDone: 0, trail: [], waypoints: [], wpIdx: 0 };
+      myChar = { id:9999, name:playerName, x:lx, y:ly, tx:lx, ty:ly, state:'walking',
+        waitLeft:0, rideLeft:0, target:null, isMe:true, ridesDone:0, trail:[], waypoints:[], wpIdx:0 };
       guests.push(myChar); pickTarget(myChar);
     }
     pendingPlace = false; canvas.style.cursor = 'default';
@@ -789,23 +740,74 @@ canvas.onclick = e => {
     document.getElementById('btn-addme').className = 'btn gold placed';
     return;
   }
+  // ── RIDE NODE CLICK — checked first, higher priority ──
+  let nearestRide = null, nrd = Infinity;
+  RIDES.forEach(r => {
+    const d = Math.hypot(r.x - lx, r.y - ly);
+    if (d < nrd) { nrd = d; nearestRide = r; }
+  });
+  if (nearestRide && nrd < 18) {
+    const tt = document.getElementById('tooltip');
+    const w    = waitData[nearestRide.db];
+    const pred = predictedData[nearestRide.db];
+    const spiking = isSpiking(nearestRide.db);
+    const delta = (pred != null && w != null) ? pred - w : null;
+    tt.innerHTML = `<b>${nearestRide.n}</b>
+      ${w != null
+        ? `<div class="t-row"><span class="t-label">Wait now</span><span style="color:${waitColor(w)}">${w} min</span></div>`
+        : `<div class="t-row"><span class="t-label">Wait now</span><span style="color:#555">—</span></div>`}
+      ${pred != null
+        ? `<div class="t-row"><span class="t-label">Predicted</span><span style="color:${spiking ? '#c9a84c' : waitColor(pred)}">${pred} min${spiking ? ' ▲' : ''}</span></div>`
+        : ''}
+      ${spiking && delta != null
+        ? `<div class="t-row"><span class="t-label">Trend</span><span style="color:#c9a84c">+${delta}m spike incoming</span></div>`
+        : ''}`;
+    const cx = sx(nearestRide.x), cy = sy(nearestRide.y);
+    tt.style.left = Math.min(cx + 14, W - 180) + 'px';
+    tt.style.top  = Math.max(cy - 80, 4) + 'px';
+    tt.style.display = 'block';
+    setTimeout(() => tt.style.display = 'none', 4000);
+    return; // don't fall through to guest check
+  }
+
+  // ── GUEST CLICK ──
   let nearest = null, nd = Infinity;
-  guests.forEach(g => { const d = Math.hypot(g.x - lx, g.y - ly); if (d < nd) { nd = d; nearest = g; } });
+  guests.forEach(g => { const d = Math.hypot(g.x-lx, g.y-ly); if (d<nd) { nd=d; nearest=g; } });
   if (nearest && nd < 20) {
     const tt = document.getElementById('tooltip');
     const w = nearest.target ? waitData[nearest.target.db] : null;
+    const pred = nearest.target ? predictedData[nearest.target.db] : null;
+    const spiking = nearest.target ? isSpiking(nearest.target.db) : false;
     tt.innerHTML = `<b>${nearest.isMe ? playerName : nearest.name}</b>
       <div class="t-row"><span class="t-label">Status</span><span>${nearest.state}</span></div>
       ${nearest.target ? `<div class="t-row"><span class="t-label">Heading to</span><span>${nearest.target.n}</span></div>` : ''}
-      ${w != null ? `<div class="t-row"><span class="t-label">Wait time</span><span style="color:${waitColor(w)}">${w} min</span></div>` : ''}
+      ${w != null ? `<div class="t-row"><span class="t-label">Wait now</span><span style="color:${waitColor(w)}">${w} min</span></div>` : ''}
+      ${pred != null ? `<div class="t-row"><span class="t-label">Predicted</span><span style="color:${spiking?'#c9a84c':waitColor(pred)}">${pred} min${spiking?' ▲':''}</span></div>` : ''}
       <div class="t-row"><span class="t-label">Rides done</span><span>${nearest.ridesDone}</span></div>`;
     const cx = sx(nearest.x), cy = sy(nearest.y);
-    tt.style.left = Math.min(cx + 12, W - 160) + 'px';
-    tt.style.top = Math.max(cy - 70, 4) + 'px';
+    tt.style.left = Math.min(cx+12, W-160) + 'px';
+    tt.style.top  = Math.max(cy-70, 4) + 'px';
     tt.style.display = 'block';
-    setTimeout(() => tt.style.display = 'none', 3500);
+    setTimeout(() => tt.style.display='none', 3500);
   }
 };
+
+// Show debug overlay with all unique ride_names from Supabase
+function showDebug() {
+  document.getElementById('debug-overlay').style.display = 'block';
+  const dc = document.getElementById('debug-content');
+  dc.textContent = 'Loading...';
+  fetch(`${SUPABASE_URL}/rest/v1/wait_times?park=eq.dl&select=ride_name&limit=1000`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  }).then(r => r.json()).then(rows => {
+    const names = [...new Set(rows.map(r => r.ride_name))].sort();
+    dc.innerHTML = names.map(n => `<div style="padding:2px 0;border-bottom:1px solid #333">${n}</div>`).join('');
+  }).catch(() => { dc.textContent = 'Failed to load'; });
+}
+
+// Spike alerts on by default — show legend item
+document.getElementById('spike-legend').style.display = 'flex';
+document.getElementById('btn-spikes').className = 'btn active';
 
 for (let i = 0; i < 150; i++) guests.push(spawnGuest(i));
 fetchWaits();
