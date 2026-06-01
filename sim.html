@@ -639,21 +639,44 @@ function drawFrame() {
     // AND it's not a station (stations share one key and are always valid if the railroad runs)
     const isClosed  = hasLiveData && w === undefined && !isStation;
 
-    // Base glow — dimmed grey for closed rides
-    ctx.beginPath(); ctx.arc(cx, cy, sw(8), 0, Math.PI*2);
-    ctx.fillStyle = isClosed ? 'rgba(80,80,80,0.18)' : col + '22'; ctx.fill();
-    // Core dot
-    ctx.beginPath(); ctx.arc(cx, cy, sw(5), 0, Math.PI*2);
-    ctx.fillStyle = isClosed ? 'rgba(100,100,100,0.6)' : col + 'bb'; ctx.fill();
-    ctx.strokeStyle = isClosed ? '#555' : col; ctx.lineWidth = 1.5; ctx.stroke();
-    // Label — wait time or "CLOSED" for all rides including stations
-    {
-      const lx = cx, ly = cy - sw(11);
-      ctx.font = `bold ${sw(7.5)}px Lato,sans-serif`; ctx.textAlign = 'center';
-      if (isClosed) {
-        ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillText('CLOSED', lx+1, ly+1);
-        ctx.fillStyle = '#888888';          ctx.fillText('CLOSED', lx, ly);
-      } else if (w !== undefined) {
+    if (isClosed) {
+      const r2 = sw(7);
+      // Dark shadow circle so it reads against any map colour
+      ctx.beginPath(); ctx.arc(cx+1, cy+1, r2 + sw(3), 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fill();
+      // White filled circle
+      ctx.beginPath(); ctx.arc(cx, cy, r2, 0, Math.PI*2);
+      ctx.fillStyle = '#ffffff'; ctx.fill();
+      ctx.strokeStyle = '#cc2222'; ctx.lineWidth = sw(2); ctx.stroke();
+      // Bold red X
+      const arm = sw(4);
+      ctx.strokeStyle = '#cc2222'; ctx.lineWidth = sw(2.5);
+      ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(cx - arm, cy - arm); ctx.lineTo(cx + arm, cy + arm); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx + arm, cy - arm); ctx.lineTo(cx - arm, cy + arm); ctx.stroke();
+      ctx.lineCap = 'butt';
+      // "CLOSED" label — white text on dark pill background
+      const label = 'CLOSED';
+      ctx.font = `bold ${sw(7)}px Lato,sans-serif`; ctx.textAlign = 'center';
+      const tw = ctx.measureText(label).width;
+      const ly = cy - sw(13);
+      ctx.fillStyle = 'rgba(0,0,0,0.72)';
+      ctx.beginPath();
+      ctx.roundRect(cx - tw/2 - sw(3), ly - sw(6.5), tw + sw(6), sw(9), sw(2));
+      ctx.fill();
+      ctx.fillStyle = '#ff6666'; ctx.fillText(label, cx, ly);
+    } else {
+      // Base glow
+      ctx.beginPath(); ctx.arc(cx, cy, sw(8), 0, Math.PI*2);
+      ctx.fillStyle = col + '22'; ctx.fill();
+      // Core dot
+      ctx.beginPath(); ctx.arc(cx, cy, sw(5), 0, Math.PI*2);
+      ctx.fillStyle = col + 'bb'; ctx.fill();
+      ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.stroke();
+      // Wait time label
+      if (w !== undefined) {
+        const lx = cx, ly = cy - sw(11);
+        ctx.font = `bold ${sw(7.5)}px Lato,sans-serif`; ctx.textAlign = 'center';
         ctx.fillStyle = '#000000aa'; ctx.fillText(w + 'm', lx+1, ly+1);
         ctx.fillStyle = '#ffffffee'; ctx.fillText(w + 'm', lx, ly);
       }
