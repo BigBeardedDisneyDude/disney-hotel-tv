@@ -445,6 +445,13 @@ async function fetchWaits() {
       agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
     });
     Object.keys(agg).forEach(k => { waitData[k] = Math.round((agg[k] / cnt[k]) / 5) * 5; });
+    // Railroad stations all share one wait time. Queue-Times may store it under a key
+    // that doesn't exactly match 'Disneyland Railroad - Main Street', so find any
+    // Railroad key and copy it to the canonical key all stations use.
+    const railKey = Object.keys(waitData).find(k => k.toLowerCase().includes('railroad') || k.toLowerCase().includes('disneyland railroad'));
+    if (railKey && railKey !== 'Disneyland Railroad - Main Street') {
+      waitData['Disneyland Railroad - Main Street'] = waitData[railKey];
+    }
     hasLiveData = true;
     const matched = RIDES.filter(r => waitData[r.db] !== undefined).length;
     const badge = document.getElementById('data-badge');
@@ -454,6 +461,7 @@ async function fetchWaits() {
     document.getElementById('data-badge').textContent = 'Estimated waits';
     document.getElementById('data-badge').style.color = '#e67e22';
     RIDES.forEach(r => { waitData[r.db] = Math.round((10 + Math.random() * 55) / 5) * 5; });
+    hasLiveData = true;
   }
   // After live data is loaded, fetch predictions for spike overlay
   fetchPredicted();
