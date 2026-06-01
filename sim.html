@@ -737,7 +737,7 @@ function loop(ts) {
   if (!running) { drawFrame(); updateHUD(); document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true}); return; }
   simMins += dt * 0.3;
   guests.forEach(g => updateGuest(g, dt));
-  if (guests.length < 80 && Math.random() < 0.006 * speed) guests.push(spawnGuest(guests.length));
+  if (guests.length < 150 && Math.random() < 0.006 * speed) guests.push(spawnGuest(guests.length));
   drawFrame(); updateHUD();
   document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true});
 }
@@ -807,7 +807,7 @@ canvas.onclick = e => {
   }
 };
 
-for (let i = 0; i < 60; i++) guests.push(spawnGuest(i));
+for (let i = 0; i < 150; i++) guests.push(spawnGuest(i));
 fetchWaits();
 requestAnimationFrame(loop);
 
