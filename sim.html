@@ -432,7 +432,7 @@ async function fetchWaits() {
       if (!agg[r.ride_name]) { agg[r.ride_name] = 0; cnt[r.ride_name] = 0; }
       agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
     });
-    Object.keys(agg).forEach(k => { waitData[k] = Math.round(agg[k] / cnt[k]); });
+    Object.keys(agg).forEach(k => { waitData[k] = Math.round((agg[k] / cnt[k]) / 5) * 5; });
     const matched = RIDES.filter(r => waitData[r.db] !== undefined).length;
     const badge = document.getElementById('data-badge');
     badge.textContent = `Live data — ${matched}/${RIDES.length} rides`;
@@ -440,7 +440,7 @@ async function fetchWaits() {
   } catch (e) {
     document.getElementById('data-badge').textContent = 'Estimated waits';
     document.getElementById('data-badge').style.color = '#e67e22';
-    RIDES.forEach(r => { waitData[r.db] = Math.round(10 + Math.random() * 55); });
+    RIDES.forEach(r => { waitData[r.db] = Math.round((10 + Math.random() * 55) / 5) * 5; });
   }
   // After live data is loaded, fetch predictions for spike overlay
   fetchPredicted();
@@ -469,7 +469,7 @@ async function fetchPredicted() {
       if (!agg[r.ride_name]) { agg[r.ride_name] = 0; cnt[r.ride_name] = 0; }
       agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
     });
-    Object.keys(agg).forEach(k => { predictedData[k] = Math.round(agg[k] / cnt[k]); });
+    Object.keys(agg).forEach(k => { predictedData[k] = Math.round((agg[k] / cnt[k]) / 5) * 5; });
   } catch (e) {
     // Predicted data is optional — fail silently, spike rings just won't show
   }
