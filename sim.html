@@ -31,7 +31,7 @@
   #status-bar span { white-space: nowrap; }
   #status-bar .highlight { color: var(--gold); }
   #canvas-wrap { position: relative; flex: 1; overflow: hidden; min-height: 0; }
-  #c { display: block; width: 100%; height: 100%; }
+  #c { display: block; width: 100%; height: 100%; touch-action: none; }
   #legend { display: flex; gap: 14px; align-items: center; padding: 6px 20px; background: var(--bg2); border-top: 1px solid var(--border); flex-wrap: wrap; }
   .leg { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-dim); font-family: 'Raleway', sans-serif; }
   .ld { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -55,6 +55,12 @@
   #tooltip b { font-family: 'Cinzel', serif; color: var(--gold); font-size: 12px; }
   .t-row { display: flex; justify-content: space-between; gap: 12px; margin-top: 3px; }
   .t-label { color: var(--text-dim); }
+  /* Zoom indicator */
+  #zoom-indicator { position: absolute; bottom: 8px; right: 12px; background: #0a1a0acc; border: 1px solid #c9a84c44; border-radius: 6px; padding: 4px 10px; font-family: 'Raleway', sans-serif; font-size: 11px; color: var(--text-dim); pointer-events: none; z-index: 40; transition: opacity 0.3s; }
+  #zoom-indicator.hidden { opacity: 0; }
+  /* Reset zoom button */
+  #btn-zoom-reset { position: absolute; bottom: 8px; left: 12px; background: #0a1a0acc; border: 1px solid #c9a84c44; border-radius: 6px; padding: 5px 10px; font-family: 'Raleway', sans-serif; font-size: 11px; color: var(--text-dim); cursor: pointer; z-index: 40; transition: all 0.15s; }
+  #btn-zoom-reset:hover { background: #c9a84c22; color: var(--gold); border-color: #c9a84c88; }
 </style>
 </head>
 <body>
@@ -98,6 +104,8 @@
     <h3 style="color:#c9a84c;margin-bottom:12px;font-family:Cinzel,serif;">Supabase ride_name values</h3>
     <div id="debug-content">Loading...</div>
   </div>
+  <div id="zoom-indicator" class="hidden">100%</div>
+  <button id="btn-zoom-reset" style="display:none">⊙ Reset View</button>
 </div>
 <div id="legend">
   <div class="leg"><div class="ld" style="background:#4a9fd4"></div>Walking</div>
@@ -135,6 +143,40 @@ mapImg.src = 'map.jpeg';
 const MAP_AR = 1024 / 986;
 let mapOffX = 0, mapOffY = 0, mapDrawW = 0, mapDrawH = 0;
 
+// ── ZOOM / PAN STATE ──
+let camX = 0, camY = 0, camZ = 1;
+const MIN_ZOOM = 0.5, MAX_ZOOM = 5;
+let isPanning = false, panStartX = 0, panStartY = 0, panCamX = 0, panCamY = 0;
+let zoomHideTimer = null;
+
+// Touch pinch state
+let lastTouchDist = null, lastTouchMidX = 0, lastTouchMidY = 0;
+
+function showZoomIndicator() {
+  const el = document.getElementById('zoom-indicator');
+  el.textContent = Math.round(camZ * 100) + '%';
+  el.classList.remove('hidden');
+  const resetBtn = document.getElementById('btn-zoom-reset');
+  resetBtn.style.display = (Math.abs(camZ - 1) > 0.05 || Math.abs(camX) > 5 || Math.abs(camY) > 5) ? 'block' : 'none';
+  clearTimeout(zoomHideTimer);
+  zoomHideTimer = setTimeout(() => el.classList.add('hidden'), 1800);
+}
+
+function clampCamera() {
+  // Keep map visible — don't let the user pan completely off screen
+  const mw = mapDrawW * camZ, mh = mapDrawH * camZ;
+  const margin = 80;
+  camX = Math.max(-(mw - margin), Math.min(mapDrawW - margin, camX));
+  camY = Math.max(-(mh - margin), Math.min(mapDrawH - margin, camY));
+}
+
+function resetCamera() {
+  camX = 0; camY = 0; camZ = 1;
+  document.getElementById('btn-zoom-reset').style.display = 'none';
+}
+
+document.getElementById('btn-zoom-reset').onclick = resetCamera;
+
 function resize() {
   const wrap = document.getElementById('canvas-wrap');
   W = canvas.width = wrap.clientWidth;
@@ -149,6 +191,107 @@ function resize() {
 }
 resize();
 window.addEventListener('resize', resize);
+
+// ── ZOOM / PAN EVENT HANDLERS ──
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) * (W / rect.width);
+  const my = (e.clientY - rect.top) * (H / rect.height);
+
+  // Zoom toward mouse cursor
+  const zoomDelta = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+  const newZ = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, camZ * zoomDelta));
+  const factor = newZ / camZ;
+
+  // Adjust pan so the point under cursor stays fixed
+  const focusX = mx - mapOffX;
+  const focusY = my - mapOffY;
+  camX = focusX - factor * (focusX - camX);
+  camY = focusY - factor * (focusY - camY);
+  camZ = newZ;
+  clampCamera();
+  showZoomIndicator();
+}, { passive: false });
+
+canvas.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+  isPanning = true;
+  panStartX = e.clientX; panStartY = e.clientY;
+  panCamX = camX; panCamY = camY;
+  canvas.style.cursor = pendingPlace ? 'crosshair' : 'grabbing';
+});
+canvas.addEventListener('mousemove', e => {
+  if (!isPanning) return;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = W / rect.width, scaleY = H / rect.height;
+  const dx = (e.clientX - panStartX) * scaleX;
+  const dy = (e.clientY - panStartY) * scaleY;
+  // Only pan if dragged more than 4px (so clicks still register)
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+    camX = panCamX + dx;
+    camY = panCamY + dy;
+    clampCamera();
+  }
+});
+canvas.addEventListener('mouseup', () => {
+  isPanning = false;
+  canvas.style.cursor = pendingPlace ? 'crosshair' : 'default';
+});
+canvas.addEventListener('mouseleave', () => { isPanning = false; });
+
+// Touch: pinch-to-zoom + drag-to-pan
+canvas.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) {
+    const t1 = e.touches[0], t2 = e.touches[1];
+    lastTouchDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+    lastTouchMidX = (t1.clientX + t2.clientX) / 2;
+    lastTouchMidY = (t1.clientY + t2.clientY) / 2;
+  } else if (e.touches.length === 1) {
+    isPanning = true;
+    panStartX = e.touches[0].clientX; panStartY = e.touches[0].clientY;
+    panCamX = camX; panCamY = camY;
+    lastTouchDist = null;
+  }
+}, { passive: true });
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (e.touches.length === 2 && lastTouchDist !== null) {
+    const t1 = e.touches[0], t2 = e.touches[1];
+    const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+    const midX = (t1.clientX + t2.clientX) / 2;
+    const midY = (t1.clientY + t2.clientY) / 2;
+    const rect = canvas.getBoundingClientRect();
+    const cmx = (midX - rect.left) * (W / rect.width) - mapOffX;
+    const cmy = (midY - rect.top)  * (H / rect.height) - mapOffY;
+
+    const factor = dist / lastTouchDist;
+    const newZ = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, camZ * factor));
+    const realFactor = newZ / camZ;
+    camX = cmx - realFactor * (cmx - camX);
+    camY = cmy - realFactor * (cmy - camY);
+    camZ = newZ;
+
+    // Pan with midpoint movement
+    const dmx = (midX - lastTouchMidX) * (W / rect.width);
+    const dmy = (midY - lastTouchMidY) * (H / rect.height);
+    camX += dmx; camY += dmy;
+
+    lastTouchDist = dist; lastTouchMidX = midX; lastTouchMidY = midY;
+    clampCamera(); showZoomIndicator();
+  } else if (e.touches.length === 1 && isPanning) {
+    const rect = canvas.getBoundingClientRect();
+    const dx = (e.touches[0].clientX - panStartX) * (W / rect.width);
+    const dy = (e.touches[0].clientY - panStartY) * (H / rect.height);
+    camX = panCamX + dx; camY = panCamY + dy;
+    clampCamera();
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchend', () => {
+  isPanning = false; lastTouchDist = null;
+});
 
 const RIDES = [
   { n: 'Rise',            x:   61, y:  294, db: 'Star Wars: Rise of the Resistance' },
@@ -321,15 +464,8 @@ function nearestNode(x, y) {
   return best.id;
 }
 
-// ── WAIT DATA ──
-// waitData: live Queue-Times wait times (what guests can "see" in the park)
-// predictedData: Supabase historical averages for the NEXT hour window
-//   used only for the spike-alert visual overlay, not for guest decisions
 let waitData = {}, predictedData = {};
-let hasLiveData = false; // flips true after first successful fetchWaits()
-
-// Spike threshold: predicted wait must be this many minutes higher than
-// live wait before we show the alert ring. Keeps noise low.
+let hasLiveData = false;
 const SPIKE_THRESHOLD = 15;
 
 function isSpiking(dbName) {
@@ -339,36 +475,21 @@ function isSpiking(dbName) {
   return (pred - live) >= SPIKE_THRESHOLD;
 }
 
-// ── GUEST DESTINATION SELECTION ──
-// Guests pick targets weighted purely by live wait times —
-// short waits are highly attractive, long waits are avoided.
-// This mirrors real guest behavior: checking the Disneyland app or posted signs.
 function pickTarget(g) {
-  // Filter to rides that:
-  // 1. Are not train stations (no wait data by design)
-  // 2. Have live wait data — if a ride isn't in waitData after a successful fetch,
-  //    Queue-Times didn't return it, meaning it's closed or not currently operating.
-  //    Guests won't target it. Falls back to all non-station rides if waitData is
-  //    still empty (first load / fallback mode).
   const hasLiveData_local = Object.keys(waitData).length > 0;
   const rideable = RIDES.filter(r => {
     if (r.n.includes('Station')) return false;
     if (hasLiveData_local && waitData[r.db] === undefined) return false;
     return true;
   });
-
-  // Weight = 1 / (liveWait + 5): lower wait → higher weight → more guests go there
-  // The +5 floor prevents division-by-zero and keeps closed/unknown rides in play at low weight
   const weights = rideable.map(r => 1 / (rideWait(r.db) + 5));
   const total = weights.reduce((a, b) => a + b, 0);
-
   let rand_val = Math.random() * total;
   let chosen = rideable[rideable.length - 1];
   for (let i = 0; i < rideable.length; i++) {
     rand_val -= weights[i];
     if (rand_val <= 0) { chosen = rideable[i]; break; }
   }
-
   g.target = chosen;
   const startNode = nearestNode(g.x, g.y);
   const goalNode  = nearestNode(chosen.x, chosen.y);
@@ -430,7 +551,6 @@ function waitColor(m) {
 }
 function rideWait(db) { return waitData[db] ?? 25; }
 
-// ── LIVE DATA FETCH ──
 async function fetchWaits() {
   document.getElementById('data-badge').textContent = 'Fetching...';
   const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.dl&select=ride_name,wait_time&order=recorded_at.desc&limit=500`;
@@ -445,9 +565,6 @@ async function fetchWaits() {
       agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
     });
     Object.keys(agg).forEach(k => { waitData[k] = Math.round((agg[k] / cnt[k]) / 5) * 5; });
-    // Railroad stations all share one wait time. Queue-Times may store it under a key
-    // that doesn't exactly match 'Disneyland Railroad - Main Street', so find any
-    // Railroad key and copy it to the canonical key all stations use.
     hasLiveData = true;
     const matched = RIDES.filter(r => waitData[r.db] !== undefined).length;
     const badge = document.getElementById('data-badge');
@@ -459,22 +576,14 @@ async function fetchWaits() {
     RIDES.forEach(r => { waitData[r.db] = Math.round((10 + Math.random() * 55) / 5) * 5; });
     hasLiveData = true;
   }
-  // After live data is loaded, fetch predictions for spike overlay
   fetchPredicted();
 }
 
-// ── PREDICTOR FETCH ──
-// Queries Supabase for historical averages in the NEXT hour window,
-// on the same day of week. Used only for the spike-alert visual ring —
-// guests themselves only react to live waitData above.
 async function fetchPredicted() {
   const now = new Date();
   const currentHour = now.getHours();
   const nextHour = (currentHour + 1) % 24;
-  const dow = now.getDay(); // 0=Sun … 6=Sat
-
-  // Fetch both current and next hour historical averages for this day of week.
-  // We blend them 50/50 to get a smooth look-ahead rather than a hard step.
+  const dow = now.getDay();
   const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.dl&day_of_week=eq.${dow}&hour_of_day=in.(${currentHour},${nextHour})&select=ride_name,wait_time`;
   try {
     const res = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
@@ -487,21 +596,23 @@ async function fetchPredicted() {
       agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
     });
     Object.keys(agg).forEach(k => { predictedData[k] = Math.round((agg[k] / cnt[k]) / 5) * 5; });
-  } catch (e) {
-    // Predicted data is optional — fail silently, spike rings just won't show
-  }
+  } catch (e) {}
 }
 
-function sx(x) { return mapOffX + x * mapDrawW / LW; }
-function sy(y) { return mapOffY + y * mapDrawH / LH; }
-function sw(w) { return w * mapDrawW / LW; }
+// ── COORDINATE TRANSFORMS (now zoom/pan aware) ──
+// sx/sy: logical map coords → canvas screen coords (applies camera transform)
+function sx(x) { return mapOffX + (x * mapDrawW / LW) * camZ + camX; }
+function sy(y) { return mapOffY + (y * mapDrawH / LH) * camZ + camY; }
+// sw: scale a logical width by current zoom level
+function sw(w) { return w * mapDrawW / LW * camZ; }
+// Inverse: screen → logical map coords (for click hit-testing)
+function invX(screenX) { return ((screenX - mapOffX - camX) / camZ) * LW / mapDrawW; }
+function invY(screenY) { return ((screenY - mapOffY - camY) / camZ) * LH / mapDrawH; }
 
 const NAMES = ['Alex','Jordan','Taylor','Morgan','Casey','Riley','Sam','Dana','Avery','Quinn','Blake','Skyler','Peyton','Jamie','Drew','Reese','Parker','Sage','Chris','Cameron'];
 function rand(a, b) { return a + Math.random() * (b - a); }
 
-// Spike pulse animation: a gold ring that breathes in/out
-let spikePhase = 0; // advances each frame, drives the pulse
-
+let spikePhase = 0;
 let showPaths = false, showHeatmap = false, showSpikes = true;
 
 function togglePaths() {
@@ -509,7 +620,6 @@ function togglePaths() {
   document.getElementById('btn-paths').textContent = showPaths ? 'Hide Paths' : 'Show Paths';
   document.getElementById('btn-paths').className = showPaths ? 'btn active' : 'btn';
 }
-
 function toggleHeatmap() {
   showHeatmap = !showHeatmap;
   const btn = document.getElementById('btn-heatmap');
@@ -517,7 +627,6 @@ function toggleHeatmap() {
   btn.className = showHeatmap ? 'btn active' : 'btn';
   document.getElementById('heat-legend').style.display = showHeatmap ? 'flex' : 'none';
 }
-
 function toggleSpikes() {
   showSpikes = !showSpikes;
   const btn = document.getElementById('btn-spikes');
@@ -541,38 +650,28 @@ function drawHeatmap() {
     const minR = sw(22), maxR = sw(110);
     const t = Math.min(w / 75, 1);
     const radius = minR + t * (maxR - minR);
-
-    // Richer, more saturated colors so they punch through the map art
     let r1, g1, b1;
     if (w <= 20) {
-      r1=0; g1=255; b1=120;           // vivid green
+      r1=0; g1=255; b1=120;
     } else if (w <= 45) {
       const tt=(w-20)/25;
       r1=Math.round(tt*255); g1=Math.round(255-tt*100); b1=Math.round(120-tt*120);
     } else {
       const tt=Math.min((w-45)/45,1);
-      r1=255; g1=Math.round(155-tt*155); b1=0; // orange → hard red
+      r1=255; g1=Math.round(155-tt*155); b1=0;
     }
-
-    // Core alpha is much higher now — we use 'screen' blend so it won't mud the map
-    const coreAlpha  = 0.72 + t * 0.18; // 0.72 → 0.90
+    const coreAlpha  = 0.72 + t * 0.18;
     const midAlpha   = (coreAlpha * 0.55).toFixed(3);
-
     const grad = heatCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
     grad.addColorStop(0,    `rgba(${r1},${g1},${b1},${coreAlpha})`);
     grad.addColorStop(0.45, `rgba(${r1},${g1},${b1},${midAlpha})`);
     grad.addColorStop(1,    `rgba(${r1},${g1},${b1},0)`);
-
     heatCtx.beginPath(); heatCtx.arc(cx, cy, radius, 0, Math.PI*2);
     heatCtx.fillStyle = grad; heatCtx.fill();
-
-    // Dark outline ring at the bloom edge so it reads against light map areas
     heatCtx.beginPath(); heatCtx.arc(cx, cy, radius * 0.48, 0, Math.PI*2);
     heatCtx.strokeStyle = `rgba(0,0,0,0.28)`;
     heatCtx.lineWidth = sw(1.5); heatCtx.stroke();
   });
-
-  // 'screen' blend: colors add to the map underneath — stays vivid without muddying the art
   ctx.save();
   ctx.globalCompositeOperation = 'screen';
   ctx.drawImage(heatCanvas, 0, 0);
@@ -595,12 +694,58 @@ function drawPaths() {
   });
 }
 
+// ── WAIT TIME LABEL HELPER ──
+// Draws a bold, high-contrast pill label that stays readable at any zoom level.
+// Base font size is 9px logical (sw(9)), but clamped so it never gets tiny:
+//   - below 1× zoom: font grows to compensate, keeping labels legible when zoomed out
+//   - above 2× zoom: font stays proportional (sw() handles it naturally)
+function drawWaitLabel(text, cx, cy, color) {
+  // Minimum readable size: 11px on screen regardless of zoom
+  const rawSize = sw(9.5);
+  const fontSize = Math.max(rawSize, 11);
+  ctx.font = `bold ${fontSize}px Lato,sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  const tw = ctx.measureText(text).width;
+  const padX = Math.max(sw(4), 5);
+  const padY = Math.max(sw(2.5), 3);
+  const pillW = tw + padX * 2;
+  const pillH = fontSize * 0.88 + padY * 2;
+  const lx = cx;
+  const ly = cy - Math.max(sw(13), 14);
+
+  // Dark pill background
+  ctx.fillStyle = 'rgba(0,0,0,0.82)';
+  ctx.beginPath();
+  ctx.roundRect(lx - pillW / 2, ly - pillH / 2, pillW, pillH, pillH / 2);
+  ctx.fill();
+
+  // Colored border — subtle, matches wait status color
+  ctx.strokeStyle = color + '88';
+  ctx.lineWidth = Math.max(sw(1), 1);
+  ctx.beginPath();
+  ctx.roundRect(lx - pillW / 2, ly - pillH / 2, pillW, pillH, pillH / 2);
+  ctx.stroke();
+
+  // Text
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(text, lx, ly);
+  ctx.textBaseline = 'alphabetic';
+}
+
 function drawFrame() {
   ctx.clearRect(0, 0, W, H);
+
+  // Draw map with camera transform applied
   if (mapImg.complete && mapImg.naturalWidth > 0) {
     ctx.fillStyle = '#0a0f0a'; ctx.fillRect(0, 0, W, H);
-    ctx.drawImage(mapImg, mapOffX, mapOffY, mapDrawW, mapDrawH);
-    ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fillRect(mapOffX, mapOffY, mapDrawW, mapDrawH);
+    ctx.drawImage(mapImg,
+      mapOffX + camX, mapOffY + camY,
+      mapDrawW * camZ, mapDrawH * camZ
+    );
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    ctx.fillRect(mapOffX + camX, mapOffY + camY, mapDrawW * camZ, mapDrawH * camZ);
   } else {
     ctx.fillStyle = '#0a0f0a'; ctx.fillRect(0, 0, W, H);
   }
@@ -613,76 +758,67 @@ function drawFrame() {
     const w = waitData[r.db], col = waitColor(w);
     const cx = sx(r.x), cy = sy(r.y);
 
-    // Spike alert ring — drawn BEHIND the ride dot
-    // A pulsing gold ring indicates the predictor sees a spike coming
+    // Spike alert ring
     if (showSpikes && isSpiking(r.db)) {
-      // Pulse: ring expands from radius 10→18 and fades, looping
-      const pulse = (Math.sin(spikePhase * 2.5 + r.x * 0.05) + 1) / 2; // 0→1, staggered per ride
-      const ringR = sw(10 + pulse * 9);
+      const pulse = (Math.sin(spikePhase * 2.5 + r.x * 0.05) + 1) / 2;
+      const ringR = Math.max(sw(10 + pulse * 9), 12);
       const ringAlpha = 0.25 + pulse * 0.45;
       ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(201,168,76,${ringAlpha})`; // gold
-      ctx.lineWidth = sw(2.5); ctx.stroke();
+      ctx.strokeStyle = `rgba(201,168,76,${ringAlpha})`;
+      ctx.lineWidth = Math.max(sw(2.5), 2); ctx.stroke();
 
-      // Small "📈" label above — only render as text, not emoji on canvas
       const predW = predictedData[r.db];
       const liveW = waitData[r.db];
       if (predW != null && liveW != null) {
         const delta = predW - liveW;
         const label = `+${delta}m`;
-        ctx.font = `bold ${sw(6.5)}px Lato,sans-serif`; ctx.textAlign = 'center';
-        ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillText(label, cx+1, cy - sw(15)+1);
-        ctx.fillStyle = '#c9a84c';          ctx.fillText(label, cx,   cy - sw(15));
+        const spikeSize = Math.max(sw(6.5), 9);
+        ctx.font = `bold ${spikeSize}px Lato,sans-serif`; ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillText(label, cx+1, cy - Math.max(sw(15), 16)+1);
+        ctx.fillStyle = '#c9a84c';          ctx.fillText(label, cx,   cy - Math.max(sw(15), 16));
       }
     }
 
-    // A ride is "closed" if live data has loaded but returned no row for it.
-    // Stations never have wait data and are not considered closed — skip their label.
     const isStation = r.n.includes('Station');
-    // A ride is "closed" only if: live data has loaded, it has no wait data,
-    // AND it's not a station (stations share one key and are always valid if the railroad runs)
     const isClosed  = hasLiveData && w === undefined && !isStation;
 
     if (isClosed) {
-      const r2 = sw(7);
-      // Dark shadow circle so it reads against any map colour
-      ctx.beginPath(); ctx.arc(cx+1, cy+1, r2 + sw(3), 0, Math.PI*2);
+      const r2 = Math.max(sw(7), 7);
+      ctx.beginPath(); ctx.arc(cx+1, cy+1, r2 + Math.max(sw(3), 3), 0, Math.PI*2);
       ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fill();
-      // White filled circle
       ctx.beginPath(); ctx.arc(cx, cy, r2, 0, Math.PI*2);
       ctx.fillStyle = '#ffffff'; ctx.fill();
-      ctx.strokeStyle = '#cc2222'; ctx.lineWidth = sw(2); ctx.stroke();
-      // Bold red X
-      const arm = sw(4);
-      ctx.strokeStyle = '#cc2222'; ctx.lineWidth = sw(2.5);
+      ctx.strokeStyle = '#cc2222'; ctx.lineWidth = Math.max(sw(2), 1.5); ctx.stroke();
+      const arm = Math.max(sw(4), 4);
+      ctx.strokeStyle = '#cc2222'; ctx.lineWidth = Math.max(sw(2.5), 2);
       ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(cx - arm, cy - arm); ctx.lineTo(cx + arm, cy + arm); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(cx + arm, cy - arm); ctx.lineTo(cx - arm, cy + arm); ctx.stroke();
       ctx.lineCap = 'butt';
-      // "CLOSED" label — white text on dark pill background
+      // CLOSED pill label
       const label = 'CLOSED';
-      ctx.font = `bold ${sw(7)}px Lato,sans-serif`; ctx.textAlign = 'center';
+      const closedSize = Math.max(sw(7), 9);
+      ctx.font = `bold ${closedSize}px Lato,sans-serif`; ctx.textAlign = 'center';
       const tw = ctx.measureText(label).width;
-      const ly = cy - sw(13);
+      const ly = cy - Math.max(sw(13), 14);
       ctx.fillStyle = 'rgba(0,0,0,0.72)';
       ctx.beginPath();
-      ctx.roundRect(cx - tw/2 - sw(3), ly - sw(6.5), tw + sw(6), sw(9), sw(2));
+      ctx.roundRect(cx - tw/2 - Math.max(sw(3),3), ly - Math.max(sw(6.5),7), tw + Math.max(sw(6),6), Math.max(sw(9),10), Math.max(sw(2),2));
       ctx.fill();
       ctx.fillStyle = '#ff6666'; ctx.fillText(label, cx, ly);
     } else {
-      // Base glow
-      ctx.beginPath(); ctx.arc(cx, cy, sw(8), 0, Math.PI*2);
+      // Glow
+      const dotR = Math.max(sw(8), 6);
+      const coreR = Math.max(sw(5), 4);
+      ctx.beginPath(); ctx.arc(cx, cy, dotR, 0, Math.PI*2);
       ctx.fillStyle = col + '22'; ctx.fill();
-      // Core dot
-      ctx.beginPath(); ctx.arc(cx, cy, sw(5), 0, Math.PI*2);
+      ctx.beginPath(); ctx.arc(cx, cy, coreR, 0, Math.PI*2);
       ctx.fillStyle = col + 'bb'; ctx.fill();
-      ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.stroke();
-      // Wait time label
+      ctx.strokeStyle = col; ctx.lineWidth = Math.max(sw(0.8), 1); ctx.stroke();
+
+      // Wait time pill label — always readable
       if (w !== undefined) {
-        const lx = cx, ly = cy - sw(11);
-        ctx.font = `bold ${sw(7.5)}px Lato,sans-serif`; ctx.textAlign = 'center';
-        ctx.fillStyle = '#000000aa'; ctx.fillText(w + 'm', lx+1, ly+1);
-        ctx.fillStyle = '#ffffffee'; ctx.fillText(w + 'm', lx, ly);
+        drawWaitLabel(w + 'm', cx, cy, col);
       }
     }
   });
@@ -694,7 +830,7 @@ function drawFrame() {
       g.trail.forEach(p => ctx.lineTo(sx(p.x), sy(p.y)));
       ctx.strokeStyle = '#c9a84c55'; ctx.lineWidth = 2; ctx.stroke();
     }
-    const r = g.isMe ? sw(9) : sw(4.5);
+    const r = g.isMe ? Math.max(sw(9), 8) : Math.max(sw(4.5), 3);
     const col = g.isMe ? '#c9a84c' : g.state==='queuing' ? '#e05050' : g.state==='riding' ? '#9b59b6' : '#4a9fd4';
     ctx.beginPath(); ctx.arc(sx(g.x)+1, sy(g.y)+1, r, 0, Math.PI*2);
     ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fill();
@@ -702,12 +838,13 @@ function drawFrame() {
     ctx.fillStyle = col; ctx.fill();
     if (g.isMe) { ctx.strokeStyle = '#1a1200'; ctx.lineWidth = 2; ctx.stroke(); }
     if (g.state !== 'walking') {
-      ctx.beginPath(); ctx.arc(sx(g.x), sy(g.y), r+sw(3.5), 0, Math.PI*2);
+      ctx.beginPath(); ctx.arc(sx(g.x), sy(g.y), r+Math.max(sw(3.5),3), 0, Math.PI*2);
       ctx.strokeStyle = col+'55'; ctx.lineWidth = 1.5; ctx.stroke();
     }
     if (g.isMe) {
-      const lx = sx(g.x), ly = sy(g.y)-sw(14);
-      ctx.font = `bold ${sw(9)}px Cinzel,serif`; ctx.textAlign = 'center';
+      const lx = sx(g.x), ly = sy(g.y)-Math.max(sw(14),14);
+      const nameSize = Math.max(sw(9), 11);
+      ctx.font = `bold ${nameSize}px Cinzel,serif`; ctx.textAlign = 'center';
       ctx.fillStyle = '#000000cc'; ctx.fillText(playerName, lx+1, ly+1);
       ctx.fillStyle = '#c9a84c';   ctx.fillText(playerName, lx, ly);
     }
@@ -729,8 +866,6 @@ function loop(ts) {
   requestAnimationFrame(loop);
   if (!lastTs) lastTs = ts;
   const dt = Math.min((ts - lastTs) / 1000, 0.1) * speed; lastTs = ts;
-
-  // Advance spike pulse phase — independent of sim speed so it always looks smooth
   spikePhase += (ts - (loop._lastRealTs || ts)) / 1000;
   loop._lastRealTs = ts;
 
@@ -777,10 +912,20 @@ function confirmName() {
 document.getElementById('btn-confirm').onclick = confirmName;
 nameInput.onkeydown = e => { if (e.key==='Enter') confirmName(); if (e.key==='Escape') modal.classList.remove('show'); };
 
+// ── CANVAS CLICK (drag-aware: ignore if user panned) ──
+let clickStartX = 0, clickStartY = 0;
+canvas.addEventListener('mousedown', e => { clickStartX = e.clientX; clickStartY = e.clientY; });
+
 canvas.onclick = e => {
+  // Ignore clicks that were actually pans
+  if (Math.abs(e.clientX - clickStartX) > 5 || Math.abs(e.clientY - clickStartY) > 5) return;
+
   const rect = canvas.getBoundingClientRect();
-  const lx = ((e.clientX - rect.left) * (W / rect.width) - mapOffX) * LW / mapDrawW;
-  const ly = ((e.clientY - rect.top) * (H / rect.height) - mapOffY) * LH / mapDrawH;
+  const screenX = (e.clientX - rect.left) * (W / rect.width);
+  const screenY = (e.clientY - rect.top)  * (H / rect.height);
+  const lx = invX(screenX);
+  const ly = invY(screenY);
+
   if (pendingPlace && playerName) {
     if (myChar) { myChar.x = lx; myChar.y = ly; myChar.trail = []; pickTarget(myChar); }
     else {
@@ -793,12 +938,10 @@ canvas.onclick = e => {
     document.getElementById('btn-addme').className = 'btn gold placed';
     return;
   }
-  // ── RIDE NODE CLICK — checked first, higher priority ──
+
+  // Ride click
   let nearestRide = null, nrd = Infinity;
-  RIDES.forEach(r => {
-    const d = Math.hypot(r.x - lx, r.y - ly);
-    if (d < nrd) { nrd = d; nearestRide = r; }
-  });
+  RIDES.forEach(r => { const d = Math.hypot(r.x - lx, r.y - ly); if (d < nrd) { nrd = d; nearestRide = r; } });
   if (nearestRide && nrd < 18) {
     const tt = document.getElementById('tooltip');
     const w    = waitData[nearestRide.db];
@@ -823,10 +966,10 @@ canvas.onclick = e => {
     tt.style.top  = Math.max(cy - 80, 4) + 'px';
     tt.style.display = 'block';
     setTimeout(() => tt.style.display = 'none', 4000);
-    return; // don't fall through to guest check
+    return;
   }
 
-  // ── GUEST CLICK ──
+  // Guest click
   let nearest = null, nd = Infinity;
   guests.forEach(g => { const d = Math.hypot(g.x-lx, g.y-ly); if (d<nd) { nd=d; nearest=g; } });
   if (nearest && nd < 20) {
@@ -848,12 +991,10 @@ canvas.onclick = e => {
   }
 };
 
-// Show debug overlay with all unique ride_names from Supabase
 function showDebug() {
   document.getElementById('debug-overlay').style.display = 'block';
   const dc = document.getElementById('debug-content');
   dc.textContent = 'Loading...';
-  // Use the same query as fetchWaits — proven to return full data
   fetch(`${SUPABASE_URL}/rest/v1/wait_times?park=eq.dl&select=ride_name,wait_time&order=recorded_at.desc&limit=500`, {
     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
   }).then(r => r.json()).then(rows => {
@@ -880,7 +1021,6 @@ function showDebug() {
   }).catch(e => { dc.textContent = 'Failed to load: ' + e; });
 }
 
-// Spike alerts on by default — show legend item
 document.getElementById('spike-legend').style.display = 'flex';
 document.getElementById('btn-spikes').className = 'btn active';
 
