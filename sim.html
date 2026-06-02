@@ -176,10 +176,10 @@ const RIDES = [
   { n: 'Buzz Lightyear',  x:  701, y:  543, db: 'Buzz Lightyear Astro Blasters' },
   { n: 'Autopia',         x:  878, y:  519, db: 'Autopia' },
   { n: 'Big Thunder',     x:  398, y:  504, db: 'Big Thunder Mountain Railroad' },
-  { n: 'Main St Station', x:  583, y:  848, db: 'Disneyland Railroad - Main Street' },
-  { n: 'NOS Station',     x:  227, y:  702, db: 'Disneyland Railroad - Main Street' },
-  { n: 'FL Station',      x:  620, y:  165, db: 'Disneyland Railroad - Main Street' },
-  { n: 'TL Station',      x:  956, y:  523, db: 'Disneyland Railroad - Main Street' },
+  { n: 'Main St Station', x:  583, y:  848, db: 'Disneyland Railroad' },
+  { n: 'NOS Station',     x:  227, y:  702, db: 'Disneyland Railroad' },
+  { n: 'FL Station',      x:  620, y:  165, db: 'Disneyland Railroad' },
+  { n: 'TL Station',      x:  956, y:  523, db: 'Disneyland Railroad' },
   { n: "Tiana's Bayou",   x:  158, y:  535, db: "Tiana's Bayou Adventure" },
   { n: 'Winnie Pooh',     x:   79, y:  532, db: "The Many Adventures of Winnie the Pooh" },
   { n: 'Pirates',         x:  353, y:  682, db: 'Pirates of the Caribbean' },
@@ -448,10 +448,6 @@ async function fetchWaits() {
     // Railroad stations all share one wait time. Queue-Times may store it under a key
     // that doesn't exactly match 'Disneyland Railroad - Main Street', so find any
     // Railroad key and copy it to the canonical key all stations use.
-    const railKey = Object.keys(waitData).find(k => k.toLowerCase().includes('railroad') || k.toLowerCase().includes('disneyland railroad'));
-    if (railKey && railKey !== 'Disneyland Railroad - Main Street') {
-      waitData['Disneyland Railroad - Main Street'] = waitData[railKey];
-    }
     hasLiveData = true;
     const matched = RIDES.filter(r => waitData[r.db] !== undefined).length;
     const badge = document.getElementById('data-badge');
