@@ -568,7 +568,8 @@ async function fetchWaits() {
     hasLiveData = true;
     const matched = RIDES.filter(r => waitData[r.db] !== undefined).length;
     const badge = document.getElementById('data-badge');
-    badge.textContent = `Live data — ${matched}/${RIDES.length} rides`;
+    const ts = new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true});
+    badge.textContent = `Live data — ${matched}/${RIDES.length} rides · ${ts}`;
     badge.style.color = matched > 6 ? '#2ecc71' : '#e67e22';
   } catch (e) {
     document.getElementById('data-badge').textContent = 'Estimated waits';
@@ -613,7 +614,7 @@ const NAMES = ['Alex','Jordan','Taylor','Morgan','Casey','Riley','Sam','Dana','A
 function rand(a, b) { return a + Math.random() * (b - a); }
 
 let spikePhase = 0;
-let showPaths = false, showHeatmap = false, showSpikes = true;
+let showPaths = false, showHeatmap = true, showSpikes = true;
 
 function togglePaths() {
   showPaths = !showPaths;
@@ -1023,9 +1024,15 @@ function showDebug() {
 
 document.getElementById('spike-legend').style.display = 'flex';
 document.getElementById('btn-spikes').className = 'btn active';
+document.getElementById('heat-legend').style.display = 'flex';
+const _heatBtn = document.getElementById('btn-heatmap');
+_heatBtn.textContent = '🌡 Hide Heat';
+_heatBtn.className = 'btn active';
 
 for (let i = 0; i < 150; i++) guests.push(spawnGuest(i));
 fetchWaits();
+// Auto-refresh every 5 minutes — matches Queue-Times update cadence
+setInterval(fetchWaits, 5 * 60 * 1000);
 requestAnimationFrame(loop);
 
 </script>
