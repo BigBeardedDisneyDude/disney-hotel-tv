@@ -77,8 +77,13 @@
   <button class="btn gold" id="btn-addme">+ Add Me</button>
   <button class="btn" id="btn-refresh">↻ Refresh data</button>
   <button class="btn" id="btn-heatmap" onclick="toggleHeatmap()">🌡 Heat Map</button>
-  <button class="btn" id="btn-debug" onclick="showDebug()">🔍 Debug names</button>
-  <button class="btn" id="btn-paths" onclick="togglePaths()">Show Paths</button>
+  <div id="debug-menu-wrap" style="position:relative">
+    <button class="btn" id="btn-debug-toggle" onclick="toggleDebugMenu()">🛠 Debug ▾</button>
+    <div id="debug-menu" style="display:none;position:absolute;top:calc(100% + 4px);left:0;background:#0d1f0d;border:1px solid #c9a84c44;border-radius:6px;padding:4px;z-index:60;flex-direction:column;gap:3px;min-width:140px">
+      <button class="btn" id="btn-debug" onclick="showDebug();toggleDebugMenu()" style="width:100%;text-align:left">🔍 Debug names</button>
+      <button class="btn" id="btn-paths" onclick="togglePaths()" style="width:100%;text-align:left">Show Paths</button>
+    </div>
+  </div>
   <button class="btn" id="btn-spikes" onclick="toggleSpikes()">📈 Spike Alerts</button>
   <div id="status-bar">
     <span id="st-guests">—</span>
@@ -468,6 +473,20 @@ let waitData = {}, predictedData = {};
 let hasLiveData = false;
 const SPIKE_THRESHOLD = 15;
 
+// ── NAME ALIASES ──
+// Merges alternate ride names so either version in Supabase works.
+// Extend this list if other mismatches are found.
+const NAME_ALIASES = [
+  ['Space Mountain', 'Hyperspace Mountain'],
+];
+
+function applyAliases(data) {
+  NAME_ALIASES.forEach(([a, b]) => {
+    if (data[a] !== undefined && data[b] === undefined) data[b] = data[a];
+    if (data[b] !== undefined && data[a] === undefined) data[a] = data[b];
+  });
+}
+
 function isSpiking(dbName) {
   const live = waitData[dbName];
   const pred = predictedData[dbName];
@@ -565,6 +584,8 @@ async function fetchWaits() {
       agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
     });
     Object.keys(agg).forEach(k => { waitData[k] = Math.round((agg[k] / cnt[k]) / 5) * 5; });
+    // Resolve aliases (e.g. Space Mountain ↔ Hyperspace Mountain)
+    applyAliases(waitData);
     hasLiveData = true;
     const matched = RIDES.filter(r => waitData[r.db] !== undefined).length;
     const badge = document.getElementById('data-badge');
@@ -597,6 +618,8 @@ async function fetchPredicted() {
       agg[r.ride_name] += r.wait_time; cnt[r.ride_name]++;
     });
     Object.keys(agg).forEach(k => { predictedData[k] = Math.round((agg[k] / cnt[k]) / 5) * 5; });
+    // Resolve aliases in predicted data too
+    applyAliases(predictedData);
   } catch (e) {}
 }
 
@@ -615,6 +638,28 @@ function rand(a, b) { return a + Math.random() * (b - a); }
 
 let spikePhase = 0;
 let showPaths = false, showHeatmap = true, showSpikes = true;
+
+let debugMenuOpen = false;
+function toggleDebugMenu() {
+  debugMenuOpen = !debugMenuOpen;
+  const menu = document.getElementById('debug-menu');
+  menu.style.display = debugMenuOpen ? 'flex' : 'none';
+  document.getElementById('btn-debug-toggle').className = debugMenuOpen ? 'btn active' : 'btn';
+  if (debugMenuOpen) {
+    // Close when clicking outside
+    setTimeout(() => {
+      document.addEventListener('click', closeDebugMenuOutside, { once: true });
+    }, 0);
+  }
+}
+function closeDebugMenuOutside(e) {
+  const wrap = document.getElementById('debug-menu-wrap');
+  if (!wrap.contains(e.target)) {
+    debugMenuOpen = false;
+    document.getElementById('debug-menu').style.display = 'none';
+    document.getElementById('btn-debug-toggle').className = 'btn';
+  }
+}
 
 function togglePaths() {
   showPaths = !showPaths;
