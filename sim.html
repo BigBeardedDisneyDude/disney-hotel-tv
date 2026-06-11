@@ -570,20 +570,35 @@ function waitColor(m) {
 }
 function rideWait(db) { return waitData[db] ?? 25; }
 
+// Live waits come straight from Queue-Times (same source + proxy chain as
+// predict.html / waittimes.html) so all pages always agree. Supabase rows
+// can be hours stale (pg_cron is idle overnight), so it's predictions-only.
+const QT_PROXIES = [
+  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+];
+
 async function fetchWaits() {
   document.getElementById('data-badge').textContent = 'Fetching...';
-  const url = `${SUPABASE_URL}/rest/v1/wait_times?park=eq.dl&select=ride_name,wait_time&order=recorded_at.desc&limit=500`;
+  const qtUrl = 'https://queue-times.com/parks/16/queue_times.json';
   try {
-    const res = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
-    if (!res.ok) throw new Error(res.status);
-    const rows = await res.json();
-    // Rows are ordered recorded_at DESC, so the first row seen per ride
-    // is its most recent reading. Use that (no averaging, no rounding)
-    // so the sim matches the predictor / wait times pages.
+    let data = null;
+    for (const fn of QT_PROXIES) {
+      try {
+        const res = await fetch(fn(qtUrl), { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) continue;
+        let payload = await res.json();
+        if (payload && typeof payload.contents === 'string') payload = JSON.parse(payload.contents);
+        if (payload?.lands) { data = payload; break; }
+      } catch (e) {}
+    }
+    if (!data) throw new Error('All proxies failed');
     waitData = {};
-    rows.forEach(r => {
-      if (r.wait_time === null) return;
-      if (waitData[r.ride_name] === undefined) waitData[r.ride_name] = r.wait_time;
+    const allRides = (data.lands || []).flatMap(l => l.rides || []).concat(data.rides || []);
+    allRides.forEach(ride => {
+      // Closed rides stay undefined so closed-ride detection keeps working
+      if (ride.is_open) waitData[ride.name] = ride.wait_time;
     });
     // Resolve aliases (e.g. Space Mountain ↔ Hyperspace Mountain)
     applyAliases(waitData);
