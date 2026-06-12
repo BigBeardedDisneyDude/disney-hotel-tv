@@ -105,6 +105,13 @@ body.wallpaper-mode #gear-btn,
 body.wallpaper-mode #first-run-nudge { display: none !important; }
 @keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.12) translate(-1.5%, 1%); } }
 body.wallpaper-mode #bg-fallback { animation: kenburns 45s ease-in-out infinite alternate; }
+#stream-overlay { position: fixed; inset: 0; z-index: 150; background: #000; display: none; }
+#stream-overlay.open { display: block; }
+#stream-overlay iframe { width: 100%; height: 100%; border: none; }
+.stream-ctrl { position: absolute; top: 16px; width: 42px; height: 42px; background: #163444; border: 1px solid rgba(201,168,76,0.5); border-radius: 50%; color: var(--gold-light); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; z-index: 151; }
+.stream-ctrl:hover { background: rgba(201,168,76,0.25); }
+#stream-close { right: 16px; }
+#stream-mute { right: 70px; font-size: 14px; }
 
 /* ── SHOW BANNER ── */
 #show-banner {
@@ -316,6 +323,13 @@ oncanplay="document.getElementById('bg-fallback').style.opacity='0'">
   </div>
 </div>
 
+<!-- STREAM OVERLAY (wallpaper mode Watch Now) -->
+<div id="stream-overlay">
+  <iframe id="stream-frame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  <button id="stream-mute" class="stream-ctrl" onclick="toggleStreamMute()" title="Unmute">&#128263;</button>
+  <button id="stream-close" class="stream-ctrl" onclick="closeStreamOverlay()" title="Close">&#10005;</button>
+</div>
+
 <!-- TODAY IN PARKS WIDGET -->
 <div id="today-widget">
 <div id="today-box">
@@ -444,7 +458,38 @@ function loadSettings() { try { const raw = localStorage.getItem(LS_KEY); if (ra
 function persistSettings(name, trip) { try { localStorage.setItem(LS_KEY, JSON.stringify({ name, trip })); } catch(e) {} }
 
 const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('wallpaper') === '1') document.body.classList.add('wallpaper-mode');
+const isWallpaperMode = urlParams.get('wallpaper') === '1';
+if (isWallpaperMode) {
+  document.body.classList.add('wallpaper-mode');
+  document.getElementById('show-banner-watch').addEventListener('click', function(e) {
+    e.preventDefault();
+    openStreamOverlay(this.href);
+  });
+}
+
+// ── STREAM OVERLAY (wallpaper mode) ──
+let streamMuted = true;
+function openStreamOverlay(watchUrl) {
+  let vid = '';
+  try { vid = new URL(watchUrl).searchParams.get('v') || ''; } catch(e) {}
+  if (!vid) return;
+  streamMuted = true;
+  document.getElementById('stream-mute').innerHTML = '&#128263;';
+  document.getElementById('stream-frame').src = 'https://www.youtube.com/embed/' + vid + '?autoplay=1&mute=1&playsinline=1&rel=0&enablejsapi=1';
+  document.getElementById('stream-overlay').classList.add('open');
+  const bg = document.getElementById('bg-video'); if (bg) bg.pause();
+}
+function closeStreamOverlay() {
+  document.getElementById('stream-frame').src = '';
+  document.getElementById('stream-overlay').classList.remove('open');
+  const bg = document.getElementById('bg-video'); if (bg) bg.play();
+}
+function toggleStreamMute() {
+  streamMuted = !streamMuted;
+  const frame = document.getElementById('stream-frame');
+  if (frame.contentWindow) frame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: streamMuted ? 'mute' : 'unMute', args: [] }), '*');
+  document.getElementById('stream-mute').innerHTML = streamMuted ? '&#128263;' : '&#128266;';
+}
 const urlName = urlParams.get('family') || '';
 const urlTrip = urlParams.get('trip') || '';
 const stored = loadSettings();
