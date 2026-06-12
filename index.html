@@ -99,6 +99,13 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 body { animation: fadeIn 1.5s ease-out; }
 
+/* ── WALLPAPER MODE (?wallpaper=1) ── */
+body.wallpaper-mode #menu-bar,
+body.wallpaper-mode #gear-btn,
+body.wallpaper-mode #first-run-nudge { display: none !important; }
+@keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.12) translate(-1.5%, 1%); } }
+body.wallpaper-mode #bg-fallback { animation: kenburns 45s ease-in-out infinite alternate; }
+
 /* ── SHOW BANNER ── */
 #show-banner {
   position: fixed;
@@ -434,6 +441,7 @@ function loadSettings() { try { const raw = localStorage.getItem(LS_KEY); if (ra
 function persistSettings(name, trip) { try { localStorage.setItem(LS_KEY, JSON.stringify({ name, trip })); } catch(e) {} }
 
 const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('wallpaper') === '1') document.body.classList.add('wallpaper-mode');
 const urlName = urlParams.get('family') || '';
 const urlTrip = urlParams.get('trip') || '';
 const stored = loadSettings();
