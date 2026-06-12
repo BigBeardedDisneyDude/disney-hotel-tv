@@ -659,7 +659,9 @@ function updateShowBanner() {
 
 function dismissShowBanner() {
   bannerDismissedUntil = Date.now() + 35 * 60 * 1000;
-  document.getElementById('show-banner').classList.remove('visible');
+  const banner = document.getElementById('show-banner');
+  banner.classList.remove('visible');
+  banner.style.top = '-200px';
 }
 
 positionBanner();
