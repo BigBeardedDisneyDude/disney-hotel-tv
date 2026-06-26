@@ -78,7 +78,7 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
 .quick-btn{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.05em;padding:.4rem .85rem;border-radius:999px;border:1px solid var(--gold-dim);background:transparent;color:var(--teal);cursor:pointer;transition:all .2s;white-space:nowrap}
 .quick-btn:hover{background:var(--teal);color:var(--gold-light);border-color:var(--teal)}
 
-#input-area{padding:.85rem calc(1.5rem + env(safe-area-inset-right)) calc(1rem + env(safe-area-inset-bottom)) calc(1.5rem + env(safe-area-inset-left));border-top:1px solid rgba(138,110,47,.18);background:var(--cream);flex-shrink:0}
+#input-area{padding:.85rem calc(1.5rem + env(safe-area-inset-right)) calc(1rem + env(safe-area-inset-bottom)) calc(1.5rem + env(safe-area-inset-left));border-top:1px solid rgba(138,110,47,.18);background:var(--cream);flex-shrink:0;position:sticky;bottom:0;z-index:2}
 #input-row{display:flex;gap:10px;align-items:flex-end}
 #user-input{flex:1;resize:none;border:1px solid var(--gold-dim);border-radius:8px;padding:9px 13px;font-size:.88rem;font-family:'Crimson Pro',serif;background:var(--card);color:var(--text);line-height:1.5;max-height:120px;overflow-y:auto;outline:none;transition:border-color .2s;-webkit-appearance:none}
 #user-input:focus{border-color:var(--teal)}
@@ -91,6 +91,9 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
   #sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.3)}
   #menu-btn{display:flex}
   .msg{max-width:90%}
+  #main{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column}
+  #messages{flex:1;min-height:0;overflow-y:auto}
+  #input-area{flex-shrink:0}
 }
 </style>
 </head>
@@ -399,7 +402,7 @@ async function runTool(name,input){
       if(!res.ok){const err=await res.json();return`Firestore error: ${JSON.stringify(err)}`;}
       const doc=await res.json();
       const docId=doc.name.split('/').pop();
-      return`Trip created! Name: "${input.name}", Date: ${dateVal}, Parks: ${input.parks.join(' + ')}. Doc ID: ${docId}. It'll show up in the survey app at survey.html.`;
+      return`TRIP_CREATED:${JSON.stringify({name:input.name,date:dateVal,parks:input.parks,docId})}`;
     }catch(e){return`Failed to create trip: ${e.message}`;}
   }
   return'Unknown tool.';
@@ -515,12 +518,49 @@ function addMessage(role,content,toolCalls,silent){
   document.getElementById('welcome')?.remove();
   const div=document.createElement('div');div.className=`msg ${role}`;
   if(toolCalls?.length)toolCalls.forEach(tc=>{const p=document.createElement('div');p.className='tool-call';p.innerHTML=`⚙ <span class="tool-pill">${tc.name}</span>`;div.appendChild(p);});
-  if(content){const b=document.createElement('div');b.className='bubble';b.textContent=content;div.appendChild(b);}
+  if(content){
+    if(content.startsWith('TRIP_CREATED:')){
+      try{
+        const data=JSON.parse(content.replace('TRIP_CREATED:',''));
+        const b=document.createElement('div');b.className='bubble';
+        b.innerHTML=`✨ Trip created!<br><br><strong>${data.name}</strong><br>${data.date} &nbsp;·&nbsp; ${data.parks.join(' + ')}<br><br><a href="survey.html" style="color:var(--gold);font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.05em;text-decoration:none;border:1px solid var(--gold-dim);padding:.3rem .8rem;border-radius:999px;display:inline-block;margin-top:4px">Open Survey App →</a>`;
+        div.appendChild(b);
+      }catch(e){const b=document.createElement('div');b.className='bubble';b.textContent=content;div.appendChild(b);}
+    } else {
+      const b=document.createElement('div');b.className='bubble';b.textContent=content;div.appendChild(b);
+    }
+  }
   msgs.appendChild(div);
   if(!silent)msgs.scrollTop=msgs.scrollHeight;
 }
-function showTyping(){const msgs=document.getElementById('messages');const d=document.createElement('div');d.className='msg assistant';d.id='typing-indicator';d.innerHTML='<div class="bubble typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;}
-function hideTyping(){document.getElementById('typing-indicator')?.remove();}
+const FLAVOR=[
+  'Riding the wildest ride in the wilderness…',
+  'On a jungle cruise…',
+  'Wishing upon a star…',
+  'Walking down Main Street…',
+  'Flying the Millennium Falcon…',
+  'Haunting the mansion…',
+  'Consulting the crystal ball…',
+  'Asking the Yeti nicely…',
+  'Checking in with the ghost host…',
+  'Loading 999 happy haunts…',
+  'Pirating the Caribbean…',
+  'Checking the Matterhorn snowpack…',
+  'Talking to the Tiki birds…',
+  'Following the Adventureland fireflies…',
+  'Boarding the Mark Twain…',
+];
+let _flavorTimer=null;
+function showTyping(){
+  const msgs=document.getElementById('messages');
+  const d=document.createElement('div');
+  d.className='msg assistant';d.id='typing-indicator';
+  let idx=Math.floor(Math.random()*FLAVOR.length);
+  d.innerHTML=`<div class="bubble" style="font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.05em;color:var(--muted);font-style:italic" id="flavor-text">${FLAVOR[idx]}</div>`;
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+  _flavorTimer=setInterval(()=>{idx=(idx+1)%FLAVOR.length;const el=document.getElementById('flavor-text');if(el)el.textContent=FLAVOR[idx];},2500);
+}
+function hideTyping(){clearInterval(_flavorTimer);document.getElementById('typing-indicator')?.remove();}
 
 async function sendMessage(){
   const input=document.getElementById('user-input');
