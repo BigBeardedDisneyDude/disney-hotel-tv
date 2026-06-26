@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MainStreet – Magic Key TV</title>
+<link rel="manifest" href="mainstreet-manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MainStreet">
+<meta name="theme-color" content="#0a4a4a">
+<link rel="apple-touch-icon" href="mainstreet-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -72,7 +78,7 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
 .quick-btn{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.05em;padding:.4rem .85rem;border-radius:999px;border:1px solid var(--gold-dim);background:transparent;color:var(--teal);cursor:pointer;transition:all .2s;white-space:nowrap}
 .quick-btn:hover{background:var(--teal);color:var(--gold-light);border-color:var(--teal)}
 
-#input-area{padding:.85rem 1.5rem 1rem;border-top:1px solid rgba(138,110,47,.18);background:var(--cream);flex-shrink:0}
+#input-area{padding:.85rem 1.5rem calc(1rem + env(safe-area-inset-bottom));border-top:1px solid rgba(138,110,47,.18);background:var(--cream);flex-shrink:0}
 #input-row{display:flex;gap:10px;align-items:flex-end}
 #user-input{flex:1;resize:none;border:1px solid var(--gold-dim);border-radius:8px;padding:9px 13px;font-size:.88rem;font-family:'Crimson Pro',serif;background:var(--card);color:var(--text);line-height:1.5;max-height:120px;overflow-y:auto;outline:none;transition:border-color .2s;-webkit-appearance:none}
 #user-input:focus{border-color:var(--teal)}
@@ -504,6 +510,7 @@ function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrol
 function tick(){const n=new Date();let h=n.getHours();const m=String(n.getMinutes()).padStart(2,'0'),ap=h>=12?'PM':'AM';h=h%12||12;document.getElementById('clock').textContent=`${h}:${m} ${ap}`;}
 setInterval(tick,1000);tick();
 (async()=>{allChats=await dbLoadChats();renderSidebar();})();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('mainstreet-sw.js').catch(()=>{});}
 </script>
 </body>
 </html>
