@@ -141,6 +141,9 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
 const SUPABASE_URL='https://qumvjdwimpvnaijjwght.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1bXZqZHdpbXB2bmFpamp3Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NzQ4ODcsImV4cCI6MjA5MzQ1MDg4N30.BjBeX8GSZkZoUnW3Ecy3MTPdHVV-6E2U1oJnVHiyr5I';
 const WORKER_URL='https://restless-glade-a1e4.andpcooke.workers.dev';
+const FIREBASE_PROJECT='disneyland-rides';
+const FIREBASE_API_KEY='AIzaSyAprWH3naFPXPRgSr9qTbq2rbEntYpJ5Pw';
+const FIRESTORE_URL=`https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents`;
 const MIN_SAMPLES=10;
 function getSeason(m){if(m===12||m===1)return'holiday';if(m>=6&&m<=8)return'summer';if(m===3||m===4)return'spring_break';return'regular';}
 function genId(){return'chat_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);}
@@ -319,7 +322,8 @@ const TOOLS=[
   {name:'get_wait_times',description:'Get current live wait times for Disneyland or DCA from Queue-Times.',input_schema:{type:'object',properties:{park:{type:'string',enum:['disneyland','dca']}},required:['park']}},
   {name:'get_park_hours',description:"Get today's operating hours for Disneyland or DCA from ThemeParks.wiki.",input_schema:{type:'object',properties:{park:{type:'string',enum:['disneyland','dca']}},required:['park']}},
   {name:'get_weather',description:'Get current weather for Anaheim, CA.',input_schema:{type:'object',properties:{}}},
-  {name:'predict_wait_times',description:'Predict wait times using Supabase historical data blended with p[] fallback arrays. Season: holiday(Dec/Jan), summer(Jun-Aug), spring_break(Mar/Apr), regular(all else). Hour index 0=6am..17=11pm. Tags: [data]=Supabase avg, [est]=fallback.',input_schema:{type:'object',properties:{park:{type:'string',enum:['disneyland','dca']},hours:{type:'array',items:{type:'number'},description:'Hours 0-23. Omit for next 3 hours.'},ride_name:{type:'string'}},required:['park']}}
+  {name:'predict_wait_times',description:'Predict wait times using Supabase historical data blended with p[] fallback arrays. Season: holiday(Dec/Jan), summer(Jun-Aug), spring_break(Mar/Apr), regular(all else). Hour index 0=6am..17=11pm. Tags: [data]=Supabase avg, [est]=fallback.',input_schema:{type:'object',properties:{park:{type:'string',enum:['disneyland','dca']},hours:{type:'array',items:{type:'number'},description:'Hours 0-23. Omit for next 3 hours.'},ride_name:{type:'string'}},required:['park']}},
+  {name:'create_trip',description:'Create a new ride survey trip in Firestore for the Sterner-Cooke family survey app. Use when asked to set up a new trip, create a survey, or start a ride rating session. Infer the date and parks from context — ask only if genuinely ambiguous.',input_schema:{type:'object',properties:{name:{type:'string',description:'Trip name, e.g. "Saturday DL Trip" or "Andrew & Amanda DCA Run"'},date:{type:'string',description:'Date in YYYY-MM-DD format'},parks:{type:'array',items:{type:'string',enum:['DL','DCA']},description:'Which parks: DL, DCA, or both'}},required:['name','date','parks']}}
 ];
 
 async function runTool(name,input){
@@ -375,6 +379,28 @@ async function runTool(name,input){
       const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
       return`Predicted waits for ${input.park==='disneyland'?'Disneyland':'DCA'} (${season}, ${days[dow]}):${lines.join('\n')}\n\n[data]=Supabase historical avg  [est]=hardcoded estimate`;
     }catch(e){return`Prediction error: ${e.message}`;}
+  }
+  if(name==='create_trip'){
+    try{
+      const dateVal=input.date||new Date().toISOString().split('T')[0];
+      const body={
+        fields:{
+          name:{stringValue:input.name},
+          date:{stringValue:dateVal},
+          parks:{arrayValue:{values:input.parks.map(p=>({stringValue:p}))}},
+          createdAt:{timestampValue:new Date().toISOString()}
+        }
+      };
+      const res=await fetch(`${FIRESTORE_URL}/trips?key=${FIREBASE_API_KEY}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(body)
+      });
+      if(!res.ok){const err=await res.json();return`Firestore error: ${JSON.stringify(err)}`;}
+      const doc=await res.json();
+      const docId=doc.name.split('/').pop();
+      return`Trip created! Name: "${input.name}", Date: ${dateVal}, Parks: ${input.parks.join(' + ')}. Doc ID: ${docId}. It'll show up in the survey app at survey.html.`;
+    }catch(e){return`Failed to create trip: ${e.message}`;}
   }
   return'Unknown tool.';
 }
@@ -438,6 +464,9 @@ When someone asks about "today" or "right now," pull live waits AND park hours A
 - Radiator Springs Racers (2012) is widely considered one of the best theme park attractions ever built
 - The Incredicoaster follows the same track layout as the old California Screamin', just re-themed
 - Oga's Cantina occupies the space that used to be the Star Wars Launch Bay, which was previously the Character Meet & Greet building
+
+## Survey & trip creation
+You can create ride survey trips directly in Firestore for the family survey app (survey.html). When Andrew asks to set up a new trip, create a survey, or start a ride rating session — use the create_trip tool. Infer sensible defaults: if he says "Saturday" use that date, if he doesn't specify parks assume DL, if he doesn't give a name make a reasonable one like "Andrew & Amanda – Sat Jun 28". Confirm what you created after.
 
 ## Style
 - Warm, knowledgeable, never condescending
