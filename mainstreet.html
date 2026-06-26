@@ -12,17 +12,10 @@
 <link rel="apple-touch-icon" href="mainstreet-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
-:root {
-  --teal:#0a4a4a; --gold:#c9a84c; --gold-light:#e8c96d; --gold-dim:#8a6e2f;
-  --cream:#fdf6e3; --cream-dark:#f5e8c0; --card:#fff9ee;
-  --text:#1a1208; --muted:#5a4a2a;
-  --sidebar-w:260px;
-}
+:root{--teal:#0a4a4a;--gold:#c9a84c;--gold-light:#e8c96d;--gold-dim:#8a6e2f;--cream:#fdf6e3;--cream-dark:#f5e8c0;--card:#fff9ee;--text:#1a1208;--muted:#5a4a2a;--sidebar-w:260px}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;height:100dvh;overflow:hidden;background:var(--cream);font-family:'Crimson Pro',Georgia,serif;color:var(--text)}
+html,body{height:100%;height:100dvh;overflow:hidden;background:var(--cream);font-family:'Crimson Pro',Georgia,serif;color:var(--text);-webkit-text-size-adjust:100%}
 #shell{display:flex;height:100vh;height:100dvh}
-
-/* SIDEBAR */
 #sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--teal);border-right:1px solid var(--gold-dim);display:flex;flex-direction:column;transition:transform .25s ease;z-index:10}
 #sidebar-header{padding:14px 14px 10px;border-bottom:1px solid rgba(201,168,76,.2);display:flex;align-items:center;gap:8px}
 #sidebar-title{font-family:'Cinzel',serif;font-size:.75rem;font-weight:600;color:var(--gold-light);letter-spacing:.07em;flex:1}
@@ -40,8 +33,6 @@ html,body{height:100%;height:100dvh;overflow:hidden;background:var(--cream);font
 .chat-item-del:hover{color:#d47070}
 .no-chats{font-size:.65rem;color:rgba(201,168,76,.4);font-style:italic;padding:16px 14px;text-align:center;line-height:1.6}
 #sidebar-footer{padding:10px 14px;border-top:1px solid rgba(201,168,76,.15);font-size:.52rem;color:rgba(201,168,76,.35);font-style:italic;font-family:'Cinzel',serif;letter-spacing:.04em}
-
-/* MAIN */
 #main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
 header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;gap:.6rem}
 .hdr-left{display:flex;align-items:center;gap:.65rem;min-width:0;flex:1;overflow:hidden}
@@ -51,11 +42,9 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
 .hdr-title{font-family:'Cinzel',serif;font-size:.78rem;font-weight:600;color:var(--gold-light);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #clock{font-family:'Cinzel',serif;font-size:.82rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap}
 #menu-btn{display:none;background:none;border:none;cursor:pointer;color:var(--gold);font-size:1.1rem;padding:4px;flex-shrink:0}
-
 #messages{flex:1;overflow-y:auto;min-height:0;padding:1.25rem 1.5rem;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:14px;background:var(--cream)}
 #messages::-webkit-scrollbar{width:5px}
 #messages::-webkit-scrollbar-thumb{background:var(--cream-dark);border-radius:3px}
-
 .msg{max-width:78%;display:flex;flex-direction:column;gap:4px}
 .msg.user{align-self:flex-end}
 .msg.assistant{align-self:flex-start}
@@ -63,13 +52,7 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
 .user .bubble{background:var(--teal);color:var(--gold-light);border-bottom-right-radius:4px}
 .assistant .bubble{background:var(--card);color:var(--text);border:1px solid rgba(138,110,47,.2);border-bottom-left-radius:4px}
 .tool-call{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:6px;padding:3px 0}
-.tool-pill{background:rgba(10,74,74,.06);border:1px solid rgba(10,74,74,.15);border-radius:999px;padding:1px 8px;font-size:.52px;color:var(--teal)}
-.typing{display:flex;gap:5px;align-items:center;padding:10px 15px}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bounce 1.2s infinite}
-.dot:nth-child(2){animation-delay:.2s}
-.dot:nth-child(3){animation-delay:.4s}
-@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
-
+.tool-pill{background:rgba(10,74,74,.06);border:1px solid rgba(10,74,74,.15);border-radius:999px;padding:1px 8px;font-size:.52rem;color:var(--teal)}
 .welcome{margin:auto;text-align:center;padding:2rem 1rem;display:flex;flex-direction:column;align-items:center;gap:1rem}
 .welcome-icon{font-size:2.5rem}
 .welcome-title{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:600;color:var(--teal);letter-spacing:.06em}
@@ -77,21 +60,21 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
 .quick-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:.5rem}
 .quick-btn{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.05em;padding:.4rem .85rem;border-radius:999px;border:1px solid var(--gold-dim);background:transparent;color:var(--teal);cursor:pointer;transition:all .2s;white-space:nowrap}
 .quick-btn:hover{background:var(--teal);color:var(--gold-light);border-color:var(--teal)}
-
-#input-area{padding:.85rem calc(1.5rem + env(safe-area-inset-right)) calc(1rem + env(safe-area-inset-bottom)) calc(1.5rem + env(safe-area-inset-left));border-top:1px solid rgba(138,110,47,.18);background:var(--cream);flex-shrink:0;position:sticky;bottom:0;z-index:2}
+#input-area{padding:.85rem calc(1.5rem + env(safe-area-inset-right)) calc(1rem + env(safe-area-inset-bottom)) calc(1.5rem + env(safe-area-inset-left));border-top:1px solid rgba(138,110,47,.18);background:var(--cream);flex-shrink:0}
 #input-row{display:flex;gap:10px;align-items:flex-end}
+/* FIX 1: 16px prevents iOS auto-zoom on textarea focus */
 #user-input{flex:1;resize:none;border:1px solid var(--gold-dim);border-radius:8px;padding:9px 13px;font-size:16px;font-family:'Crimson Pro',serif;background:var(--card);color:var(--text);line-height:1.5;max-height:120px;overflow-y:auto;outline:none;transition:border-color .2s;-webkit-appearance:none}
 #user-input:focus{border-color:var(--teal)}
 #user-input::placeholder{color:var(--muted);font-style:italic}
 #send-btn{width:38px;height:38px;border-radius:50%;background:var(--teal);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s;color:var(--gold-light);font-size:1rem}
 #send-btn:disabled{opacity:.35;cursor:not-allowed}
-
 @media(max-width:640px){
   #sidebar{position:fixed;top:0;left:0;height:100%;height:100dvh;transform:translateX(-100%)}
   #sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.3)}
   #menu-btn{display:flex}
   .msg{max-width:90%}
-  #main{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column}
+  /* FIX 2: position:fixed pins the whole layout so Safari toolbar never pushes input off screen */
+  #main{position:fixed;top:0;left:0;right:0;bottom:0}
   #messages{flex:1;min-height:0;overflow-y:auto}
   #input-area{flex-shrink:0}
 }
@@ -105,7 +88,7 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
       <button id="new-chat-btn" onclick="newChat()">+ New</button>
     </div>
     <div id="chat-list"></div>
-    <div id="sidebar-footer">Saved in this browser</div>
+    <div id="sidebar-footer">Saved in Supabase</div>
   </nav>
   <div id="main">
     <header>
@@ -150,185 +133,96 @@ const FIRESTORE_URL=`https://firestore.googleapis.com/v1/projects/${FIREBASE_PRO
 const MIN_SAMPLES=10;
 function getSeason(m){if(m===12||m===1)return'holiday';if(m>=6&&m<=8)return'summer';if(m===3||m===4)return'spring_break';return'regular';}
 function genId(){return'chat_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);}
-
 const SB_CONV=`${SUPABASE_URL}/rest/v1/conversations`;
 const SB_HDRS={apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'};
-
-async function dbLoadChats(){
-  try{
-    const res=await fetch(`${SB_CONV}?select=id,title,updated_at&order=updated_at.desc&limit=50`,{headers:SB_HDRS});
-    if(!res.ok)return[];
-    return await res.json();
-  }catch(e){return[];}
-}
-async function dbSaveChat(id,title,messages){
-  try{
-    await fetch(SB_CONV,{method:'POST',headers:{...SB_HDRS,Prefer:'resolution=merge-duplicates'},
-      body:JSON.stringify({id,title,messages,updated_at:new Date().toISOString()})});
-  }catch(e){}
-}
-async function dbLoadMessages(id){
-  try{
-    const res=await fetch(`${SB_CONV}?id=eq.${id}&select=messages`,{headers:SB_HDRS});
-    if(!res.ok)return[];
-    const rows=await res.json();
-    return rows[0]?.messages||[];
-  }catch(e){return[];}
-}
-async function dbDeleteChat(id){
-  try{await fetch(`${SB_CONV}?id=eq.${id}`,{method:'DELETE',headers:SB_HDRS});}catch(e){}
-}
-
+async function dbLoadChats(){try{const res=await fetch(`${SB_CONV}?select=id,title,updated_at&order=updated_at.desc&limit=50`,{headers:SB_HDRS});if(!res.ok)return[];return await res.json();}catch(e){return[];}}
+async function dbSaveChat(id,title,messages){try{await fetch(SB_CONV,{method:'POST',headers:{...SB_HDRS,Prefer:'resolution=merge-duplicates'},body:JSON.stringify({id,title,messages,updated_at:new Date().toISOString()})});}catch(e){}}
+async function dbLoadMessages(id){try{const res=await fetch(`${SB_CONV}?id=eq.${id}&select=messages`,{headers:SB_HDRS});if(!res.ok)return[];const rows=await res.json();return rows[0]?.messages||[];}catch(e){return[];}}
+async function dbDeleteChat(id){try{await fetch(`${SB_CONV}?id=eq.${id}`,{method:'DELETE',headers:SB_HDRS});}catch(e){}}
 let allChats=[],activeChatId=null,conversationHistory=[],isLoading=false;
-
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function relTime(ts){const d=Date.now()-ts;if(d<60000)return'just now';if(d<3600000)return Math.floor(d/60000)+'m ago';if(d<86400000)return Math.floor(d/3600000)+'h ago';return Math.floor(d/86400000)+'d ago';}
-
 function renderSidebar(){
   const list=document.getElementById('chat-list');
   if(!allChats.length){list.innerHTML='<div class="no-chats">No saved chats yet.<br>Start a conversation!</div>';return;}
-  list.innerHTML=allChats.map(c=>`
-    <div class="chat-item ${c.id===activeChatId?'active':''}" onclick="loadChat('${c.id}')">
-      <button class="chat-item-del" onclick="deleteChat(event,'${c.id}')" title="Delete">✕</button>
-      <div class="chat-item-title">${escHtml(c.title)}</div>
-      <div class="chat-item-meta">${relTime(new Date(c.updated_at).getTime())}</div>
-    </div>`).join('');
+  list.innerHTML=allChats.map(c=>`<div class="chat-item ${c.id===activeChatId?'active':''}" onclick="loadChat('${c.id}')"><button class="chat-item-del" onclick="deleteChat(event,'${c.id}')" title="Delete">✕</button><div class="chat-item-title">${escHtml(c.title)}</div><div class="chat-item-meta">${relTime(new Date(c.updated_at).getTime())}</div></div>`).join('');
 }
-
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
-
-function welcomeHTML(){
-  return`<div class="welcome" id="welcome">
-    <div class="welcome-icon">🏰</div>
-    <div class="welcome-title">MainStreet</div>
-    <div class="welcome-sub">Your Disney adult AI agent. Live wait times, park hours, weather, and ride predictions.</div>
-    <div class="quick-grid">
-      <button class="quick-btn" onclick="sendQuick(this)">Wait times right now</button>
-      <button class="quick-btn" onclick="sendQuick(this)">Is the park open today?</button>
-      <button class="quick-btn" onclick="sendQuick(this)">Weather in Anaheim</button>
-      <button class="quick-btn" onclick="sendQuick(this)">Predict this afternoon</button>
-      <button class="quick-btn" onclick="sendQuick(this)">Lightning Lane strategy</button>
-      <button class="quick-btn" onclick="sendQuick(this)">Best rides right now</button>
-    </div>
-  </div>`;
-}
-
-async function newChat(){
-  await persistCurrent();
-  activeChatId=null; conversationHistory=[];
-  document.getElementById('messages').innerHTML=welcomeHTML();
-  renderSidebar();
-  document.getElementById('sidebar').classList.remove('open');
-}
-
-async function persistCurrent(){
-  if(!activeChatId||!conversationHistory.length)return;
-  const now=new Date().toISOString();
-  const idx=allChats.findIndex(c=>c.id===activeChatId);
-  if(idx!==-1)allChats[idx].updated_at=now;
-  const chat=allChats.find(c=>c.id===activeChatId);
-  if(chat)await dbSaveChat(activeChatId,chat.title,conversationHistory);
-}
-
+function welcomeHTML(){return`<div class="welcome" id="welcome"><div class="welcome-icon">🏰</div><div class="welcome-title">MainStreet</div><div class="welcome-sub">Your Disney adult AI agent. Live wait times, park hours, weather, and ride predictions.</div><div class="quick-grid"><button class="quick-btn" onclick="sendQuick(this)">Wait times right now</button><button class="quick-btn" onclick="sendQuick(this)">Is the park open today?</button><button class="quick-btn" onclick="sendQuick(this)">Weather in Anaheim</button><button class="quick-btn" onclick="sendQuick(this)">Predict this afternoon</button><button class="quick-btn" onclick="sendQuick(this)">Lightning Lane strategy</button><button class="quick-btn" onclick="sendQuick(this)">Best rides right now</button></div></div>`;}
+async function newChat(){await persistCurrent();activeChatId=null;conversationHistory=[];document.getElementById('messages').innerHTML=welcomeHTML();renderSidebar();document.getElementById('sidebar').classList.remove('open');}
+async function persistCurrent(){if(!activeChatId||!conversationHistory.length)return;const now=new Date().toISOString();const idx=allChats.findIndex(c=>c.id===activeChatId);if(idx!==-1)allChats[idx].updated_at=now;const chat=allChats.find(c=>c.id===activeChatId);if(chat)await dbSaveChat(activeChatId,chat.title,conversationHistory);}
 async function loadChat(id){
-  await persistCurrent();
-  activeChatId=id; conversationHistory=[];
+  await persistCurrent();activeChatId=id;conversationHistory=[];
   const msgs=document.getElementById('messages');
   msgs.innerHTML='<div class="welcome" id="welcome"><div class="welcome-icon">⏳</div><div class="welcome-title" style="font-size:.8rem">Loading…</div></div>';
-  conversationHistory=await dbLoadMessages(id);
-  msgs.innerHTML='';
+  conversationHistory=await dbLoadMessages(id);msgs.innerHTML='';
   for(const msg of conversationHistory){
-    if(msg.role==='user'&&typeof msg.content==='string') addMessage('user',msg.content,null,true);
+    if(msg.role==='user'&&typeof msg.content==='string')addMessage('user',msg.content,null,true);
     else if(msg.role==='assistant'){
-      if(typeof msg.content==='string') addMessage('assistant',msg.content,null,true);
-      else if(Array.isArray(msg.content)){
-        const tb=msg.content.filter(b=>b.type==='tool_use');
-        const txt=msg.content.find(b=>b.type==='text');
-        if(tb.length) addMessage('assistant',null,tb.map(b=>({name:b.name})),true);
-        if(txt) addMessage('assistant',txt.text,null,true);
-      }
+      if(typeof msg.content==='string')addMessage('assistant',msg.content,null,true);
+      else if(Array.isArray(msg.content)){const tb=msg.content.filter(b=>b.type==='tool_use');const txt=msg.content.find(b=>b.type==='text');if(tb.length)addMessage('assistant',null,tb.map(b=>({name:b.name})),true);if(txt)addMessage('assistant',txt.text,null,true);}
     }
   }
-  renderSidebar();
-  document.getElementById('sidebar').classList.remove('open');
+  renderSidebar();document.getElementById('sidebar').classList.remove('open');
   const m=document.getElementById('messages');m.scrollTop=m.scrollHeight;
 }
-
-async function deleteChat(e,id){
-  e.stopPropagation();
-  allChats=allChats.filter(c=>c.id!==id);
-  await dbDeleteChat(id);
-  if(activeChatId===id){activeChatId=null;conversationHistory=[];document.getElementById('messages').innerHTML=welcomeHTML();}
-  renderSidebar();
-}
-
+async function deleteChat(e,id){e.stopPropagation();allChats=allChats.filter(c=>c.id!==id);await dbDeleteChat(id);if(activeChatId===id){activeChatId=null;conversationHistory=[];document.getElementById('messages').innerHTML=welcomeHTML();}renderSidebar();}
 function chatTitle(text){const c=text.replace(/[^\w\s']/g,'').trim();return c.length>40?c.slice(0,38)+'…':c||'Chat';}
-
 const DL=[
-  {name:'Indiana Jones Adventure',land:'Adventureland',ll:true,p:[10,10,20,40,60,75,80,75,70,65,60,60,65,70,65,55,45,30]},
-  {name:'Jungle Cruise',land:'Adventureland',ll:false,p:[5,5,10,20,30,40,45,45,40,35,30,35,40,45,40,30,20,10]},
-  {name:'Pirates of the Caribbean',land:'New Orleans Square',ll:false,p:[5,5,5,10,20,30,35,40,35,30,25,30,35,40,35,25,20,10]},
-  {name:'Haunted Mansion',land:'New Orleans Square',ll:true,p:[5,5,5,10,20,35,40,45,40,35,30,35,40,50,45,35,25,15]},
-  {name:"Tiana's Bayou Adventure",land:'Bayou Country',ll:true,p:[5,5,10,25,45,65,70,65,60,55,50,55,65,70,60,45,30,15]},
-  {name:"The Many Adventures of Winnie the Pooh",land:'Bayou Country',ll:false,p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
-  {name:'Big Thunder Mountain Railroad',land:'Frontierland',ll:true,p:[5,5,10,25,40,55,60,65,60,55,50,55,60,65,60,50,40,25]},
-  {name:'Matterhorn Bobsleds',land:'Fantasyland',ll:true,p:[5,5,10,20,35,55,65,70,65,60,55,50,55,65,60,50,40,30]},
-  {name:"Peter Pan's Flight",land:'Fantasyland',ll:false,p:[10,10,20,35,50,65,70,70,65,60,55,60,65,70,65,50,40,25]},
-  {name:"Pinocchio's Daring Journey",land:'Fantasyland',ll:false,p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,5,5]},
-  {name:'Dumbo the Flying Elephant',land:'Fantasyland',ll:false,p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
-  {name:'Alice in Wonderland',land:'Fantasyland',ll:false,p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
-  {name:"Mr. Toad's Wild Ride",land:'Fantasyland',ll:false,p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
-  {name:"Snow White's Enchanted Wish",land:'Fantasyland',ll:false,p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
-  {name:'King Arthur Carrousel',land:'Fantasyland',ll:false,p:[5,5,5,5,10,10,10,10,10,10,10,10,10,10,10,5,5,5]},
-  {name:"it's a small world",land:'Fantasyland',ll:true,p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
-  {name:"Mickey & Minnie's Runaway Railway",land:'Toontown',ll:true,p:[10,15,25,40,55,65,70,65,60,55,50,55,60,65,60,45,35,20]},
-  {name:"Roger Rabbit's Car Toon Spin",land:'Toontown',ll:true,p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
-  {name:"Chip 'n' Dale's GADGETcoaster",land:'Toontown',ll:false,p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
-  {name:'Space Mountain',land:'Tomorrowland',ll:true,p:[5,5,10,25,45,65,70,75,70,65,60,65,70,75,70,55,45,30]},
-  {name:'Buzz Lightyear Astro Blasters',land:'Tomorrowland',ll:true,p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
-  {name:'Autopia',land:'Tomorrowland',ll:true,p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
-  {name:'Finding Nemo Submarine Voyage',land:'Tomorrowland',ll:false,p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
-  {name:'Astro Orbitor',land:'Tomorrowland',ll:false,p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
-  {name:"Star Tours \u2014 The Adventures Continue",land:'Tomorrowland',ll:true,p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
-  {name:"Star Wars: Rise of the Resistance",land:"Galaxy's Edge",ll:false,p:[20,30,50,75,100,120,120,110,100,95,90,95,110,115,100,80,60,40]},
-  {name:"Millennium Falcon: Smugglers Run",land:"Galaxy's Edge",ll:true,p:[10,15,30,50,70,85,90,85,80,70,65,70,80,85,75,60,45,30]},
+  {name:'Indiana Jones Adventure',ll:true,p:[10,10,20,40,60,75,80,75,70,65,60,60,65,70,65,55,45,30]},
+  {name:'Jungle Cruise',ll:false,p:[5,5,10,20,30,40,45,45,40,35,30,35,40,45,40,30,20,10]},
+  {name:'Pirates of the Caribbean',ll:false,p:[5,5,5,10,20,30,35,40,35,30,25,30,35,40,35,25,20,10]},
+  {name:'Haunted Mansion',ll:true,p:[5,5,5,10,20,35,40,45,40,35,30,35,40,50,45,35,25,15]},
+  {name:"Tiana's Bayou Adventure",ll:true,p:[5,5,10,25,45,65,70,65,60,55,50,55,65,70,60,45,30,15]},
+  {name:"The Many Adventures of Winnie the Pooh",ll:false,p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {name:'Big Thunder Mountain Railroad',ll:true,p:[5,5,10,25,40,55,60,65,60,55,50,55,60,65,60,50,40,25]},
+  {name:'Matterhorn Bobsleds',ll:true,p:[5,5,10,20,35,55,65,70,65,60,55,50,55,65,60,50,40,30]},
+  {name:"Peter Pan's Flight",ll:false,p:[10,10,20,35,50,65,70,70,65,60,55,60,65,70,65,50,40,25]},
+  {name:"Pinocchio's Daring Journey",ll:false,p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,5,5]},
+  {name:'Dumbo the Flying Elephant',ll:false,p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,5,5]},
+  {name:'Alice in Wonderland',ll:false,p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {name:"Mr. Toad's Wild Ride",ll:false,p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {name:"Snow White's Enchanted Wish",ll:false,p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,5,5]},
+  {name:'King Arthur Carrousel',ll:false,p:[5,5,5,5,10,10,10,10,10,10,10,10,10,10,10,5,5,5]},
+  {name:"it's a small world",ll:true,p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
+  {name:"Mickey & Minnie's Runaway Railway",ll:true,p:[10,15,25,40,55,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {name:"Roger Rabbit's Car Toon Spin",ll:true,p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {name:"Chip 'n' Dale's GADGETcoaster",ll:false,p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {name:'Space Mountain',ll:true,p:[5,5,10,25,45,65,70,75,70,65,60,65,70,75,70,55,45,30]},
+  {name:'Buzz Lightyear Astro Blasters',ll:true,p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {name:'Autopia',ll:true,p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {name:'Finding Nemo Submarine Voyage',ll:false,p:[5,5,10,15,20,25,30,30,25,25,20,20,25,25,20,15,10,5]},
+  {name:'Astro Orbitor',ll:false,p:[5,5,5,10,15,20,25,25,20,20,15,15,20,25,20,15,10,5]},
+  {name:'Star Tours \u2014 The Adventures Continue',ll:true,p:[5,5,10,20,30,40,45,45,40,35,30,30,35,40,35,25,20,10]},
+  {name:'Star Wars: Rise of the Resistance',ll:false,p:[20,30,50,75,100,120,120,110,100,95,90,95,110,115,100,80,60,40]},
+  {name:'Millennium Falcon: Smugglers Run',ll:true,p:[10,15,30,50,70,85,90,85,80,70,65,70,80,85,75,60,45,30]},
 ];
 const DCA=[
-  {name:'Radiator Springs Racers',land:'Cars Land',ll:false,p:[20,30,55,80,100,115,110,105,95,90,85,90,100,110,100,80,60,40]},
-  {name:"Luigi's Rollickin' Roadsters",land:'Cars Land',ll:false,p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,8,5]},
-  {name:"Mater's Junkyard Jamboree",land:'Cars Land',ll:false,p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
-  {name:'Guardians of the Galaxy \u2014 Mission: BREAKOUT!',land:'Avengers Campus',ll:true,p:[15,15,25,45,65,80,85,80,75,70,65,70,75,80,70,55,45,30]},
-  {name:'WEB SLINGERS: A Spider-Man Adventure',land:'Avengers Campus',ll:true,p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
-  {name:'Incredicoaster',land:'Pixar Pier',ll:true,p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
-  {name:'Toy Story Midway Mania!',land:'Pixar Pier',ll:true,p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
-  {name:'Inside Out Emotional Whirlwind',land:'Pixar Pier',ll:false,p:[10,10,20,30,45,55,60,55,50,45,40,45,50,55,50,40,30,15]},
-  {name:"Jessie's Critter Carousel",land:'Pixar Pier',ll:false,p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
-  {name:"Soarin' Around the World",land:'Grizzly Peak',ll:true,p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
-  {name:'Grizzly River Run',land:'Grizzly Peak',ll:true,p:[5,5,10,20,35,55,60,55,50,45,45,50,55,60,55,40,30,15]},
-  {name:"Monsters, Inc. Mike & Sulley to the Rescue!",land:'Hollywood Land',ll:true,p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,8,5]},
-  {name:"The Little Mermaid \u2014 Ariel's Undersea Adventure",land:'Paradise Gardens Park',ll:true,p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,8,5]},
-  {name:"Goofy's Sky School",land:'Paradise Gardens Park',ll:true,p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
+  {name:'Radiator Springs Racers',ll:false,p:[20,30,55,80,100,115,110,105,95,90,85,90,100,110,100,80,60,40]},
+  {name:"Luigi's Rollickin' Roadsters",ll:false,p:[5,5,5,10,15,20,25,25,20,20,15,15,20,20,15,10,8,5]},
+  {name:"Mater's Junkyard Jamboree",ll:false,p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
+  {name:'Guardians of the Galaxy \u2014 Mission: BREAKOUT!',ll:true,p:[15,15,25,45,65,80,85,80,75,70,65,70,75,80,70,55,45,30]},
+  {name:'WEB SLINGERS: A Spider-Man Adventure',ll:true,p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {name:'Incredicoaster',ll:true,p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
+  {name:'Toy Story Midway Mania!',ll:true,p:[10,10,20,35,50,65,70,65,60,55,50,55,60,65,60,45,35,20]},
+  {name:'Inside Out Emotional Whirlwind',ll:false,p:[10,10,20,30,45,55,60,55,50,45,40,45,50,55,50,40,30,15]},
+  {name:"Jessie's Critter Carousel",ll:false,p:[5,5,5,5,10,15,15,15,15,10,10,10,10,10,10,5,5,5]},
+  {name:"Soarin' Around the World",ll:true,p:[10,10,20,35,55,70,75,70,65,60,55,60,65,70,65,50,40,25]},
+  {name:'Grizzly River Run',ll:true,p:[5,5,10,20,35,55,60,55,50,45,45,50,55,60,55,40,30,15]},
+  {name:"Monsters, Inc. Mike & Sulley to the Rescue!",ll:true,p:[5,5,5,10,15,20,20,20,15,15,15,15,20,20,15,10,8,5]},
+  {name:"The Little Mermaid \u2014 Ariel's Undersea Adventure",ll:true,p:[5,5,5,10,15,20,25,25,20,15,15,15,20,20,15,10,8,5]},
+  {name:"Goofy's Sky School",ll:true,p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
 ];
 const HRS=['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm','11pm'];
-
-const PROXIES=[
-  u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-  u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
-  u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
-];
-async function fetchProxy(url){
-  for(const fn of PROXIES){try{const r=await fetch(fn(url),{signal:AbortSignal.timeout(7000)});if(r.ok)return await r.json();}catch(e){}}
-  return null;
-}
-
+const PROXIES=[u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`];
+async function fetchProxy(url){for(const fn of PROXIES){try{const r=await fetch(fn(url),{signal:AbortSignal.timeout(7000)});if(r.ok)return await r.json();}catch(e){}}return null;}
 const TOOLS=[
   {name:'get_wait_times',description:'Get current live wait times for Disneyland or DCA from Queue-Times.',input_schema:{type:'object',properties:{park:{type:'string',enum:['disneyland','dca']}},required:['park']}},
   {name:'get_park_hours',description:"Get today's operating hours for Disneyland or DCA from ThemeParks.wiki.",input_schema:{type:'object',properties:{park:{type:'string',enum:['disneyland','dca']}},required:['park']}},
   {name:'get_weather',description:'Get current weather for Anaheim, CA.',input_schema:{type:'object',properties:{}}},
   {name:'predict_wait_times',description:'Predict wait times using Supabase historical data blended with p[] fallback arrays. Season: holiday(Dec/Jan), summer(Jun-Aug), spring_break(Mar/Apr), regular(all else). Hour index 0=6am..17=11pm. Tags: [data]=Supabase avg, [est]=fallback.',input_schema:{type:'object',properties:{park:{type:'string',enum:['disneyland','dca']},hours:{type:'array',items:{type:'number'},description:'Hours 0-23. Omit for next 3 hours.'},ride_name:{type:'string'}},required:['park']}},
-  {name:'create_trip',description:'Create a new ride survey trip in Firestore for the Sterner-Cooke family survey app. Use when asked to set up a new trip, create a survey, or start a ride rating session. Infer the date and parks from context — ask only if genuinely ambiguous.',input_schema:{type:'object',properties:{name:{type:'string',description:'Trip name, e.g. "Saturday DL Trip" or "Andrew & Amanda DCA Run"'},date:{type:'string',description:'Date in YYYY-MM-DD format'},parks:{type:'array',items:{type:'string',enum:['DL','DCA']},description:'Which parks: DL, DCA, or both'}},required:['name','date','parks']}}
+  {name:'create_trip',description:'Create a new ride survey trip in Firestore for the family survey app. Use when asked to set up a trip or survey. Infer date and parks from context.',input_schema:{type:'object',properties:{name:{type:'string'},date:{type:'string',description:'YYYY-MM-DD'},parks:{type:'array',items:{type:'string',enum:['DL','DCA']}}},required:['name','date','parks']}}
 ];
-
 async function runTool(name,input){
   if(name==='get_wait_times'){
     const parkId=input.park==='disneyland'?16:17;
@@ -336,25 +230,25 @@ async function runTool(name,input){
     if(!data?.lands)return'Could not fetch wait times.';
     const rides=data.lands.flatMap(l=>l.rides||[]);
     const open=rides.filter(r=>r.is_open).sort((a,b)=>b.wait_time-a.wait_time);
-    if(!open.length)return'No open rides — park may be closed.';
-    return`Live waits for ${input.park==='disneyland'?'Disneyland':'DCA'}:\n`+open.slice(0,15).map(r=>`${r.name}: ${r.wait_time} min`).join('\n');
+    if(!open.length)return'No open rides \u2014 park may be closed.';
+    return'Live waits for '+(input.park==='disneyland'?'Disneyland':'DCA')+':\n'+open.slice(0,15).map(r=>r.name+': '+r.wait_time+' min').join('\n');
   }
   if(name==='get_park_hours'){
     const ids={disneyland:'7340550b-c14d-4def-80bb-acbe51f931d1',dca:'832fcd51-ea19-4e77-85c7-75d5843b127d'};
-    const data=await fetchProxy(`https://api.themeparks.wiki/v1/entity/${ids[input.park]}/schedule`);
+    const data=await fetchProxy('https://api.themeparks.wiki/v1/entity/'+ids[input.park]+'/schedule');
     if(!data?.schedule)return'Could not fetch park hours.';
     const todayStr=new Date().toLocaleDateString('en-CA',{timeZone:'America/Los_Angeles'});
     const entry=data.schedule.find(s=>s.date===todayStr&&s.type==='OPERATING');
-    if(!entry)return`${input.park==='disneyland'?'Disneyland':'DCA'} appears closed today.`;
-    return`${input.park==='disneyland'?'Disneyland':'DCA'} today: Opens ${entry.openingTime}, Closes ${entry.closingTime}`;
+    if(!entry)return(input.park==='disneyland'?'Disneyland':'DCA')+' appears closed today.';
+    return(input.park==='disneyland'?'Disneyland':'DCA')+' today: Opens '+entry.openingTime+', Closes '+entry.closingTime;
   }
   if(name==='get_weather'){
     try{
       const res=await fetch('https://api.open-meteo.com/v1/forecast?latitude=33.8121&longitude=-117.9190&current=temperature_2m,apparent_temperature,precipitation_probability,weathercode,windspeed_10m&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=America%2FLos_Angeles');
       const d=await res.json();const c=d.current;
       const wmo={0:'Clear',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',51:'Light drizzle',61:'Slight rain',80:'Light showers'};
-      return`Anaheim now: ${Math.round(c.temperature_2m)}°F (feels ${Math.round(c.apparent_temperature)}°F), ${wmo[c.weathercode]||'Mixed'}, wind ${Math.round(c.windspeed_10m)} mph, ${c.precipitation_probability}% rain chance.`;
-    }catch(e){return`Weather fetch failed: ${e.message}`;}
+      return'Anaheim now: '+Math.round(c.temperature_2m)+'\u00b0F (feels '+Math.round(c.apparent_temperature)+'\u00b0F), '+(wmo[c.weathercode]||'Mixed')+', wind '+Math.round(c.windspeed_10m)+' mph, '+c.precipitation_probability+'% rain chance.';
+    }catch(e){return'Weather fetch failed: '+e.message;}
   }
   if(name==='predict_wait_times'){
     const pt=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Los_Angeles'}));
@@ -363,135 +257,99 @@ async function runTool(name,input){
     const rideList=input.park==='disneyland'?DL:DCA;
     const targetHours=input.hours?.length>0?input.hours:[1,2,3].map(i=>(pt.getHours()+i)%24).filter(h=>h>=6&&h<=23);
     let filteredRides=rideList;
-    if(input.ride_name){const q=input.ride_name.toLowerCase();filteredRides=rideList.filter(r=>r.name.toLowerCase().includes(q));if(!filteredRides.length)return`No ride found matching "${input.ride_name}".`;}
+    if(input.ride_name){const q=input.ride_name.toLowerCase();filteredRides=rideList.filter(r=>r.name.toLowerCase().includes(q));if(!filteredRides.length)return'No ride found matching "'+input.ride_name+'".';}
     try{
-      const params=new URLSearchParams({select:'ride_name,hour_of_day,wait_time',park:`eq.${parkKey}`,day_of_week:`eq.${dow}`,season:`eq.${season}`,is_open:'eq.true','wait_time':'gte.0',limit:'2000'});
-      const res=await fetch(`${SUPABASE_URL}/rest/v1/wait_times?${params}`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`},signal:AbortSignal.timeout(8000)});
+      const params=new URLSearchParams({select:'ride_name,hour_of_day,wait_time',park:'eq.'+parkKey,day_of_week:'eq.'+dow,season:'eq.'+season,is_open:'eq.true','wait_time':'gte.0',limit:'2000'});
+      const res=await fetch(SUPABASE_URL+'/rest/v1/wait_times?'+params,{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY},signal:AbortSignal.timeout(8000)});
       const rows=await res.json();
       const buckets={};
-      if(Array.isArray(rows))for(const row of rows){const k=`${row.ride_name}|${row.hour_of_day}`;if(!buckets[k])buckets[k]=[];buckets[k].push(row.wait_time);}
-      const lines=[];
+      if(Array.isArray(rows))for(const row of rows){const k=row.ride_name+'|'+row.hour_of_day;if(!buckets[k])buckets[k]=[];buckets[k].push(row.wait_time);}
+      const lines=[];const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
       for(const hour of targetHours){
         if(hour<6||hour>23)continue;
-        const idx=hour-6,label=HRS[idx]||`${hour}:00`;
-        lines.push(`\n${label}:`);
-        filteredRides.map(ride=>{const k=`${ride.name}|${hour}`;const vals=buckets[k];const wait=(vals&&vals.length>=MIN_SAMPLES)?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):(ride.p[idx]??null);const src=(vals&&vals.length>=MIN_SAMPLES)?'data':'est';return{name:ride.name,wait,src};})
+        const idx=hour-6,label=HRS[idx]||hour+':00';
+        lines.push('\n'+label+':');
+        filteredRides.map(ride=>{const k=ride.name+'|'+hour;const vals=buckets[k];const wait=(vals&&vals.length>=MIN_SAMPLES)?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):(ride.p[idx]??null);const src=(vals&&vals.length>=MIN_SAMPLES)?'data':'est';return{name:ride.name,wait,src};})
           .filter(r=>r.wait!==null).sort((a,b)=>b.wait-a.wait).slice(0,input.ride_name?99:8)
-          .forEach(r=>lines.push(`  ${r.name}: ~${r.wait} min [${r.src}]`));
+          .forEach(r=>lines.push('  '+r.name+': ~'+r.wait+' min ['+r.src+']'));
       }
-      const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      return`Predicted waits for ${input.park==='disneyland'?'Disneyland':'DCA'} (${season}, ${days[dow]}):${lines.join('\n')}\n\n[data]=Supabase historical avg  [est]=hardcoded estimate`;
-    }catch(e){return`Prediction error: ${e.message}`;}
+      return'Predicted waits for '+(input.park==='disneyland'?'Disneyland':'DCA')+' ('+season+', '+days[dow]+'):'+lines.join('\n')+'\n\n[data]=Supabase historical avg  [est]=hardcoded estimate';
+    }catch(e){return'Prediction error: '+e.message;}
   }
   if(name==='create_trip'){
     try{
       const dateVal=input.date||new Date().toISOString().split('T')[0];
-      const body={
-        fields:{
-          name:{stringValue:input.name},
-          date:{stringValue:dateVal},
-          parks:{arrayValue:{values:input.parks.map(p=>({stringValue:p}))}},
-          createdAt:{timestampValue:new Date().toISOString()}
-        }
-      };
-      const res=await fetch(`${FIRESTORE_URL}/trips?key=${FIREBASE_API_KEY}`,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(body)
-      });
-      if(!res.ok){const err=await res.json();return`Firestore error: ${JSON.stringify(err)}`;}
+      const body={fields:{name:{stringValue:input.name},date:{stringValue:dateVal},parks:{arrayValue:{values:input.parks.map(p=>({stringValue:p}))}},createdAt:{timestampValue:new Date().toISOString()}}};
+      const res=await fetch(FIRESTORE_URL+'/trips?key='+FIREBASE_API_KEY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(!res.ok){const err=await res.json();return'Firestore error: '+JSON.stringify(err);}
       const doc=await res.json();
       const docId=doc.name.split('/').pop();
-      return`TRIP_CREATED:${JSON.stringify({name:input.name,date:dateVal,parks:input.parks,docId})}`;
-    }catch(e){return`Failed to create trip: ${e.message}`;}
+      // FIX 3: return sentinel — intercepted in callAgent before Claude can rewrite it
+      return'TRIP_CREATED:'+JSON.stringify({name:input.name,date:dateVal,parks:input.parks,docId});
+    }catch(e){return'Failed to create trip: '+e.message;}
   }
   return'Unknown tool.';
 }
+const SYSTEM=`You are MainStreet \u2014 a warm, encyclopedic Disney historian and park planning companion. You speak like a lifelong Disney adult who has spent hundreds of days at Disneyland and DCA: you know the lore behind every attraction, the best churro cart locations, which years each land opened, and exactly what the park smells like at rope drop on a cool January morning. You love sharing that knowledge, but you never lecture \u2014 you make it feel like a conversation with a well-traveled friend.
 
-const SYSTEM=`You are MainStreet — a warm, encyclopedic Disney historian and park planning companion. You speak like a lifelong Disney adult who has spent hundreds of days at Disneyland and DCA: you know the lore behind every attraction, the best churro cart locations, which years each land opened, and exactly what the park smells like at rope drop on a cool January morning. You love sharing that knowledge, but you never lecture — you make it feel like a conversation with a well-traveled friend.
-
-You are speaking with Andrew from the Sterner-Cooke family. He is a Magic Key holder (Disneyland annual pass) and a dedicated Disney adult. Tailor all advice accordingly — assume he knows the basics, skip the tourist 101, and treat him like a peer. Reference Magic Key perks (parking, discounts, blockout date awareness) when relevant. He is also a fan of park history and lore, so don't shy away from it.
+You are speaking with Andrew from the Sterner-Cooke family. He is a Magic Key holder (Disneyland annual pass) and a dedicated Disney adult. Tailor all advice accordingly \u2014 assume he knows the basics, skip the tourist 101, and treat him like a peer. Reference Magic Key perks (parking, discounts, blockout date awareness) when relevant. He is also a fan of park history and lore, so don't shy away from it.
 
 ## Tools
-You have four tools — use them proactively, often in combination:
+You have five tools \u2014 use them proactively, often in combination:
 - get_wait_times: live waits from Queue-Times (parks 16=DL, 17=DCA)
 - get_park_hours: today's open/close from ThemeParks.wiki
 - get_weather: current Anaheim conditions from Open-Meteo
-- predict_wait_times: historical Supabase data blended with hardcoded p[] fallbacks, filtered by day_of_week + season (holiday/summer/spring_break/regular). Hours indexed 0=6am through 17=11pm. Results tagged [data] for real averages (≥10 samples) or [est] for fallback estimates.
+- predict_wait_times: historical Supabase data blended with hardcoded p[] fallbacks, filtered by day_of_week + season (holiday/summer/spring_break/regular). Hours indexed 0=6am through 17=11pm. Results tagged [data] for real averages (\u226510 samples) or [est] for fallback estimates.
+- create_trip: creates a ride survey trip in Firestore for the family survey app
 
 When someone asks about "today" or "right now," pull live waits AND park hours AND weather in parallel. When someone asks about planning a future visit or time slot, lead with predict_wait_times. Always tell Andrew whether the data is live or estimated.
 
 ## Lightning Lane strategy
-- ILL (Individual Lightning Lane): Rise of the Resistance (DL), Radiator Springs Racers (DCA) — purchase at or just before park open; these sell out fast
-- LLMP top picks DL: Indiana Jones, Haunted Mansion, Space Mountain, Big Thunder Mountain, Matterhorn, Mickey & Minnie's Runaway Railway
-- LLMP top picks DCA: Guardians of the Galaxy, Incredicoaster, Toy Story Midway Mania, Soarin', Web Slingers
-- Book LLMP at 7am in-app on day of visit; stack your next booking the moment you tap into your current one
-- Rope drop strategy: hit your ILL ride first (or its standby if it's short at open), then pivot to the highest-wait headliner before crowds build — typically 45–60 min after open is when lines spike
-- Late evening is underrated: waits drop significantly in the last 90 min before close, especially for headliners
+- ILL: Rise of the Resistance (DL), Radiator Springs Racers (DCA) \u2014 purchase at or just before park open; sell out fast
+- LLMP top DL: Indiana Jones, Haunted Mansion, Space Mountain, Big Thunder, Matterhorn, Mickey & Minnie's Runaway Railway
+- LLMP top DCA: Guardians, Incredicoaster, Toy Story Midway Mania, Soarin', Web Slingers
+- Book LLMP at 7am in-app; stack next booking the moment you tap into your current one
+- Rope drop: ILL first, then highest-wait headliner before crowds build (lines spike ~45\u201360 min after open)
+- Late evening: waits drop significantly in the last 90 min before close
 
 ## Crowd & timing wisdom
-- Lowest crowds: Tuesday–Thursday, avoiding school breaks, January (post-holiday) and early September
-- Highest crowds: summer, spring break (Mar–Apr), holiday season (Thanksgiving through New Year), any weekend with a special ticketed event
-- Parade and fireworks times clear out headliner queues — use them strategically
-- First hour after rope drop and the last 90 min before close are the two golden windows
-- Rain is your friend: crowds thin dramatically, most rides stay open, and the park looks magical
+- Lowest crowds: Tue\u2013Thu, avoiding school breaks, January post-holiday, early September
+- Highest crowds: summer, spring break, holiday season, weekends with special ticketed events
+- Parade and fireworks times clear out headliner queues \u2014 use them strategically
+- Rain is your friend: crowds thin dramatically, most rides stay open
 
-## Dining knowledge
-**Disneyland:**
-- Blue Bayou: iconic, book 60 days out, sit near the water for the Pirates ambiance; Monte Cristo is the move
-- Café Orleans: more accessible than Blue Bayou, same New Orleans Square vibes, great pommes frites
-- Bengal Barbecue: quick, adventureland skewers — the Outpost Chips with dip are underrated
-- Jolly Holiday Bakery: best breakfast stop on Main Street, rose-shaped macaron
-- Plaza Inn: fried chicken, character dining at breakfast
-- French Market: good quick outdoor option in New Orleans Square, live jazz some evenings
-- Carnation Café: classic Main Street sit-down, clam chowder in a bread bowl
-- Oga's Cantina (Galaxy's Edge): reservations strongly recommended, themed cocktails and mocktails, limited but fun
+## Dining
+**Disneyland:** Blue Bayou (book 60 days out, Monte Cristo, sit near the water), Caf\u00e9 Orleans (pommes frites), Bengal Barbecue (Outpost Chips underrated), Jolly Holiday Bakery (best Main Street breakfast, rose macaron), Oga's Cantina (reservations required), Carnation Caf\u00e9 (clam chowder bread bowl), French Market (live jazz some evenings)
+**DCA:** Lamplight Lounge (lobster nachos, great beer, book ahead \u2014 best everyday choice), Carthay Circle (special occasions, replica of the 1937 Snow White premiere theatre), Flo's V8 Caf\u00e9 (pot roast sleeper hit), Pym Test Kitchen (Pym-ini is legit), Award Wieners (reliable corn dogs)
 
-**DCA:**
-- Lamplight Lounge (Pixar Pier): best full-service restaurant in DCA, lobster nachos, great beer list, book ahead
-- Carthay Circle: upscale, beautiful building (replica of the original 1937 Carthay Circle Theatre where Snow White premiered), good for a special occasion
-- Flo's V8 Café (Cars Land): solid quick service, the pot roast is a sleeper hit
-- Pym Test Kitchen (Avengers Campus): theming is excellent, the Pym-ini is legit good
-- Award Wieners: reliable corn dogs on Hollywood Blvd
-- Cocina Cucamonga: solid Mexican quick service near Pacific Wharf
-
-## Park history & ride lore (share when relevant, don't force it)
-- Disneyland opened July 17, 1955 — the famous "Black Sunday" due to early chaos, counterfeit tickets, a gas leak, and a women's heel-sinking-into-fresh-asphalt situation
-- New Orleans Square (1966) was the first new land added to Disneyland after opening, and the first land not in Walt's original plans
-- Pirates of the Caribbean (1967) was the last attraction Walt Disney personally supervised before his death in December 1966
-- The Haunted Mansion opened in 1969 after years of development — Walt wanted it to be a walk-through; Imagineers convinced him it needed a ride system
-- Indiana Jones Adventure (1995) uses the same show building illusion trick as Mystic Manor in Hong Kong — you appear to travel much farther than you actually do
-- Galaxy's Edge (2019) is the largest single-land expansion in Disneyland history at 14 acres
-- Tiana's Bayou Adventure replaced Splash Mountain in 2024, the first Disneyland attraction based on a Black Disney princess
-- DCA opened in 2001 to mixed reviews and has been extensively rebuilt — Buena Vista Street, Cars Land, and Pixar Pier are all post-opening additions
-- Radiator Springs Racers (2012) is widely considered one of the best theme park attractions ever built
-- The Incredicoaster follows the same track layout as the old California Screamin', just re-themed
-- Oga's Cantina occupies the space that used to be the Star Wars Launch Bay, which was previously the Character Meet & Greet building
+## Park history & lore
+- Disneyland opened July 17, 1955 \u2014 "Black Sunday": counterfeit tickets, gas leak, women's heels sinking into fresh asphalt
+- New Orleans Square (1966): first new land added after opening, not in Walt's original plans
+- Pirates (1967): last attraction Walt personally supervised before his death in December 1966
+- Haunted Mansion (1969): Walt wanted a walk-through; Imagineers pushed for a ride system
+- Indiana Jones (1995): same show building illusion as Mystic Manor \u2014 you appear to travel far more than you actually do
+- Galaxy's Edge (2019): largest single-land expansion in Disneyland history at 14 acres
+- Tiana's Bayou Adventure (2024): replaced Splash Mountain, first attraction based on a Black Disney princess
+- DCA opened 2001 to mixed reviews; Buena Vista Street, Cars Land, Pixar Pier all added later
+- Radiator Springs Racers (2012): widely considered one of the best theme park attractions ever built
+- Incredicoaster: same track layout as California Screamin', just re-themed
 
 ## Survey & trip creation
-You can create ride survey trips directly in Firestore for the family survey app (survey.html). When Andrew asks to set up a new trip, create a survey, or start a ride rating session — use the create_trip tool. Infer sensible defaults: if he says "Saturday" use that date, if he doesn't specify parks assume DL, if he doesn't give a name make a reasonable one like "Andrew & Amanda – Sat Jun 28". Confirm what you created after.
+When Andrew asks to set up a trip or survey, use create_trip. Infer sensible defaults (date from context, assume DL if no park specified, make a reasonable name). After creating, the UI will show a link to survey.html automatically.
 
 ## Style
-- Warm, knowledgeable, never condescending
-- Assume Andrew knows the park well — meet him at his level
-- Drop in history or lore naturally when it's genuinely interesting, not as a lecture
-- Give specific, actionable advice with real ride names and exact timing
-- If wait times are high, suggest the best alternative or the best time to retry
-- Keep responses focused — don't pad, don't list everything, prioritize the most useful info
-- You can have opinions: "Carthay Circle is worth it for a special dinner but Lamplight Lounge is the better everyday choice" is more useful than a neutral list`;
-
+- Warm, knowledgeable, never condescending. Meet Andrew at his level.
+- Drop in history or lore naturally when genuinely interesting, not as a lecture
+- Specific, actionable advice with real ride names and exact timing
+- You can have opinions \u2014 "Lamplight Lounge is the better everyday choice" beats a neutral list
+- Keep responses focused; don't pad`;
 async function callAgent(userMessage){
-  if(!activeChatId){
-    activeChatId=genId();
-    const now=new Date().toISOString();
-    allChats.unshift({id:activeChatId,title:chatTitle(userMessage),updated_at:now});
-    renderSidebar();
-  }
+  if(!activeChatId){activeChatId=genId();const now=new Date().toISOString();allChats.unshift({id:activeChatId,title:chatTitle(userMessage),updated_at:now});renderSidebar();}
   conversationHistory.push({role:'user',content:userMessage});
   let loops=0;
   while(loops<6){
     loops++;
-    const res=await fetch(`${WORKER_URL}/v1/messages`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SYSTEM,tools:TOOLS,messages:conversationHistory})});
+    const res=await fetch(WORKER_URL+'/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SYSTEM,tools:TOOLS,messages:conversationHistory})});
     const data=await res.json();
     const toolBlocks=data.content.filter(b=>b.type==='tool_use');
     const textBlock=data.content.find(b=>b.type==='text');
@@ -501,84 +359,52 @@ async function callAgent(userMessage){
       addMessage('assistant',null,toolBlocks.map(b=>({name:b.name})));
       showTyping();
       const results=await Promise.all(toolBlocks.map(async b=>({type:'tool_result',tool_use_id:b.id,content:await runTool(b.name,b.input)})));
-      // Intercept trip creation — render card directly, don't send back through Claude
+      // FIX 3: intercept TRIP_CREATED before Claude rewrites it as plain text
       const tripResult=results.find(r=>typeof r.content==='string'&&r.content.startsWith('TRIP_CREATED:'));
       if(tripResult){
         try{
-          const tripData=JSON.parse(tripResult.content.replace('TRIP_CREATED:',''));
+          const td=JSON.parse(tripResult.content.replace('TRIP_CREATED:',''));
           hideTyping();
           const div=document.createElement('div');div.className='msg assistant';
           const b=document.createElement('div');b.className='bubble';
-          b.innerHTML=`✨ <strong>Trip created!</strong><br><br><span style="font-family:'Cinzel',serif;font-size:.7rem">${tripData.name}</span><br><span style="font-size:.8rem;color:var(--muted)">${tripData.date} · ${tripData.parks.join(' + ')}</span><br><br><a href="survey.html" style="color:var(--gold);font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.07em;text-decoration:none;border:1px solid var(--gold-dim);padding:.3rem .85rem;border-radius:999px;display:inline-block;margin-top:2px">Open Survey App →</a>`;
+          b.innerHTML='\u2728 <strong>Trip created!</strong><br><br>'
+            +'<span style="font-family:\'Cinzel\',serif;font-size:.72rem;letter-spacing:.04em">'+td.name+'</span><br>'
+            +'<span style="font-size:.8rem;color:var(--muted)">'+td.date+' \u00b7 '+td.parks.join(' + ')+'</span><br><br>'
+            +'<a href="survey.html" style="color:var(--gold);font-family:\'Cinzel\',serif;font-size:.65rem;letter-spacing:.07em;text-decoration:none;border:1px solid var(--gold-dim);padding:.32rem .9rem;border-radius:999px;display:inline-block;margin-top:4px">Open Survey App \u2192</a>';
           div.appendChild(b);
-          document.getElementById('messages').appendChild(div);
-          document.getElementById('messages').scrollTop=99999;
-          conversationHistory.push({role:'assistant',content:`Trip "${tripData.name}" created for ${tripData.date} at ${tripData.parks.join(' + ')}.`});
-          await persistCurrent();
-          return;
+          const msgs=document.getElementById('messages');msgs.appendChild(div);msgs.scrollTop=99999;
+          conversationHistory.push({role:'assistant',content:'Trip "'+td.name+'" created for '+td.date+' at '+td.parks.join(' + ')+'.'});
+          await persistCurrent();return;
         }catch(e){}
       }
       conversationHistory.push({role:'user',content:results});
       continue;
     }
-    if(textBlock){
-      conversationHistory.push({role:'assistant',content:textBlock.text});
-      hideTyping();addMessage('assistant',textBlock.text);await persistCurrent();return;
-    }
-    hideTyping();addMessage('assistant','Something went wrong — please try again.');return;
+    if(textBlock){conversationHistory.push({role:'assistant',content:textBlock.text});hideTyping();addMessage('assistant',textBlock.text);await persistCurrent();return;}
+    hideTyping();addMessage('assistant','Something went wrong \u2014 please try again.');return;
   }
-  hideTyping();addMessage('assistant','Got turned around — try rephrasing!');
+  hideTyping();addMessage('assistant','Got turned around \u2014 try rephrasing!');
 }
-
 function addMessage(role,content,toolCalls,silent){
   const msgs=document.getElementById('messages');
   document.getElementById('welcome')?.remove();
-  const div=document.createElement('div');div.className=`msg ${role}`;
-  if(toolCalls?.length)toolCalls.forEach(tc=>{const p=document.createElement('div');p.className='tool-call';p.innerHTML=`⚙ <span class="tool-pill">${tc.name}</span>`;div.appendChild(p);});
-  if(content){
-    if(content.startsWith('TRIP_CREATED:')){
-      try{
-        const data=JSON.parse(content.replace('TRIP_CREATED:',''));
-        const b=document.createElement('div');b.className='bubble';
-        b.innerHTML=`✨ Trip created!<br><br><strong>${data.name}</strong><br>${data.date} &nbsp;·&nbsp; ${data.parks.join(' + ')}<br><br><a href="survey.html" style="color:var(--gold);font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.05em;text-decoration:none;border:1px solid var(--gold-dim);padding:.3rem .8rem;border-radius:999px;display:inline-block;margin-top:4px">Open Survey App →</a>`;
-        div.appendChild(b);
-      }catch(e){const b=document.createElement('div');b.className='bubble';b.textContent=content;div.appendChild(b);}
-    } else {
-      const b=document.createElement('div');b.className='bubble';b.textContent=content;div.appendChild(b);
-    }
-  }
+  const div=document.createElement('div');div.className='msg '+role;
+  if(toolCalls?.length)toolCalls.forEach(tc=>{const p=document.createElement('div');p.className='tool-call';p.innerHTML='\u2699 <span class="tool-pill">'+tc.name+'</span>';div.appendChild(p);});
+  if(content){const b=document.createElement('div');b.className='bubble';b.textContent=content;div.appendChild(b);}
   msgs.appendChild(div);
   if(!silent)msgs.scrollTop=msgs.scrollHeight;
 }
-const FLAVOR=[
-  'Riding the wildest ride in the wilderness…',
-  'On a jungle cruise…',
-  'Wishing upon a star…',
-  'Walking down Main Street…',
-  'Flying the Millennium Falcon…',
-  'Haunting the mansion…',
-  'Consulting the crystal ball…',
-  'Asking the Yeti nicely…',
-  'Checking in with the ghost host…',
-  'Loading 999 happy haunts…',
-  'Pirating the Caribbean…',
-  'Checking the Matterhorn snowpack…',
-  'Talking to the Tiki birds…',
-  'Following the Adventureland fireflies…',
-  'Boarding the Mark Twain…',
-];
+const FLAVOR=['Riding the wildest ride in the wilderness\u2026','On a jungle cruise\u2026','Wishing upon a star\u2026','Walking down Main Street\u2026','Flying the Millennium Falcon\u2026','Haunting the mansion\u2026','Consulting the crystal ball\u2026','Asking the Yeti nicely\u2026','Checking in with the ghost host\u2026','Loading 999 happy haunts\u2026','Pirating the Caribbean\u2026','Checking the Matterhorn snowpack\u2026','Talking to the Tiki birds\u2026','Following the Adventureland fireflies\u2026','Boarding the Mark Twain\u2026'];
 let _flavorTimer=null;
 function showTyping(){
   const msgs=document.getElementById('messages');
-  const d=document.createElement('div');
-  d.className='msg assistant';d.id='typing-indicator';
+  const d=document.createElement('div');d.className='msg assistant';d.id='typing-indicator';
   let idx=Math.floor(Math.random()*FLAVOR.length);
-  d.innerHTML=`<div class="bubble" style="font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.05em;color:var(--muted);font-style:italic" id="flavor-text">${FLAVOR[idx]}</div>`;
+  d.innerHTML='<div class="bubble" style="font-family:\'Cinzel\',serif;font-size:.6rem;letter-spacing:.05em;color:var(--muted);font-style:italic" id="flavor-text">'+FLAVOR[idx]+'</div>';
   msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
   _flavorTimer=setInterval(()=>{idx=(idx+1)%FLAVOR.length;const el=document.getElementById('flavor-text');if(el)el.textContent=FLAVOR[idx];},2500);
 }
 function hideTyping(){clearInterval(_flavorTimer);document.getElementById('typing-indicator')?.remove();}
-
 async function sendMessage(){
   const input=document.getElementById('user-input');
   const text=input.value.trim();
@@ -586,14 +412,13 @@ async function sendMessage(){
   isLoading=true;document.getElementById('send-btn').disabled=true;
   input.value='';input.style.height='auto';
   addMessage('user',text);showTyping();
-  try{await callAgent(text);}catch(e){hideTyping();addMessage('assistant',`Error: ${e.message}`);}
+  try{await callAgent(text);}catch(e){hideTyping();addMessage('assistant','Error: '+e.message);}
   isLoading=false;document.getElementById('send-btn').disabled=false;input.focus();
 }
 function sendQuick(btn){document.getElementById('user-input').value=btn.textContent;sendMessage();}
 function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
-
-function tick(){const n=new Date();let h=n.getHours();const m=String(n.getMinutes()).padStart(2,'0'),ap=h>=12?'PM':'AM';h=h%12||12;document.getElementById('clock').textContent=`${h}:${m} ${ap}`;}
+function tick(){const n=new Date();let h=n.getHours();const m=String(n.getMinutes()).padStart(2,'0'),ap=h>=12?'PM':'AM';h=h%12||12;document.getElementById('clock').textContent=h+':'+m+' '+ap;}
 setInterval(tick,1000);tick();
 (async()=>{allChats=await dbLoadChats();renderSidebar();})();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('mainstreet-sw.js').catch(()=>{});}
