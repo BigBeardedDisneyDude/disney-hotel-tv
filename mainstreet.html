@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>MainStreet – Magic Key TV</title>
 <link rel="manifest" href="mainstreet-manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,8 +19,8 @@
   --sidebar-w:260px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;background:var(--cream);font-family:'Crimson Pro',Georgia,serif;color:var(--text)}
-#shell{display:flex;height:100vh}
+html,body{height:100%;height:100dvh;overflow:hidden;background:var(--cream);font-family:'Crimson Pro',Georgia,serif;color:var(--text)}
+#shell{display:flex;height:100vh;height:100dvh}
 
 /* SIDEBAR */
 #sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--teal);border-right:1px solid var(--gold-dim);display:flex;flex-direction:column;transition:transform .25s ease;z-index:10}
@@ -52,7 +52,7 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
 #clock{font-family:'Cinzel',serif;font-size:.82rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap}
 #menu-btn{display:none;background:none;border:none;cursor:pointer;color:var(--gold);font-size:1.1rem;padding:4px;flex-shrink:0}
 
-#messages{flex:1;overflow-y:auto;padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:14px;background:var(--cream)}
+#messages{flex:1;overflow-y:auto;padding:1.25rem 1.5rem;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:14px;background:var(--cream)}
 #messages::-webkit-scrollbar{width:5px}
 #messages::-webkit-scrollbar-thumb{background:var(--cream-dark);border-radius:3px}
 
@@ -78,7 +78,7 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
 .quick-btn{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.05em;padding:.4rem .85rem;border-radius:999px;border:1px solid var(--gold-dim);background:transparent;color:var(--teal);cursor:pointer;transition:all .2s;white-space:nowrap}
 .quick-btn:hover{background:var(--teal);color:var(--gold-light);border-color:var(--teal)}
 
-#input-area{padding:.85rem 1.5rem calc(1rem + env(safe-area-inset-bottom));border-top:1px solid rgba(138,110,47,.18);background:var(--cream);flex-shrink:0}
+#input-area{padding:.85rem calc(1.5rem + env(safe-area-inset-right)) calc(1rem + env(safe-area-inset-bottom)) calc(1.5rem + env(safe-area-inset-left));border-top:1px solid rgba(138,110,47,.18);background:var(--cream);flex-shrink:0}
 #input-row{display:flex;gap:10px;align-items:flex-end}
 #user-input{flex:1;resize:none;border:1px solid var(--gold-dim);border-radius:8px;padding:9px 13px;font-size:.88rem;font-family:'Crimson Pro',serif;background:var(--card);color:var(--text);line-height:1.5;max-height:120px;overflow-y:auto;outline:none;transition:border-color .2s;-webkit-appearance:none}
 #user-input:focus{border-color:var(--teal)}
@@ -87,7 +87,7 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
 #send-btn:disabled{opacity:.35;cursor:not-allowed}
 
 @media(max-width:640px){
-  #sidebar{position:fixed;top:0;left:0;height:100%;transform:translateX(-100%)}
+  #sidebar{position:fixed;top:0;left:0;height:100%;height:100dvh;transform:translateX(-100%)}
   #sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.3)}
   #menu-btn{display:flex}
   .msg{max-width:90%}
