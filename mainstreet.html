@@ -370,7 +370,7 @@ async function callAgent(userMessage){
           b.innerHTML='\u2728 <strong>Trip created!</strong><br><br>'
             +'<span style="font-family:\'Cinzel\',serif;font-size:.72rem;letter-spacing:.04em">'+td.name+'</span><br>'
             +'<span style="font-size:.8rem;color:var(--muted)">'+td.date+' \u00b7 '+td.parks.join(' + ')+'</span><br><br>'
-            +'<a href="survey.html" style="color:var(--gold);font-family:\'Cinzel\',serif;font-size:.65rem;letter-spacing:.07em;text-decoration:none;border:1px solid var(--gold-dim);padding:.32rem .9rem;border-radius:999px;display:inline-block;margin-top:4px">Open Survey App \u2192</a>';
+            +'<a href="survey.html?trip='+td.docId+'" style="color:var(--gold);font-family:\'Cinzel\',serif;font-size:.65rem;letter-spacing:.07em;text-decoration:none;border:1px solid var(--gold-dim);padding:.32rem .9rem;border-radius:999px;display:inline-block;margin-top:4px">Open Survey App \u2192</a>';
           div.appendChild(b);
           const msgs=document.getElementById('messages');msgs.appendChild(div);msgs.scrollTop=99999;
           conversationHistory.push({role:'assistant',content:'Trip "'+td.name+'" created for '+td.date+' at '+td.parks.join(' + ')+'.'});
