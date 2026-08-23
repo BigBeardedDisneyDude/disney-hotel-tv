@@ -467,6 +467,35 @@ if (isWallpaperMode) {
   });
 }
 
+// ── VIDEO BACKGROUND WATCHDOG (wallpaper mode) ──
+// On cold boot the R2-hosted video can fail silently if the network isn't
+// fully up yet, leaving us stuck on the Ken Burns fallback forever. This
+// keeps retrying quietly until the video actually plays.
+if (isWallpaperMode) {
+  const bgVideo = document.getElementById('bg-video');
+  let videoReady = false;
+  let retryCount = 0;
+
+  bgVideo.addEventListener('canplay', () => { videoReady = true; });
+  bgVideo.addEventListener('playing', () => { videoReady = true; });
+  bgVideo.addEventListener('error', () => { if (!videoReady) scheduleRetry(); });
+
+  function retryVideoLoad() {
+    if (videoReady) return;
+    retryCount++;
+    bgVideo.load();
+    const p = bgVideo.play();
+    if (p && p.catch) p.catch(() => {});
+    scheduleRetry();
+  }
+  function scheduleRetry() {
+    if (videoReady) return;
+    const delay = Math.min(2000 * (retryCount + 1), 20000);
+    setTimeout(retryVideoLoad, delay);
+  }
+  setTimeout(retryVideoLoad, 4000); // give the first natural attempt a head start
+}
+
 // ── STREAM OVERLAY (wallpaper mode) ──
 let streamMuted = true;
 function openStreamOverlay(watchUrl) {
