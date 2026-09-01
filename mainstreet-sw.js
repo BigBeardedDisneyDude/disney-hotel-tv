@@ -26,10 +26,7 @@ self.addEventListener('fetch', e => {
     || url.hostname.includes('workers.dev')
     || url.hostname.includes('queue-times.com')
     || url.hostname.includes('themeparks.wiki')
-    || url.hostname.includes('open-meteo.com')
-    || url.hostname.includes('allorigins.win')
-    || url.hostname.includes('corsproxy.io')
-    || url.hostname.includes('codetabs.com');
+    || url.hostname.includes('open-meteo.com');
 
   if (isApi) {
     e.respondWith(fetch(e.request));

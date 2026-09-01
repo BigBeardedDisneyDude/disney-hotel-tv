@@ -570,30 +570,25 @@ function waitColor(m) {
 }
 function rideWait(db) { return waitData[db] ?? 25; }
 
-// Live waits come straight from Queue-Times (same source + proxy chain as
-// predict.html / waittimes.html) so all pages always agree. Supabase rows
-// can be hours stale (pg_cron is idle overnight), so it's predictions-only.
-const QT_PROXIES = [
-  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
-];
+// Live waits come straight from Queue-Times (same source as predict.html /
+// waittimes.html) via the site Worker proxy, so all pages always agree.
+// Supabase rows can be hours stale (pg_cron is idle overnight), so it's
+// predictions-only.
+const WORKER_PROXY = 'https://restless-glade-a1e4.andpcooke.workers.dev/proxy?url=';
 
 async function fetchWaits() {
   document.getElementById('data-badge').textContent = 'Fetching...';
   const qtUrl = 'https://queue-times.com/parks/16/queue_times.json';
   try {
     let data = null;
-    for (const fn of QT_PROXIES) {
-      try {
-        const res = await fetch(fn(qtUrl), { signal: AbortSignal.timeout(8000) });
-        if (!res.ok) continue;
-        let payload = await res.json();
-        if (payload && typeof payload.contents === 'string') payload = JSON.parse(payload.contents);
-        if (payload?.lands) { data = payload; break; }
-      } catch (e) {}
-    }
-    if (!data) throw new Error('All proxies failed');
+    try {
+      const res = await fetch(WORKER_PROXY + encodeURIComponent(qtUrl), { signal: AbortSignal.timeout(9000) });
+      if (res.ok) {
+        const payload = await res.json();
+        if (payload?.lands) data = payload;
+      }
+    } catch (e) {}
+    if (!data) throw new Error('Proxy fetch failed');
     waitData = {};
     const allRides = (data.lands || []).flatMap(l => l.rides || []).concat(data.rides || []);
     allRides.forEach(ride => {

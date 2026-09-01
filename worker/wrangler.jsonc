@@ -1,0 +1,13 @@
+{
+  // Name MUST match the existing deployed Worker so `wrangler deploy` updates it
+  // in place (same restless-glade-a1e4.andpcooke.workers.dev URL, same secrets).
+  "name": "restless-glade-a1e4",
+  "main": "worker.js",
+  "compatibility_date": "2026-08-25",
+  "workers_dev": true,
+  "observability": {
+    "enabled": true
+  }
+  // ANTHROPIC_API_KEY is a dashboard-managed secret and is intentionally not
+  // listed here. `wrangler deploy` leaves existing secrets untouched.
+}

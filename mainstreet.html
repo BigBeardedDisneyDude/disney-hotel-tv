@@ -214,8 +214,8 @@ const DCA=[
   {name:"Goofy's Sky School",ll:true,p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
 ];
 const HRS=['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm','11pm'];
-const PROXIES=[u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`];
-async function fetchProxy(url){for(const fn of PROXIES){try{const r=await fetch(fn(url),{signal:AbortSignal.timeout(7000)});if(r.ok)return await r.json();}catch(e){}}return null;}
+const WORKER_PROXY=`${WORKER_URL}/proxy?url=`;
+async function fetchProxy(url){try{const r=await fetch(WORKER_PROXY+encodeURIComponent(url),{signal:AbortSignal.timeout(9000)});if(r.ok)return await r.json();}catch(e){}return null;}
 const TOOLS=[
   {name:'get_wait_times',description:'Get current live wait times for Disneyland or DCA from Queue-Times.',input_schema:{type:'object',properties:{park:{type:'string',enum:['disneyland','dca']}},required:['park']}},
   {name:'get_park_hours',description:"Get today's operating hours for Disneyland or DCA from ThemeParks.wiki.",input_schema:{type:'object',properties:{park:{type:'string',enum:['disneyland','dca']}},required:['park']}},

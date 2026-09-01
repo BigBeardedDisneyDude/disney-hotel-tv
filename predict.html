@@ -380,18 +380,12 @@ return 'regular';
 
 // ── QUEUE-TIMES PARK IDs ──────────────────────────────────────────────────────
 const QT = {dl:16, dca:17};
-const PROXIES = [
-u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
-u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
-];
+const WORKER_PROXY = 'https://restless-glade-a1e4.andpcooke.workers.dev/proxy?url=';
 async function fetchProxy(url) {
-for (const fn of PROXIES) {
 try {
-const r = await fetch(fn(url), {signal:AbortSignal.timeout(7000)});
+const r = await fetch(WORKER_PROXY + encodeURIComponent(url), {signal:AbortSignal.timeout(9000)});
 if (r.ok) return await r.json();
 } catch(e) {}
-}
 return null;
 }
 async function loadLive(parkId) {
