@@ -31,6 +31,14 @@
       --orange-ui:    #e8944a;
       --red-ui:       #e85c4a;
       --closed-col:   rgba(253,248,238,0.18);
+
+      /* Semantic aliases used by waits-core.js, so one shared code path can
+         theme both this page and waittimes.html. Only these names differ per resort. */
+      --accent:       var(--tan-light);
+      --accent-soft:  rgba(200,169,110,0.4);
+      --text-faint:   rgba(253,248,238,0.5);
+      --text-fainter: rgba(253,248,238,0.22);
+      --text-ghost:   rgba(253,248,238,0.3);
     }
 
     html, body {
@@ -325,6 +333,13 @@
     }
     .attribution a { color: rgba(200,169,110,0.5); text-decoration: none; }
     .attribution a:hover { color: var(--tan-light); }
+
+    /* Messages rendered inside a park panel by waits-core.js */
+    .panel-note { text-align: center; padding: 40px 0; font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--text-ghost); }
+    .panel-error { text-align: center; padding: 40px 0; }
+    .panel-error p { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 13px; color: var(--text-faint); margin-bottom: 10px; }
+    .panel-error .detail { font-size: 10px; color: var(--text-fainter); letter-spacing: .1em; margin-bottom: 20px; }
+    .retry-btn { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 11px; letter-spacing: .25em; color: var(--accent); text-transform: uppercase; background: none; border: 1px solid var(--accent-soft); border-radius: 3px; padding: 8px 22px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -352,12 +367,7 @@
   <div id="toolbar">
     <div id="status-text">Loading…</div>
     <div class="toolbar-right">
-      <div class="park-tabs">
-        <button class="park-tab active" data-park="mk"  onclick="switchPark('mk')">Magic Kingdom</button>
-        <button class="park-tab"        data-park="ep"  onclick="switchPark('ep')">EPCOT</button>
-        <button class="park-tab"        data-park="hs"  onclick="switchPark('hs')">Hollywood Studios</button>
-        <button class="park-tab"        data-park="ak"  onclick="switchPark('ak')">Animal Kingdom</button>
-      </div>
+      <div class="park-tabs" id="park-tabs"></div>
       <button id="refresh-btn" onclick="fetchAll()">↻ Refresh</button>
     </div>
   </div>
@@ -391,10 +401,7 @@
     <button id="retry-btn" onclick="fetchAll()">Try Again</button>
   </div>
 
-  <div id="park-mk" class="park-panel visible"></div>
-  <div id="park-ep" class="park-panel"></div>
-  <div id="park-hs" class="park-panel"></div>
-  <div id="park-ak" class="park-panel"></div>
+  <div id="park-panels"></div>
 
   <div class="ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
   <div class="last-updated" id="last-updated"></div>
@@ -402,131 +409,18 @@
 </div>
 
 <script>
-/* Queue-Times park IDs for Walt Disney World */
-const PARKS = {
-  mk: { id: 6,  name: 'Magic Kingdom',       panelId: 'park-mk' },
-  ep: { id: 7,  name: 'EPCOT',               panelId: 'park-ep' },
-  hs: { id: 8,  name: 'Hollywood Studios',   panelId: 'park-hs' },
-  ak: { id: 9,  name: 'Animal Kingdom',      panelId: 'park-ak' }
+/* Which parks this page shows. All the behaviour lives in waits-core.js,
+   shared with waittimes.html. */
+const RESORT = {
+  parks: [
+    { key: 'mk', id: 6, name: 'Magic Kingdom' },
+    { key: 'ep', id: 5, name: 'EPCOT' },
+    { key: 'hs', id: 7, name: 'Hollywood Studios' },
+    { key: 'ak', id: 8, name: 'Animal Kingdom' },
+  ],
 };
-
-const PARK_KEYS = ['mk','ep','hs','ak'];
-
-const WORKER_PROXY = 'https://restless-glade-a1e4.andpcooke.workers.dev/proxy?url=';
-const QT_URL = id => `https://queue-times.com/parks/${id}/queue_times.json`;
-
-let rideData = { mk: null, ep: null, hs: null, ak: null };
-let activeTab = 'mk';
-let refreshTimer;
-
-async function fetchJSON(url) {
-  const res = await fetch(WORKER_PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(9000) });
-  if (!res.ok) throw new Error(`Proxy HTTP ${res.status}`);
-  return await res.json();
-}
-
-function showLoading(on) { document.getElementById('loading').style.display = on ? 'flex' : 'none'; }
-function showError(msg) { document.getElementById('error').style.display = 'block'; document.getElementById('err-detail').textContent = msg; }
-function hideError() { document.getElementById('error').style.display = 'none'; }
-
-function switchPark(key) {
-  activeTab = key;
-  document.querySelectorAll('.park-tab').forEach(t => t.classList.toggle('active', t.dataset.park === key));
-  PARK_KEYS.forEach(k => {
-    document.getElementById(PARKS[k].panelId).style.display = k === key ? 'block' : 'none';
-  });
-  updateStats();
-}
-
-function updateStats() {
-  const data = rideData[activeTab];
-  if (!data) return;
-  const all = (data.lands || []).flatMap(l => l.rides || []).concat(data.rides || []);
-  const open = all.filter(r => r.is_open);
-  const waits = open.map(r => r.wait_time).filter(w => w > 0);
-  document.getElementById('stat-open').textContent = `${open.length}/${all.length}`;
-  document.getElementById('stat-avg').textContent = waits.length ? Math.round(waits.reduce((a,b) => a+b, 0) / waits.length) + 'm' : '–';
-  document.getElementById('stat-max').textContent = waits.length ? Math.max(...waits) + 'm' : '–';
-  document.getElementById('stat-short').textContent = waits.length ? Math.min(...waits) + 'm' : '–';
-}
-
-function renderPark(key, data) {
-  const panel = document.getElementById(PARKS[key].panelId);
-  const lands = [...(data.lands || [])];
-  if ((data.rides || []).length) lands.push({ name: 'Other Attractions', rides: data.rides });
-  if (!lands.length) {
-    panel.innerHTML = '<p style="text-align:center;padding:40px 0;font-family:Cormorant Garamond,serif;font-style:italic;color:rgba(253,248,238,0.3)">No ride data available.</p>';
-    return;
-  }
-  let html = '';
-  for (const land of lands) {
-    if (!land.rides || !land.rides.length) continue;
-    const sorted = [...land.rides].sort((a,b) => {
-      if (a.is_open && !b.is_open) return -1;
-      if (!a.is_open && b.is_open) return 1;
-      return b.wait_time - a.wait_time;
-    });
-    html += `<div class="land-group"><div class="land-header"><div class="land-title">${x(land.name)}</div><div class="land-divider"></div></div><div class="ride-grid">`;
-    for (const ride of sorted) {
-      const cls = !ride.is_open ? 'closed'
-        : ride.wait_time < 20  ? 'open-low'
-        : ride.wait_time < 40  ? 'open-med'
-        : ride.wait_time < 60  ? 'open-high'
-        : 'open-max';
-      const badge = !ride.is_open ? 'Closed'
-        : (ride.wait_time || 0) === 0 ? '0 min'
-        : ride.wait_time + ' min';
-      html += `<div class="ride-card ${cls}"><div class="ride-name">${x(ride.name)}</div><div class="wait-badge">${badge}</div></div>`;
-    }
-    html += `</div></div>`;
-  }
-  panel.innerHTML = html;
-}
-
-async function fetchPark(key) {
-  try {
-    const data = await fetchJSON(QT_URL(PARKS[key].id));
-    rideData[key] = data;
-    renderPark(key, data);
-  } catch(err) {
-    rideData[key] = null;
-    document.getElementById(PARKS[key].panelId).innerHTML = `
-      <div style="text-align:center;padding:40px 0">
-        <p style="font-family:Raleway,sans-serif;font-weight:300;font-size:13px;color:rgba(253,248,238,0.5);margin-bottom:10px">
-          Could not load ${PARKS[key].name} wait times.</p>
-        <p style="font-size:10px;color:rgba(253,248,238,0.22);letter-spacing:.1em;margin-bottom:20px">${x(err.message)}</p>
-        <button onclick="fetchAll()" style="font-family:Raleway,sans-serif;font-weight:300;font-size:11px;letter-spacing:.25em;color:var(--tan-light);text-transform:uppercase;background:none;border:1px solid rgba(200,169,110,0.4);border-radius:3px;padding:8px 22px;cursor:pointer">Try Again</button>
-      </div>`;
-  }
-}
-
-async function fetchAll() {
-  showLoading(true); hideError();
-  PARK_KEYS.forEach(k => { document.getElementById(PARKS[k].panelId).style.display = 'none'; });
-  document.getElementById('status-text').textContent = 'Refreshing…';
-  await Promise.all(PARK_KEYS.map(k => fetchPark(k)));
-  showLoading(false);
-  PARK_KEYS.forEach(k => {
-    document.getElementById(PARKS[k].panelId).style.display = k === activeTab ? 'block' : 'none';
-  });
-  const anyLoaded = PARK_KEYS.some(k => rideData[k]);
-  document.getElementById('status-text').textContent = anyLoaded ? 'Live data' : 'Data unavailable';
-  document.getElementById('last-updated').textContent =
-    `Updated ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · Auto-refreshes every 5 min`;
-  updateStats();
-  clearTimeout(refreshTimer);
-  refreshTimer = setTimeout(fetchAll, 5 * 60 * 1000);
-}
-
-function x(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function goHome() {
-  window.location.href = 'wdw.html';
-}
-
-fetchAll();
+function goHome() { window.location.href = 'wdw.html'; }
 </script>
+<script src="waits-core.js"></script>
 </body>
 </html>

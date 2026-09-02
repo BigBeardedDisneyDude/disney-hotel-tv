@@ -18,6 +18,14 @@
       --orange:     #e8944a;
       --red:        #e85c4a;
       --closed-col: rgba(255,248,238,0.18);
+
+      /* Semantic aliases used by waits-core.js, so one shared code path can
+         theme both this page and wdwwait.html. Only these names differ per resort. */
+      --accent:       var(--gold);
+      --accent-soft:  rgba(201,168,76,.4);
+      --text-faint:   rgba(255,248,238,.5);
+      --text-fainter: rgba(255,248,238,.22);
+      --text-ghost:   rgba(255,248,238,.3);
     }
 
     html, body {
@@ -196,6 +204,13 @@
     .attribution { text-align: center; font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 10px; letter-spacing: .15em; color: rgba(255,248,238,.22); margin-bottom: 40px; }
     .attribution a { color: rgba(201,168,76,.5); text-decoration: none; }
     .attribution a:hover { color: var(--gold); }
+
+    /* Messages rendered inside a park panel by waits-core.js */
+    .panel-note { text-align: center; padding: 40px 0; font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--text-ghost); }
+    .panel-error { text-align: center; padding: 40px 0; }
+    .panel-error p { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 13px; color: var(--text-faint); margin-bottom: 10px; }
+    .panel-error .detail { font-size: 10px; color: var(--text-fainter); letter-spacing: .1em; margin-bottom: 20px; }
+    .retry-btn { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 11px; letter-spacing: .25em; color: var(--accent); text-transform: uppercase; background: none; border: 1px solid var(--accent-soft); border-radius: 3px; padding: 8px 22px; cursor: pointer; }
   </style>
   <link rel="stylesheet" href="tv-mode.css">
 </head>
@@ -219,10 +234,7 @@
   <div id="toolbar">
     <div id="status-text">Loading…</div>
     <div class="toolbar-right">
-      <div class="park-tabs">
-        <button class="park-tab active" data-park="dl"  onclick="switchPark('dl')">Disneyland</button>
-        <button class="park-tab"        data-park="dca" onclick="switchPark('dca')">Cal Adventure</button>
-      </div>
+      <div class="park-tabs" id="park-tabs"></div>
       <button id="refresh-btn" onclick="fetchAll()">↻ Refresh</button>
     </div>
   </div>
@@ -256,8 +268,7 @@
     <button id="retry-btn" onclick="fetchAll()">Try Again</button>
   </div>
 
-  <div id="park-dl"  class="park-panel visible"></div>
-  <div id="park-dca" class="park-panel"></div>
+  <div id="park-panels"></div>
 
   <div class="ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
   <div class="last-updated" id="last-updated"></div>
@@ -265,70 +276,16 @@
 </div>
 
 <script>
-const PARKS = { dl: { id: 16, name: 'Disneyland', panelId: 'park-dl' }, dca: { id: 17, name: 'California Adventure', panelId: 'park-dca' } };
-const WORKER_PROXY = 'https://restless-glade-a1e4.andpcooke.workers.dev/proxy?url=';
-const QT_URL = id => `https://queue-times.com/parks/${id}/queue_times.json`;
-let rideData = { dl: null, dca: null }, activeTab = 'dl', refreshTimer;
-
-async function fetchJSON(url) {
-  const res = await fetch(WORKER_PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(9000) });
-  if (!res.ok) throw new Error(`Proxy HTTP ${res.status}`);
-  return await res.json();
-}
-
-function showLoading(on){document.getElementById('loading').style.display=on?'flex':'none';}
-function showError(msg){document.getElementById('error').style.display='block';document.getElementById('err-detail').textContent=msg;}
-function hideError(){document.getElementById('error').style.display='none';}
-
-function switchPark(key){activeTab=key;document.querySelectorAll('.park-tab').forEach(t=>t.classList.toggle('active',t.dataset.park===key));document.getElementById('park-dl').style.display=key==='dl'?'block':'none';document.getElementById('park-dca').style.display=key==='dca'?'block':'none';updateStats();}
-
-function updateStats(){
-  const data=rideData[activeTab];if(!data)return;
-  const all=(data.lands||[]).flatMap(l=>l.rides||[]).concat(data.rides||[]);
-  const open=all.filter(r=>r.is_open),waits=open.map(r=>r.wait_time).filter(w=>w>0);
-  document.getElementById('stat-open').textContent=`${open.length}/${all.length}`;
-  document.getElementById('stat-avg').textContent=waits.length?Math.round(waits.reduce((a,b)=>a+b,0)/waits.length)+'m':'–';
-  document.getElementById('stat-max').textContent=waits.length?Math.max(...waits)+'m':'–';
-  document.getElementById('stat-short').textContent=waits.length?Math.min(...waits)+'m':'–';
-}
-
-function renderPark(key,data){
-  const panel=document.getElementById(PARKS[key].panelId);
-  const lands=[...(data.lands||[])];if((data.rides||[]).length)lands.push({name:'Other Attractions',rides:data.rides});
-  if(!lands.length){panel.innerHTML='<p style="text-align:center;padding:40px 0;font-family:Cormorant Garamond,serif;font-style:italic;color:rgba(255,248,238,.3)">No ride data available.</p>';return;}
-  let html='';
-  for(const land of lands){
-    if(!land.rides||!land.rides.length)continue;
-    const sorted=[...land.rides].sort((a,b)=>{if(a.is_open&&!b.is_open)return-1;if(!a.is_open&&b.is_open)return 1;return b.wait_time-a.wait_time;});
-    html+=`<div class="land-group"><div class="land-header"><div class="land-title">${x(land.name)}</div><div class="land-divider"></div></div><div class="ride-grid">`;
-    for(const ride of sorted){const cls=!ride.is_open?'closed':ride.wait_time<20?'open-low':ride.wait_time<40?'open-med':ride.wait_time<60?'open-high':'open-max';const badge=!ride.is_open?'Closed':(ride.wait_time||0)===0?'0 min':ride.wait_time+' min';html+=`<div class="ride-card ${cls}"><div class="ride-name">${x(ride.name)}</div><div class="wait-badge">${badge}</div></div>`;}
-    html+=`</div></div>`;
-  }
-  panel.innerHTML=html;
-}
-
-async function fetchPark(key){
-  try{const data=await fetchJSON(QT_URL(PARKS[key].id));rideData[key]=data;renderPark(key,data);}
-  catch(err){rideData[key]=null;document.getElementById(PARKS[key].panelId).innerHTML=`<div style="text-align:center;padding:40px 0"><p style="font-family:Raleway,sans-serif;font-weight:300;font-size:13px;color:rgba(255,248,238,.5);margin-bottom:10px">Could not load ${PARKS[key].name} wait times.</p><p style="font-size:10px;color:rgba(255,248,238,.22);letter-spacing:.1em;margin-bottom:20px">${x(err.message)}</p><button onclick="fetchAll()" style="font-family:Raleway,sans-serif;font-weight:300;font-size:11px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;background:none;border:1px solid rgba(201,168,76,.4);border-radius:3px;padding:8px 22px;cursor:pointer">Try Again</button></div>`;}
-}
-
-async function fetchAll(){
-  showLoading(true);hideError();
-  document.getElementById('park-dl').style.display='none';document.getElementById('park-dca').style.display='none';
-  document.getElementById('status-text').textContent='Refreshing…';
-  await Promise.all([fetchPark('dl'),fetchPark('dca')]);
-  showLoading(false);
-  document.getElementById('park-dl').style.display=activeTab==='dl'?'block':'none';
-  document.getElementById('park-dca').style.display=activeTab==='dca'?'block':'none';
-  const loaded=rideData.dl||rideData.dca;
-  document.getElementById('status-text').textContent=loaded?'Live data':'Data unavailable';
-  document.getElementById('last-updated').textContent=`Updated ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · Auto-refreshes every 5 min`;
-  updateStats();clearTimeout(refreshTimer);refreshTimer=setTimeout(fetchAll,5*60*1000);
-}
-
-function x(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-fetchAll();
+/* Which parks this page shows. All the behaviour lives in waits-core.js,
+   shared with wdwwait.html. */
+const RESORT = {
+  parks: [
+    { key: 'dl',  id: 16, name: 'Disneyland' },
+    { key: 'dca', id: 17, name: 'California Adventure', tabLabel: 'Cal Adventure' },
+  ],
+};
 </script>
+<script src="waits-core.js"></script>
 
 <script>
 const LS_KEY = 'dh_tv_settings';
