@@ -141,7 +141,13 @@ return m;
 }
 
 // ── PARK HOURS (ThemeParks.wiki) ─────────────────────────────────────────────
+// parkHours[key] holds an array of { open, close } windows for today. Rides
+// run - and Queue-Times keeps posting waits - during regular hours, hard-ticket
+// after-hours events (Oogie Boogie Bash, Halloween/holiday parties) and the
+// resort early-entry / extended-evening blocks, so all three schedule types
+// count as "park open".
 const parkHours = {};
+const OPEN_SCHEDULE_TYPES = ['OPERATING', 'TICKETED_EVENT', 'EXTRA_HOURS'];
 async function loadParkHours(parkKey) {
 const id = parkCfg(parkKey).twId;
 if (!id) return;
@@ -149,19 +155,20 @@ const url = `https://api.themeparks.wiki/v1/entity/${id}/schedule`;
 const data = await fetchProxy(url);
 if (!data?.schedule) return;
 const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
-const today = data.schedule.find(s => s.date === todayStr && s.type === 'OPERATING');
-if (!today) return;
-parkHours[parkKey] = {
-open: new Date(today.openingTime),
-close: new Date(today.closingTime)
-};
-console.log(`Park hours loaded for ${parkKey}: ${today.openingTime} – ${today.closingTime}`);
+const windows = data.schedule
+.filter(s => s.date === todayStr && OPEN_SCHEDULE_TYPES.includes(s.type) && s.openingTime && s.closingTime)
+.map(s => ({ open: new Date(s.openingTime), close: new Date(s.closingTime) }))
+.sort((a, b) => a.open - b.open);
+if (!windows.length) return;
+parkHours[parkKey] = windows;
+console.log(`Park hours loaded for ${parkKey}: ` +
+windows.map(w => `${w.open.toLocaleTimeString()}–${w.close.toLocaleTimeString()}`).join(', '));
 }
 function isParkOpen() {
-const hours = parkHours[park];
-if (!hours?.open || !hours?.close) return true;
+const windows = parkHours[park];
+if (!windows || !windows.length) return true;
 const now = new Date();
-return now >= hours.open && now < hours.close;
+return windows.some(w => now >= w.open && now < w.close);
 }
 
 // ── DAY / SEASON / CROWD MATH ────────────────────────────────────────────────
