@@ -120,6 +120,62 @@
     return w < 20 ? 'open-low' : w < 40 ? 'open-med' : w < 60 ? 'open-high' : 'open-max';
   }
 
+  // --- non-ride filtering ---------------------------------------------------
+  // Queue-Times gives us no attraction "type", so shows, character meet-and-
+  // greets, theatre acts and walkthroughs are recognised by name. Ride-style
+  // attractions that still post a real standby wait (Enchanted Tiki Room, the
+  // PeopleMover, the park railroads) are deliberately NOT matched here.
+  // A page can override per park via RESORT config: `keep: ['Exact Name']`
+  // always wins, `hide: ['Exact Name']` force-removes a straggler.
+  var NON_RIDE_PATTERNS = [
+    /\bmeet\b/i, /sing-?along/i, /\bon stage\b/i, /stunt spectacular/i,
+    /\bmusical\b/i, /\bconcert\b/i, /clubhouse live/i, /disney jr\./i,
+    /mickey mouse clubhouse/i, /turtle talk/i, /philharmagic/i,
+    /\bshort film\b/i, /film festival/i, /film spotlight/i, /animated short/i,
+    /circle-?vision/i, /\bcinema\b/i, /\bgallery\b/i, /hall of presidents/i,
+    /great moments with mr\.? lincoln/i, /a magical life/i,
+    /carousel of progress/i, /country bear/i, /festival of the lion king/i,
+    /\blion king\b/i, /feathered friends in flight/i,
+    /for the first time in forever/i, /the big blue/i,
+    /beauty and the beast/i, /\bzootopia\b/i, /better zoogether/i,
+    /enchanted tales with belle/i, /shootin['’ ]/i, /exposition/i,
+    /\btheat(er|re)\b/i, /celebrity spotlight/i, /red carpet dreams/i,
+    /walt disney presents/i, /animation academy/i, /sorcerer'?s workshop/i,
+    /bakery tour/i, /awesome planet/i, /\bexhibits?\b/i,
+    /conservation station/i, /wilderness explorers/i, /\btrails?\b/i,
+    /\bwalkthrough\b/i, /\btreehouse\b/i, /tree of life/i, /journey of water/i,
+    /\baquarium\b/i, /games of pixar pier/i, /main street vehicles/i,
+    /\bminnie'?s house\b/i, /\bmickey'?s house\b/i, /world of color/i,
+    /laugh floor/i, /pirate'?s adventure/i, /soak station/i,
+    /cinderella castle/i
+  ];
+
+  function isRide(name, hideSet, keepSet) {
+    if (keepSet.has(name)) return true;
+    if (hideSet.has(name)) return false;
+    for (var i = 0; i < NON_RIDE_PATTERNS.length; i++) {
+      if (NON_RIDE_PATTERNS[i].test(name)) return false;
+    }
+    return true;
+  }
+
+  function filterNonRides(data, park) {
+    var hideSet = new Set(park.hide || []);
+    var keepSet = new Set(park.keep || []);
+    var removed = [];
+    function keep(r) {
+      var ok = isRide(r.name, hideSet, keepSet);
+      if (!ok) removed.push(r.name);
+      return ok;
+    }
+    (data.lands || []).forEach(function (land) {
+      land.rides = (land.rides || []).filter(keep);
+    });
+    if (data.rides) data.rides = data.rides.filter(keep);
+    if (removed.length) console.log('[waits] ' + park.name + ': hid ' + removed.length + ' non-rides', removed);
+    return data;
+  }
+
   function renderPark(key, data) {
     var panel = $(panelId(key));
     var lands = (data.lands || []).slice();
@@ -155,6 +211,7 @@
   async function fetchPark(key) {
     try {
       var data = await fetchJSON(qtUrl(PARKS[key].id));
+      filterNonRides(data, PARKS[key]);
       rideData[key] = data;
       renderPark(key, data);
     } catch (err) {

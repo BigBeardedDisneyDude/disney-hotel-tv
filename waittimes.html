@@ -280,7 +280,9 @@
    shared with wdwwait.html. */
 const RESORT = {
   parks: [
-    { key: 'dl',  id: 16, name: 'Disneyland' },
+    { key: 'dl',  id: 16, name: 'Disneyland',
+      // Open Toontown playgrounds - walk-in, never a real wait.
+      hide: ['Donald\'s Duck Pond', 'Goofy\'s How-to-Play Yard'] },
     { key: 'dca', id: 17, name: 'California Adventure', tabLabel: 'Cal Adventure' },
   ],
 };
