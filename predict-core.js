@@ -130,13 +130,24 @@ if (r.ok) return await r.json();
 } catch(e) {}
 return null;
 }
+// Normalise a ride name for matching: lower-case, unify curly/〝smart〞
+// apostrophes and dashes to plain ASCII, collapse whitespace. Queue-Times is
+// inconsistent about these (e.g. "Soarin’ Across America" with a curly quote),
+// which otherwise breaks the string match against the roster's `qt` value.
+function normName(s) {
+return String(s == null ? '' : s).toLowerCase()
+.replace(/[‘’ʼ`]/g, "'")
+.replace(/[–—]/g, '-')
+.replace(/\s+/g, ' ')
+.trim();
+}
 async function loadLive(parkId) {
 const d = await fetchProxy(`https://queue-times.com/parks/${parkId}/queue_times.json`);
 if (!d?.lands) return {};
 const m = {};
 for (const land of d.lands)
 for (const ride of land.rides)
-m[ride.name.toLowerCase().trim()] = {wait:ride.wait_time, open:ride.is_open};
+m[normName(ride.name)] = {wait:ride.wait_time, open:ride.is_open};
 return m;
 }
 
@@ -246,7 +257,7 @@ return { arrow: '→', phrase: 'Holding steady', color: '#c9a000' };
 function getLive(ride) {
 if (!isParkOpen()) return { wait: null, closed: true };
 if(!live||!Object.keys(live).length) return {wait:null, closed:false};
-const k=ride.qt.toLowerCase().trim();
+const k=normName(ride.qt);
 const match = live[k] || Object.entries(live).find(([key])=>key.includes(k.slice(0,10))||k.includes(key.slice(0,10)))?.[1];
 if(!match) return {wait:null, closed:false};
 if(!match.open) return {wait:null, closed:true};
