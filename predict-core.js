@@ -54,29 +54,72 @@ const ridesOf = k => parkCfg(k).rides;
 
 // ── HISTORICAL PROFILE CACHE ─────────────────────────────────────────────────
 let historicalProfiles = null;
+let historicalBands = null; // profiles[park][rideName][idx] = {p25,p75}, raw minutes (not multiplier-scaled)
 let usingRealData = false;
+// Empirical correction on top of the hand-authored crowdLevel()/mult() table,
+// derived from how far real Supabase averages land from what that table would
+// have predicted for the SAME rides/hours today. Keyed by park; absent = 1x
+// (not enough same-day data yet to trust a correction). See effectiveMult().
+let autoTuneFactor = {};
+
+function percentile(sortedAsc, p) {
+if (!sortedAsc.length) return null;
+const idx = (sortedAsc.length - 1) * p;
+const lo = Math.floor(idx), hi = Math.ceil(idx);
+if (lo === hi) return sortedAsc[lo];
+return sortedAsc[lo] + (sortedAsc[hi] - sortedAsc[lo]) * (idx - lo);
+}
+
+// PostgREST (Supabase's REST layer) caps a response at 1000 rows by default,
+// with no error or warning — it just silently truncates. Combined with the
+// `order=ride_name,hour_of_day` below, an unpaginated query only ever sees
+// rides early in the alphabet, no matter how much history actually exists.
+// On a single busy day-type/season bucket for one park, the true row count is
+// easily 10x that cap (confirmed 11k+ for a Friday/regular-season/Disneyland
+// query on 2026-09-05), so this must page through everything rather than
+// trust the first page. MAX_ROWS is a circuit breaker, not a normal limit.
+const SUPABASE_PAGE_SIZE = 1000;
+const SUPABASE_MAX_ROWS = 20000;
+async function fetchAllRows(params) {
+const rows = [];
+let offset = 0;
+while (true) {
+const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times?${params}`, {
+headers: {
+apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
+Range: `${offset}-${offset + SUPABASE_PAGE_SIZE - 1}`
+},
+signal: AbortSignal.timeout(8000)
+});
+if (!res.ok && res.status !== 206) throw new Error(`Supabase ${res.status}`);
+const page = await res.json();
+rows.push(...page);
+if (page.length < SUPABASE_PAGE_SIZE || rows.length >= SUPABASE_MAX_ROWS) break;
+offset += SUPABASE_PAGE_SIZE;
+}
+return rows;
+}
 
 async function loadHistoricalProfiles() {
 if (SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
 const now = new Date();
 const pt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
 const dow = pt.getDay();
-const season = getSeason(pt.getMonth() + 1);
+const seasonKey = getSeason(pt.getMonth() + 1);
+try {
+const perPark = await Promise.all(PREDICT.parks.map(p => {
 const params = new URLSearchParams({
 select: 'park,ride_name,hour_of_day,wait_time',
+park: `eq.${p.key}`,
 day_of_week: `eq.${dow}`,
-season: `eq.${season}`,
+season: `eq.${seasonKey}`,
 is_open: 'eq.true',
 wait_time: 'gte.0',
 order: 'ride_name,hour_of_day'
 });
-try {
-const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times?${params}`, {
-headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
-signal: AbortSignal.timeout(8000)
-});
-if (!res.ok) throw new Error(`Supabase ${res.status}`);
-const rows = await res.json();
+return fetchAllRows(params);
+}));
+const rows = perPark.flat();
 if (!rows.length) return;
 const buckets = {};
 for (const row of rows) {
@@ -84,8 +127,12 @@ const key = `${row.park}|${row.ride_name}|${row.hour_of_day}`;
 if (!buckets[key]) buckets[key] = [];
 buckets[key].push(row.wait_time);
 }
-const profiles = {};
-PREDICT.parks.forEach(p => { profiles[p.key] = {}; });
+const profiles = {}, bands = {};
+PREDICT.parks.forEach(p => { profiles[p.key] = {}; bands[p.key] = {}; });
+// Reference point for measuring drift below: what the hand-authored table
+// would have predicted for today's day-type/season, before any tuning.
+const baselineMult = mult(crowdLevel(dayType(now), season(now)));
+const ratiosByPark = {};
 for (const [key, waits] of Object.entries(buckets)) {
 if (waits.length < MIN_SAMPLES) continue;
 const [pk, rideName, hourStr] = key.split('|');
@@ -93,28 +140,69 @@ if (!profiles[pk]) continue;             // a park this page doesn't show
 const hour = parseInt(hourStr);
 const idx = hour - 6;
 if (idx < 0 || idx > 17) continue;
+const sorted = [...waits].sort((a,b)=>a-b);
+const mean = waits.reduce((a,b)=>a+b,0) / waits.length;
 if (!profiles[pk][rideName]) profiles[pk][rideName] = new Array(18).fill(null);
-profiles[pk][rideName][idx] = Math.round(waits.reduce((a,b)=>a+b,0) / waits.length);
+if (!bands[pk][rideName]) bands[pk][rideName] = new Array(18).fill(null);
+profiles[pk][rideName][idx] = Math.round(mean);
+bands[pk][rideName][idx] = { p25: Math.round(percentile(sorted, 0.25)), p75: Math.round(percentile(sorted, 0.75)) };
+// How far off was the hand-authored baseline for this exact (ride, hour)?
+const cfg = PREDICT.parks.find(pp => pp.key === pk);
+const ride = cfg?.rides.find(r => r.name === rideName);
+const predicted = ride ? ride.p[idx] * baselineMult : 0;
+if (predicted > 0) (ratiosByPark[pk] = ratiosByPark[pk] || []).push(mean / predicted);
 }
 const covered = PREDICT.parks.some(p =>
 Object.keys(profiles[p.key]).length / Math.max(p.rides.length, 1) > 0.5);
 if (covered) {
 historicalProfiles = profiles;
+historicalBands = bands;
 usingRealData = true;
+autoTuneFactor = {};
+const MIN_RATIOS = 8; // need signal from enough (ride,hour) buckets to trust a park-wide correction
+for (const [pk, ratios] of Object.entries(ratiosByPark)) {
+if (ratios.length < MIN_RATIOS) continue;
+const sortedRatios = [...ratios].sort((a,b)=>a-b);
+const median = sortedRatios[Math.floor(sortedRatios.length / 2)];
+autoTuneFactor[pk] = Math.max(0.5, Math.min(2, median)); // clamp against noisy/small samples
+}
 console.log('Historical profiles loaded: ' +
-PREDICT.parks.map(p => `${Object.keys(profiles[p.key]).length} ${p.key}`).join(', '));
+PREDICT.parks.map(p => `${Object.keys(profiles[p.key]).length} ${p.key}` +
+(autoTuneFactor[p.key] ? ` (auto-tune ×${autoTuneFactor[p.key].toFixed(2)} from ${ratiosByPark[p.key].length} buckets)` : '')).join(', '));
 }
 } catch(e) {
 console.warn('Could not load historical profiles:', e.message);
 }
 }
 
+// The crowd multiplier actually used for display: the hand-authored table,
+// corrected by today's measured drift once there's enough same-day data to
+// trust a correction (see loadHistoricalProfiles). This is what "auto-tuning
+// the crowd multipliers from measured drift" means in practice — it only
+// affects hours estimated from the baseline shape; hours with real per-ride
+// data bypass this entirely (see getProfile below).
+function effectiveMult(l) {
+const base = mult(l);
+const factor = autoTuneFactor[park];
+return factor ? base * factor : base;
+}
+
 function getProfile(ride) {
-if (!usingRealData || !historicalProfiles) return { p: ride.p, real: false };
+if (!usingRealData || !historicalProfiles) return { p: ride.p, real: false, band: null };
 const rideProfile = historicalProfiles[park]?.[ride.name];
-if (!rideProfile) return { p: ride.p, real: false };
-const filled = rideProfile.map((v, i) => v !== null ? v : ride.p[i]);
-return { p: filled, real: true };
+if (!rideProfile) return { p: ride.p, real: false, band: null };
+// Real per-hour averages already reflect today's actual day-type/season crowd
+// level, so they must NOT be scaled by the crowd multiplier again — every
+// caller multiplies this whole array by `m` uniformly, so pre-dividing real
+// values by that same `m` here cancels back out to the true measured value,
+// while `ride.p[i]` fallback hours (a plain baseline shape) still get scaled
+// as intended. `m` is deterministic for a given day, so this matches whatever
+// `m` each caller computes independently.
+const now = new Date();
+const m = effectiveMult(crowdLevel(dayType(now), season(now)));
+const filled = rideProfile.map((v, i) => v !== null ? v / m : ride.p[i]);
+const band = historicalBands?.[park]?.[ride.name] || null;
+return { p: filled, real: true, band };
 }
 
 function getSeason(month) {
@@ -427,7 +515,7 @@ return el;
 
 function renderFavs() {
 const now=new Date(), dt=dayType(now), s=season(now);
-const cl=crowdLevel(dt,s), m=mult(cl), hi=hIdx(now);
+const cl=crowdLevel(dt,s), m=effectiveMult(cl), hi=hIdx(now);
 const rides = ridesOf(park);
 const section = document.getElementById('fav-section');
 const pg = document.getElementById('fav-picks');
@@ -457,14 +545,15 @@ favRides.forEach(r=>{const c=document.getElementById(`sp-${r.id}-fav`);if(c)spar
 
 function render() {
 const now=new Date(), dt=dayType(now), s=season(now);
-const cl=crowdLevel(dt,s), m=mult(cl), hi=hIdx(now);
+const cl=crowdLevel(dt,s), m=effectiveMult(cl), hi=hIdx(now);
 document.getElementById('ctx-day').textContent=dt;
 document.getElementById('ctx-season').textContent=s;
 document.getElementById('crowd-lbl').textContent=['','Low','Mild','Moderate','Busy','Very Busy'][cl];
 document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i<cl));
 const dsBadge = document.getElementById('data-source');
 if (usingRealData) {
-dsBadge.textContent = '✦ Real historical data';
+const tune = autoTuneFactor[park];
+dsBadge.textContent = '✦ Real historical data' + (tune ? ` (crowd ×${tune.toFixed(2)} auto-tuned)` : '');
 dsBadge.style.display = 'inline';
 dsBadge.style.background = 'rgba(45,106,45,.18)';
 dsBadge.style.color = 'var(--green)';
@@ -610,7 +699,7 @@ return HRS[bookIdx];
 function renderLL() {
 const now = new Date();
 const dt = dayType(now), s = season(now);
-const cl = crowdLevel(dt, s), m = mult(cl);
+const cl = crowdLevel(dt, s), m = effectiveMult(cl);
 const rides = ridesOf(park);
 
 const scored = rides.map(r => {
@@ -736,9 +825,10 @@ const rides = ridesOf(park);
 const r = rides.find(x=>x.id===id);
 if (!r) return;
 const now=new Date(), dt=dayType(now), s=season(now);
-const cl=crowdLevel(dt,s), m=mult(cl), hi=hIdx(now);
+const cl=crowdLevel(dt,s), m=effectiveMult(cl), hi=hIdx(now);
 const {start, end} = parkOpenRange();
-const {p, real} = getProfile(r);
+const {p, real, band} = getProfile(r);
+const hourBand = band ? band[hi] : null;
 document.getElementById('modal-name').textContent = r.name;
 document.getElementById('modal-land').textContent = r.land + (real ? ' · ✦ real data' : ' · est. profile');
 const openVals = p.slice(start, end+1).map(v=>disneyRound(Math.round(v*m), r.id));
@@ -767,6 +857,11 @@ document.getElementById('modal-stats').innerHTML = `
 <div class="modal-stat-val" style="${isClosed?'font-size:.8rem;color:var(--muted)':''}">${isClosed?'Closed':(nowEst?'~':'')+nowWait+' min'}</div>
 <div class="modal-stat-sub" style="color:${trend?trend.color:'inherit'}">${isClosed?'check back later':trend?`${trend.arrow} ${trend.phrase}`:''}</div>
 </div>
+${hourBand && !isClosed ? `<div class="modal-stat">
+<div class="modal-stat-lbl">Typical Range</div>
+<div class="modal-stat-val">${hourBand.p25}–${hourBand.p75} min</div>
+<div class="modal-stat-sub">25th–75th pctile, this hour</div>
+</div>` : ''}
 <div class="modal-stat">
 <div class="modal-stat-lbl">Today's Low</div>
 <div class="modal-stat-val">${minWait} min</div>
@@ -888,6 +983,7 @@ function switchPark(key) {
 park=key; live={}; searchQ='';
 favs = loadFavs();
 historicalProfiles = null;
+historicalBands = null;
 usingRealData = false;
 llOpen = false;
 document.getElementById('ll-body').classList.remove('open');
