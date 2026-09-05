@@ -154,7 +154,10 @@ async function handleProxy(request) {
       return jsonError(request, "upstream fetch failed: " + err.message, 502);
     }
     if (!upstream.ok) {
-      return jsonError(request, "upstream responded " + upstream.status, upstream.status === 429 ? 429 : 502);
+      // Pass the real upstream status through (rather than collapsing everything
+      // to 502) so callers can tell a rotted ThemeParks.wiki entity id (404) apart
+      // from a rate limit (429) or a generic upstream failure.
+      return jsonError(request, "upstream responded " + upstream.status, upstream.status);
     }
     entry = {
       body: await upstream.text(),

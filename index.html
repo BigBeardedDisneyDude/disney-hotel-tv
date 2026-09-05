@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Magic Key TV</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="tv-mode.css">
+<link rel="stylesheet" href="tv-mode.css?v=20260904">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -264,7 +264,7 @@ body.wallpaper-mode #bg-fallback { animation: kenburns 45s ease-in-out infinite 
 </style>
 </head>
 <body>
-<script src="tv-mode.js"></script>
+<script src="tv-mode.js?v=20260904"></script>
 <canvas id="fireworks-canvas" style="position:fixed;inset:0;z-index:300;pointer-events:none;opacity:0;transition:opacity 1s;"></canvas>
 
 <div id="bg">
@@ -601,6 +601,13 @@ function updateClock() {
 updateClock(); setInterval(updateClock, 30000); window.addEventListener('resize', updateClock);
 
 fetchWeather(33.8353, -117.9145);
+const WEATHER_CACHE_MAX_AGE_MS = 60*60*1000; // generous ceiling above the ~10min normal refresh
+function showWeather(temp,icon,desc){
+  document.getElementById('weather-loading').style.display='none';
+  document.getElementById('weather-temp').textContent=temp;
+  document.getElementById('weather-icon').textContent=icon;
+  document.getElementById('weather-desc').textContent=desc;
+}
 function fetchWeather(lat, lon) {
   fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current_weather=true&temperature_unit=fahrenheit&wind_speed_unit=mph').then(r=>r.json()).then(data=>{
     const cw=data.current_weather, temp=Math.round(cw.temperature)+'°F', code=cw.weathercode;
@@ -611,11 +618,15 @@ function fetchWeather(lat, lon) {
     if (code>=71&&code<=77){icon='❄️';desc='Snow';}
     if (code>=80&&code<=82){icon='🌦️';desc='Showers';}
     if (code>=95){icon='⛈️';desc='Thunderstorm';}
-    document.getElementById('weather-loading').style.display='none';
-    document.getElementById('weather-temp').textContent=temp;
-    document.getElementById('weather-icon').textContent=icon;
-    document.getElementById('weather-desc').textContent=desc;
-  }).catch(()=>{document.getElementById('weather-loading').textContent='';});
+    showWeather(temp,icon,desc);
+    try { localStorage.setItem('dh_weather_cache',JSON.stringify({t:Date.now(),temp,icon,desc})); } catch(e){}
+  }).catch(()=>{
+    try {
+      const cached=JSON.parse(localStorage.getItem('dh_weather_cache')||'null');
+      if (cached && Date.now()-cached.t<=WEATHER_CACHE_MAX_AGE_MS) { showWeather(cached.temp,cached.icon,cached.desc); return; }
+    } catch(e){}
+    document.getElementById('weather-loading').textContent='';
+  });
 }
 
 function openModal() { const nudge=document.getElementById('first-run-nudge'); nudge.classList.remove('show'); document.getElementById('input-name').value=params.name||''; document.getElementById('input-trip').value=params.trip||''; document.getElementById('modal-overlay').classList.add('open'); setTimeout(()=>document.getElementById('input-name').focus(),200); }

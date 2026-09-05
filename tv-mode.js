@@ -8,10 +8,14 @@
  *  a TV or large display.
  *
  *  Usage:
- *    <link rel="stylesheet" href="tv-mode.css">
- *    <script src="tv-mode.js"></script>
+ *    <link rel="stylesheet" href="tv-mode.css?v=YYYYMMDD">
+ *    <script src="tv-mode.js?v=YYYYMMDD"></script>
  *
  *  Or paste inline at the bottom of each page's <script>
+ *
+ *  Bump the ?v= on every page that includes this file (and tv-mode.css)
+ *  whenever you edit either one, so browsers don't keep serving a stale
+ *  cached copy after a deploy.
  * =====================================================
  */
 

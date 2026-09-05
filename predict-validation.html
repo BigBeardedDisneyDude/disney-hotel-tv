@@ -137,6 +137,11 @@ canvas{width:100%!important;height:100%!important}
 
 <main>
 
+  <!-- Rename watchdog: rides whose `qt` name stopped matching live Queue-Times
+       data, flagged by predict.html and persisted to localStorage since that's
+       a different page load. See MISMATCH_KEY in predict-core.js. -->
+  <div id="watchdog-banner" style="display:none"></div>
+
   <!-- Controls -->
   <div class="controls">
     <div class="tabs">
@@ -566,8 +571,29 @@ function renderChart(id, scroll = false) {
   }
 }
 
+// ── RENAME WATCHDOG BANNER ───────────────────────────────────────────────────
+// Reads what predict-core.js's checkRenameWatchdog() persisted (see MISMATCH_KEY
+// there) since that's a separate page load from this one.
+function renderWatchdog() {
+  let store;
+  try { store = JSON.parse(localStorage.getItem('dh_qt_mismatches') || '{}'); } catch(e) { store = {}; }
+  const entries = Object.values(store);
+  const el = document.getElementById('watchdog-banner');
+  if (!entries.length) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.style.cssText = 'background:var(--yellow-bg);border:1px solid rgba(138,112,0,.3);border-radius:8px;padding:.7rem .9rem;margin-bottom:.9rem;font-size:.72rem;color:var(--yellow)';
+  el.innerHTML = '<strong>⚠ Possible rename drift:</strong> these rides haven\'t matched a live Queue-Times name in a while — check for a seasonal overlay title and update their <code>qt</code> value in the page\'s PREDICT config.<ul style="margin:.4rem 0 0 1.1rem">' +
+    entries.map(e => `<li>${e.name} (${e.parkName}) — qt: "${e.qt}", first seen ${new Date(e.firstDetected).toLocaleDateString()}</li>`).join('') +
+    '</ul><button onclick="dismissWatchdog()" style="margin-top:.5rem;font-family:\'Cinzel\',serif;font-size:.58rem;letter-spacing:.06em;padding:.3rem .7rem;border:1px solid var(--yellow);border-radius:5px;background:transparent;color:var(--yellow);cursor:pointer">Dismiss</button>';
+}
+function dismissWatchdog() {
+  localStorage.removeItem('dh_qt_mismatches');
+  renderWatchdog();
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadData();
+renderWatchdog();
 </script>
 </body>
 </html>

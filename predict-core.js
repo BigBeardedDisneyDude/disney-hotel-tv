@@ -32,6 +32,9 @@
  * collector writes to Supabase (`dl`, `dca`, `mk`, `epcot`, `hs`, `ak`), or
  * the historical-profile blend for that park will never match any rows.
  *
+ * IMPORTANT: bump the `?v=` on every shell's `<script src="predict-core.js?v=...">`
+ * whenever you edit this file, so browsers don't keep serving a stale cached copy.
+ *
  * The shell also supplies: the page styling, the <header> + home link, the
  * <title>, and these containers for this file to fill / drive:
  *
@@ -123,13 +126,52 @@ return 'regular';
 
 // ── LIVE WAITS (Queue-Times via Worker proxy) ────────────────────────────────
 const WORKER_PROXY = 'https://restless-glade-a1e4.andpcooke.workers.dev/proxy?url=';
-async function fetchProxy(url) {
+// Last-resort fallback if our own Worker is down or over its free-tier request
+// ceiling — the Worker is a single point of failure shared by this page, the
+// wait-times pages and the Rainmeter widget. Only tried when the Worker fails.
+const FALLBACK_PROXY = 'https://api.allorigins.win/raw?url=';
+
+// Returns { ok, status, data } so callers that need the real HTTP status (park
+// hours does, to tell a rotted ThemeParks.wiki id apart from a rate limit)
+// can see it, instead of just success/failure.
+async function fetchProxyStatus(url) {
 try {
 const r = await fetch(WORKER_PROXY + encodeURIComponent(url), {signal:AbortSignal.timeout(9000)});
-if (r.ok) return await r.json();
+if (r.ok) return { ok: true, status: r.status, data: await r.json() };
+return { ok: false, status: r.status, data: null };
+} catch(e) {
+return { ok: false, status: 0, data: null };
+}
+}
+async function fetchProxy(url) {
+const primary = await fetchProxyStatus(url);
+if (primary.ok) return primary.data;
+try {
+const r = await fetch(FALLBACK_PROXY + encodeURIComponent(url), {signal:AbortSignal.timeout(9000)});
+if (r.ok) {
+console.warn('[predict] Worker proxy failed (status ' + primary.status + ') — used fallback CORS proxy for', url);
+return JSON.parse(await r.text());
+}
 } catch(e) {}
 return null;
 }
+
+// ── SMALL LOCALSTORAGE RESPONSE CACHE ────────────────────────────────────────
+// Keeps the last good response around so a transient fetch failure degrades to
+// "slightly stale data, clearly labeled" instead of blanking the page.
+function cacheGet(key, maxAgeMs) {
+try {
+const raw = localStorage.getItem(key);
+if (!raw) return null;
+const { t, v } = JSON.parse(raw);
+if (Date.now() - t > maxAgeMs) return null;
+return { value: v, ageMs: Date.now() - t };
+} catch(e) { return null; }
+}
+function cacheSet(key, v) {
+try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), v })); } catch(e) {}
+}
+const WAITS_CACHE_MAX_AGE_MS = 20 * 60 * 1000; // generous ceiling above the ~60s normal freshness
 // Normalise a ride name for matching: lower-case, unify curly/〝smart〞
 // apostrophes and dashes to plain ASCII, collapse whitespace. Queue-Times is
 // inconsistent about these (e.g. "Soarin’ Across America" with a curly quote),
@@ -141,14 +183,23 @@ return String(s == null ? '' : s).toLowerCase()
 .replace(/\s+/g, ' ')
 .trim();
 }
+function liveCacheKey(parkId) { return `dh_live_cache_${parkId}`; }
 async function loadLive(parkId) {
 const d = await fetchProxy(`https://queue-times.com/parks/${parkId}/queue_times.json`);
-if (!d?.lands) return {};
+if (!d?.lands) {
+const cached = cacheGet(liveCacheKey(parkId), WAITS_CACHE_MAX_AGE_MS);
+if (cached) {
+console.warn(`[predict] Live fetch failed — showing cached wait times from ${Math.round(cached.ageMs/1000)}s ago`);
+return { data: cached.value, stale: true, ageMs: cached.ageMs };
+}
+return { data: {}, stale: false, ageMs: 0 };
+}
 const m = {};
 for (const land of d.lands)
 for (const ride of land.rides)
 m[normName(ride.name)] = {wait:ride.wait_time, open:ride.is_open};
-return m;
+cacheSet(liveCacheKey(parkId), m);
+return { data: m, stale: false, ageMs: 0 };
 }
 
 // ── PARK HOURS (ThemeParks.wiki) ─────────────────────────────────────────────
@@ -160,10 +211,29 @@ return m;
 const parkHours = {};
 const OPEN_SCHEDULE_TYPES = ['OPERATING', 'TICKETED_EVENT', 'EXTRA_HOURS'];
 async function loadParkHours(parkKey) {
-const id = parkCfg(parkKey).twId;
+const cfg = parkCfg(parkKey);
+const id = cfg.twId;
 if (!id) return;
 const url = `https://api.themeparks.wiki/v1/entity/${id}/schedule`;
-const data = await fetchProxy(url);
+let res = await fetchProxyStatus(url);
+if (!res.ok && res.status !== 404) {
+// A 404 means the entity id itself is bad — retrying via a different proxy
+// won't fix that. Anything else (network failure, 5xx, rate limit) might be
+// our own Worker having a bad moment, so it's worth the fallback proxy.
+try {
+const r = await fetch(FALLBACK_PROXY + encodeURIComponent(url), {signal:AbortSignal.timeout(9000)});
+if (r.ok) { res = { ok:true, status:r.status, data: JSON.parse(await r.text()) }; console.warn('[predict] Worker proxy failed for park hours — used fallback CORS proxy'); }
+} catch(e) {}
+}
+if (!res.ok) {
+if (res.status === 404) {
+console.error(`[predict] ThemeParks.wiki entity id "${id}" for ${cfg.name} returned 404 — the id has likely rotted. Look up the current one at https://api.themeparks.wiki/v1/destinations and update twId in this page's PREDICT config. Falling back to assuming the park is open (no hours data available).`);
+} else if (res.status !== 0) {
+console.warn(`[predict] Park hours fetch for ${cfg.name} failed with status ${res.status}. Falling back to assuming the park is open.`);
+}
+return;
+}
+const data = res.data;
 if (!data?.schedule) return;
 const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
 const windows = data.schedule
@@ -262,6 +332,44 @@ const match = live[k] || Object.entries(live).find(([key])=>key.includes(k.slice
 if(!match) return {wait:null, closed:false};
 if(!match.open) return {wait:null, closed:true};
 return {wait:match.wait, closed:false};
+}
+
+// ── RENAME WATCHDOG ──────────────────────────────────────────────────────────
+// Disney reskins some rides seasonally (Soarin' -> "Soarin' Across America",
+// Luigi's -> "Honkin' Haul-O-Ween", etc.), which silently breaks the `qt`
+// name match and quietly falls back to the estimated profile. Rather than let
+// that drift go unnoticed, flag any roster ride that fails to match a live
+// Queue-Times name for several refreshes in a row (a single miss can just be
+// the ride being briefly absent from the feed) while the park is confirmed
+// open and the live payload looks real. Findings are logged to the console
+// and persisted to localStorage so predict-validation.html can surface them
+// even though it's a different page load.
+const MISMATCH_KEY = 'dh_qt_mismatches';
+const MISMATCH_STREAK_THRESHOLD = 3;
+const mismatchStreaks = {};
+function checkRenameWatchdog() {
+if (!isParkOpen()) return;
+const liveKeys = Object.keys(live);
+if (liveKeys.length < 5) return; // payload too small to trust a "no match" verdict
+ridesOf(park).forEach(r => {
+const k = normName(r.qt);
+const matched = live[k] || liveKeys.some(key => key.includes(k.slice(0,10)) || k.includes(key.slice(0,10)));
+const streakKey = `${park}|${r.id}`;
+if (matched) { mismatchStreaks[streakKey] = 0; return; }
+mismatchStreaks[streakKey] = (mismatchStreaks[streakKey] || 0) + 1;
+if (mismatchStreaks[streakKey] === MISMATCH_STREAK_THRESHOLD) {
+console.warn(`[predict] "${r.name}" (qt: "${r.qt}") hasn't matched any live Queue-Times name in ${MISMATCH_STREAK_THRESHOLD} refreshes — it may have a seasonal overlay name right now. Check queue-times.com/parks/${parkCfg(park).qtId}/queue_times.json and update its qt value.`);
+recordMismatch(r);
+}
+});
+}
+function recordMismatch(ride) {
+let store;
+try { store = JSON.parse(localStorage.getItem(MISMATCH_KEY) || '{}'); } catch(e) { store = {}; }
+const key = `${park}|${ride.id}`;
+const now = new Date().toISOString();
+store[key] = { park, parkName: parkCfg(park).name, id: ride.id, name: ride.name, qt: ride.qt, firstDetected: store[key]?.firstDetected || now, lastSeen: now };
+localStorage.setItem(MISMATCH_KEY, JSON.stringify(store));
 }
 
 function disneyRound(wait, rideId) {
@@ -750,12 +858,18 @@ document.getElementById('main-content').classList.toggle('hidden', on);
 async function refresh() {
 const badge=document.getElementById('badge');
 badge.textContent='● FETCHING'; badge.className='badge stale';
-const data=await loadLive(parkCfg(park).qtId);
+const {data, stale, ageMs}=await loadLive(parkCfg(park).qtId);
 if(data&&Object.keys(data).length){
 live=data;
+if (stale) {
+badge.textContent='● CACHED'; badge.className='badge stale';
+document.getElementById('updated').textContent=`Live fetch failed — showing wait times from ${Math.round(ageMs/60000)} min ago`;
+} else {
 badge.textContent='● LIVE'; badge.className='badge';
 const n=new Date();
 document.getElementById('updated').textContent=`Live data as of ${n.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`;
+checkRenameWatchdog();
+}
 } else {
 badge.textContent='● HISTORICAL'; badge.className='badge err';
 document.getElementById('updated').textContent='Live data unavailable — showing historical estimates only';
