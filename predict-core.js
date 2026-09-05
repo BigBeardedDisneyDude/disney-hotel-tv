@@ -982,9 +982,6 @@ if(r) openModal(r.id);
 function switchPark(key) {
 park=key; live={}; searchQ='';
 favs = loadFavs();
-historicalProfiles = null;
-historicalBands = null;
-usingRealData = false;
 llOpen = false;
 document.getElementById('ll-body').classList.remove('open');
 document.getElementById('ll-toggle').textContent = 'Show ▾';
@@ -992,10 +989,14 @@ document.getElementById('ll-toggle').classList.remove('open');
 document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.park === key));
 document.getElementById('q').value='';
 setLoading(true);
-Promise.all([
-loadParkHours(key),
-loadHistoricalProfiles()
-]).then(() => refresh());
+// Deliberately NOT re-calling loadHistoricalProfiles() here: it always fetches
+// every park in PREDICT.parks in one go (see its own comment), so the initial
+// page-load call already cached every park's data for today. Re-running it on
+// every tab switch used to re-fetch every park's data again just to switch
+// which one is on screen — the actual waste the 2026-09-05 Supabase-egress
+// review flagged. The 24h interval at the bottom of this file still refreshes
+// everything once the day/season rolls over.
+loadParkHours(key).then(() => refresh());
 }
 
 // Inline oninput="" / onclick="" handlers in the shell markup call these by name.
