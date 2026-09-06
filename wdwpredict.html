@@ -51,10 +51,13 @@ main{flex:1;background:var(--cream);padding:1rem 1rem 2rem;display:flex;flex-dir
 .crowd-lbl{font-family:'Playfair Display',serif;font-size:.56rem;color:var(--muted);letter-spacing:.05em}
 #updated{font-family:'Cormorant Garamond',serif;font-size:.64rem;color:var(--muted);font-style:italic;width:100%}
 .controls{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
-.tabs{display:flex;border:1.5px solid var(--gold-dim);border-radius:6px;overflow:hidden;width:fit-content;flex-wrap:wrap}
-.tab{font-family:'Playfair Display',serif;font-size:.62rem;letter-spacing:.06em;padding:.4rem .9rem;border:none;cursor:pointer;background:transparent;color:var(--gold-dim);transition:all .2s;border-right:1px solid var(--gold-dim);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-.tab:last-child{border-right:none}
-.tab.on{background:var(--teal);color:var(--gold-light)}
+/* Separated chips rather than a joined segmented bar: with four long park
+   names the row wraps on a phone, and a joined bar gave the wrapped tabs no
+   divider between them. Each tab now carries its own full border so every
+   park reads as a distinct cell on any width. */
+.tabs{display:flex;flex-wrap:wrap;gap:.4rem;width:fit-content;max-width:100%}
+.tab{font-family:'Playfair Display',serif;font-size:.62rem;letter-spacing:.06em;padding:.42rem .9rem;border:1.5px solid var(--gold-dim);border-radius:6px;cursor:pointer;background:var(--card);color:var(--gold-dim);transition:all .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.tab.on{background:var(--teal);color:var(--gold-light);border-color:var(--teal)}
 .tab:not(.on):hover{background:var(--cream-dark);color:var(--teal)}
 .search-wrap{position:relative;flex:1;min-width:140px;max-width:300px}
 .search-wrap svg{position:absolute;left:.55rem;top:50%;transform:translateY(-50%);width:11px;height:11px;opacity:.38;pointer-events:none;color:var(--muted)}
