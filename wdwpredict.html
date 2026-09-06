@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>WDW Ride Predictor – Magic Key TV</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+--teal:#2b5425; --gold:#c8a96e; --gold-light:#e6d0a0; --gold-dim:#a8854a;
+--cream:#fdf8ee; --cream-dark:#efe2c6; --card:#fffdf7;
+--text:#241c10; --muted:#6b5836;
+--green:#2d6a2d; --green-bg:#e8f5e8;
+--yellow:#8a7000; --yellow-bg:#fff8d6;
+--red:#7a3028; --red-bg:#f7ebe8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;overflow-x:hidden}
+body{background:var(--cream);font-family:'Cormorant Garamond',Georgia,serif;color:var(--text);min-height:100%;display:flex;flex-direction:column;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;position:sticky;top:0;z-index:50;gap:.6rem;overflow:hidden}
+.hdr-left{display:flex;align-items:center;gap:.65rem;min-width:0;flex:1;overflow:hidden}
+.home-btn{font-family:'Playfair Display',serif;font-size:.6rem;color:var(--gold);text-decoration:none;letter-spacing:.07em;opacity:.75;transition:opacity .2s;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.home-btn:hover{opacity:1}
+.hdr-div{width:1px;height:16px;background:var(--gold-dim);opacity:.4;flex-shrink:0}
+.hdr-title{font-family:'Playfair Display',serif;font-size:.78rem;font-weight:600;color:var(--gold-light);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.hdr-right{display:flex;align-items:center;gap:.55rem;flex-shrink:0}
+#clock{font-family:'Playfair Display',serif;font-size:.82rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap}
+.badge{font-family:'Playfair Display',serif;font-size:.48rem;letter-spacing:.09em;padding:.14rem .4rem;border-radius:999px;white-space:nowrap;background:rgba(45,106,45,.22);color:#3f8f3f;border:1px solid rgba(63,143,63,.3)}
+.badge.stale{background:rgba(138,112,0,.18);color:var(--gold-dim);border-color:rgba(168,133,74,.4)}
+.badge.err{background:rgba(122,48,40,.16);color:#a5564a;border-color:rgba(165,86,74,.35)}
+@media(max-width:360px){.badge{display:none}}
+
+/* ── "STILL BUILDING" BANNER ── */
+.build-banner{display:flex;align-items:flex-start;gap:.7rem;background:var(--yellow-bg);border-bottom:1px solid var(--gold-dim);padding:.6rem 1rem;font-family:'Cormorant Garamond',serif}
+.build-banner[hidden]{display:none}
+.build-banner .bb-text{flex:1;font-size:.82rem;line-height:1.45;color:#6a5410}
+.build-banner .bb-text strong{font-family:'Playfair Display',serif;font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:#5a4708;display:block;margin-bottom:.15rem}
+.build-banner .bb-close{background:none;border:1px solid rgba(138,112,0,.35);color:#7a6010;border-radius:999px;width:20px;height:20px;line-height:1;font-size:.7rem;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:background .15s}
+.build-banner .bb-close:hover{background:rgba(138,112,0,.12)}
+@media(min-width:600px){.build-banner{padding:.7rem 1.75rem}}
+
+main{flex:1;background:var(--cream);padding:1rem 1rem 2rem;display:flex;flex-direction:column;gap:1.1rem}
+@media(min-width:600px){main{padding:1.35rem 1.75rem 2rem;gap:1.35rem}}
+.ctx-bar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.ctx-lbl{font-family:'Playfair Display',serif;font-size:.58rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.ctx-pill{background:var(--teal);color:var(--gold-light);font-family:'Playfair Display',serif;font-size:.58rem;letter-spacing:.07em;padding:.17rem .6rem;border-radius:999px}
+.crowd{display:flex;align-items:center;gap:.38rem;margin-left:auto}
+.dots{display:flex;gap:3px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--cream-dark);border:1px solid var(--gold-dim)}
+.dot.on{background:var(--gold);border-color:var(--gold)}
+.crowd-lbl{font-family:'Playfair Display',serif;font-size:.56rem;color:var(--muted);letter-spacing:.05em}
+#updated{font-family:'Cormorant Garamond',serif;font-size:.64rem;color:var(--muted);font-style:italic;width:100%}
+.controls{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+.tabs{display:flex;border:1.5px solid var(--gold-dim);border-radius:6px;overflow:hidden;width:fit-content;flex-wrap:wrap}
+.tab{font-family:'Playfair Display',serif;font-size:.62rem;letter-spacing:.06em;padding:.4rem .9rem;border:none;cursor:pointer;background:transparent;color:var(--gold-dim);transition:all .2s;border-right:1px solid var(--gold-dim);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.tab:last-child{border-right:none}
+.tab.on{background:var(--teal);color:var(--gold-light)}
+.tab:not(.on):hover{background:var(--cream-dark);color:var(--teal)}
+.search-wrap{position:relative;flex:1;min-width:140px;max-width:300px}
+.search-wrap svg{position:absolute;left:.55rem;top:50%;transform:translateY(-50%);width:11px;height:11px;opacity:.38;pointer-events:none;color:var(--muted)}
+input[type=text]{width:100%;font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--text);background:var(--card);border:1px solid var(--gold-dim);border-radius:6px;padding:.37rem .75rem .37rem 1.75rem;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+input[type=text]:focus{border-color:var(--teal)}
+input[type=text]::placeholder{color:var(--muted);font-style:italic}
+.sec-hdr{display:flex;align-items:baseline;gap:.6rem;border-bottom:1px solid var(--gold-dim);padding-bottom:.34rem;margin-bottom:.72rem;flex-wrap:wrap}
+.sec-title{font-family:'Playfair Display',serif;font-size:.65rem;font-weight:600;color:var(--teal);letter-spacing:.1em;text-transform:uppercase}
+.sec-sub{font-family:'Cormorant Garamond',serif;font-size:.82rem;color:var(--muted);font-style:italic}
+.picks{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+@media(max-width:360px){.picks{grid-template-columns:1fr}}
+@media(min-width:580px){.picks{grid-template-columns:repeat(auto-fill,minmax(185px,1fr))}}
+.card{background:var(--card);border:1px solid var(--gold-dim);border-radius:8px;padding:.75rem .85rem;position:relative;overflow:hidden;transition:box-shadow .2s,transform .15s;animation:up .3s ease both;-webkit-tap-highlight-color:transparent;cursor:pointer;touch-action:manipulation}
+.card:active{transform:scale(.98)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.card.go::before{background:var(--green)}
+.card.caution::before{background:#c9a000}
+.card.skip::before{background:var(--red)}
+.card:nth-child(1){animation-delay:.04s}.card:nth-child(2){animation-delay:.08s}
+.card:nth-child(3){animation-delay:.12s}.card:nth-child(4){animation-delay:.16s}
+.cbadge{font-family:'Playfair Display',serif;font-size:.52rem;letter-spacing:.09em;text-transform:uppercase;padding:.14rem .44rem;border-radius:999px;display:inline-block;margin-bottom:.36rem}
+.go .cbadge{background:var(--green-bg);color:var(--green)}
+.caution .cbadge{background:var(--yellow-bg);color:var(--yellow)}
+.skip .cbadge{background:var(--red-bg);color:var(--red)}
+.cname{font-family:'Playfair Display',serif;font-size:.7rem;font-weight:600;color:var(--teal);line-height:1.3;margin-bottom:.22rem}
+.cland{font-size:.72rem;color:var(--muted);font-style:italic;margin-bottom:.42rem}
+.cwait-row{display:flex;align-items:baseline;gap:.38rem}
+.cwait{font-family:'Playfair Display',serif;font-size:1.18rem;font-weight:700;color:var(--teal);line-height:1}
+.cwait span{font-size:.57rem;font-weight:400;color:var(--muted)}
+.live-tag{font-family:'Playfair Display',serif;font-size:.47rem;letter-spacing:.08em;padding:.1rem .32rem;border-radius:999px;background:rgba(45,106,45,.13);color:var(--green);border:1px solid rgba(45,106,45,.2)}
+.est-tag{font-family:'Playfair Display',serif;font-size:.47rem;letter-spacing:.08em;padding:.1rem .32rem;border-radius:999px;background:rgba(107,88,54,.1);color:var(--muted);border:1px solid rgba(107,88,54,.2)}
+canvas.spark{margin-top:.42rem;height:22px;width:100%;display:block}
+.ctip{font-size:.72rem;color:var(--muted);font-style:italic;margin-top:.36rem;line-height:1.4}
+.fav-btn{background:none;border:none;cursor:pointer;padding:0 0 0 .2rem;line-height:1;flex-shrink:0;font-size:15px;opacity:.3;transition:opacity .15s,transform .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.fav-btn:hover{opacity:.7}
+.fav-btn.on{opacity:1;transform:scale(1.15)}
+.fav-section{display:none}
+.fav-section.visible{display:block}
+.grid{display:grid;grid-template-columns:1fr;gap:.42rem}
+@media(min-width:500px){.grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}}
+.row{background:var(--card);border:1px solid rgba(168,133,74,.22);border-radius:6px;padding:.5rem .7rem;display:flex;align-items:center;gap:.55rem;transition:background .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.row:active{background:var(--cream-dark)}
+.row.hide{display:none}
+.rdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rdot.go{background:var(--green)}.rdot.caution{background:#c9a000}.rdot.skip{background:var(--red)}.rdot.closed{background:var(--muted);opacity:.5}
+.rcol{flex:1;min-width:0}
+.rname{font-family:'Playfair Display',serif;font-size:.65rem;color:var(--teal);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rland{font-size:.66rem;color:var(--muted);font-style:italic}
+.rright{text-align:right;flex-shrink:0}
+.rwait{font-family:'Playfair Display',serif;font-size:.82rem;font-weight:600;color:var(--teal);white-space:nowrap}
+.rwait small{font-family:'Cormorant Garamond',serif;font-size:.62rem;font-weight:400;color:var(--muted)}
+.rbest{font-size:.62rem;color:var(--green);font-style:italic;white-space:nowrap}
+.noresult{grid-column:1/-1;font-style:italic;color:var(--muted);font-size:.9rem;padding:.4rem 0;display:none}
+.legend{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center}
+.li{display:flex;align-items:center;gap:.28rem;font-size:.7rem;color:var(--muted);font-style:italic}
+.ld{width:7px;height:7px;border-radius:50%}
+.modal-backdrop{position:fixed;inset:0;background:rgba(18,31,16,.75);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;transition:opacity .2s;pointer-events:none}
+.modal-backdrop.open{opacity:1;pointer-events:all}
+@media(min-width:520px){.modal-backdrop{align-items:center;padding:1rem}}
+.modal{background:#fdf8ee;border:2px solid var(--gold);border-radius:14px 14px 0 0;width:100%;max-width:540px;padding:1rem 1.1rem 1.6rem;position:relative;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -8px 40px rgba(0,0,0,.35)}
+@media(min-width:520px){.modal{border-radius:10px;max-height:85vh;padding:1.2rem 1.35rem 1.4rem;box-shadow:0 8px 40px rgba(0,0,0,.35)}}
+.modal-handle{width:36px;height:4px;background:var(--gold-dim);opacity:.4;border-radius:2px;margin:0 auto .85rem}
+@media(min-width:520px){.modal-handle{display:none}}
+.modal-close{position:absolute;top:.65rem;right:.85rem;background:none;border:none;font-family:'Playfair Display',serif;font-size:.7rem;color:var(--gold-dim);cursor:pointer;letter-spacing:.08em;opacity:.7;transition:opacity .2s;-webkit-tap-highlight-color:transparent}
+.modal-close:hover{opacity:1}
+.modal-ride-name{font-family:'Playfair Display',serif;font-size:.88rem;font-weight:600;color:var(--teal);margin-bottom:.12rem;padding-right:3rem;line-height:1.3}
+.modal-land{font-size:.78rem;color:var(--muted);font-style:italic;margin-bottom:.85rem}
+.modal-chart-wrap{position:relative;width:100%;height:145px}
+.modal-stats{display:flex;gap:.55rem;margin-top:.8rem;flex-wrap:wrap}
+.modal-stat{flex:1;min-width:75px;background:var(--cream-dark);border-radius:6px;padding:.48rem .62rem}
+.modal-stat-lbl{font-family:'Playfair Display',serif;font-size:.53rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:.16rem}
+.modal-stat-val{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:600;color:var(--teal)}
+.modal-stat-sub{font-size:.68rem;color:var(--muted);font-style:italic;margin-top:.07rem}
+@keyframes up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skeleton{background:linear-gradient(90deg,var(--cream-dark) 25%,var(--card) 50%,var(--cream-dark) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite linear;border-radius:6px}
+.skel-card{height:130px;border-radius:8px}
+.skel-row{height:46px;border-radius:6px}
+.loading-overlay{display:none;flex-direction:column;gap:1.1rem}
+.loading-overlay.visible{display:flex}
+.lo-picks{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+@media(min-width:580px){.lo-picks{grid-template-columns:repeat(auto-fill,minmax(185px,1fr))}}
+.lo-grid{display:grid;grid-template-columns:1fr;gap:.42rem}
+@media(min-width:500px){.lo-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}}
+.lo-label{height:14px;width:140px;border-radius:4px}
+.main-content{display:flex;flex-direction:column;gap:1.1rem}
+.main-content.hidden{display:none}
+
+/* ── LL Advisor ── */
+.ll-section { display: none; }
+.ll-section.visible { display: block; }
+.ll-hdr { display:flex;align-items:baseline;gap:.6rem;border-bottom:1px solid var(--gold-dim);padding-bottom:.34rem;margin-bottom:.72rem;flex-wrap:wrap; }
+.ll-hdr-left { display:flex;align-items:baseline;gap:.5rem;flex:1;min-width:0; }
+.ll-toggle { font-family:'Playfair Display',serif;font-size:.56rem;letter-spacing:.07em;padding:.15rem .5rem;border-radius:999px;border:1px solid var(--gold-dim);background:transparent;color:var(--gold-dim);cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;margin-left:auto;white-space:nowrap;flex-shrink:0; }
+.ll-toggle:hover,.ll-toggle.open { background:var(--teal);color:var(--gold-light);border-color:var(--teal); }
+.ll-collapsed { font-family:'Cormorant Garamond',serif;font-size:.86rem;color:var(--muted);font-style:italic;padding:.2rem 0 .5rem; }
+.ll-body { display:none;flex-direction:column;gap:.85rem; }
+.ll-body.open { display:flex; }
+.ll-grid { display:grid;grid-template-columns:1fr;gap:.42rem; }
+@media(min-width:520px){ .ll-grid { grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); } }
+.ll-card { background:var(--card);border:1px solid rgba(168,133,74,.25);border-radius:7px;padding:.6rem .8rem;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.5rem .65rem;animation:up .3s ease both;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;position:relative;overflow:hidden; }
+.ll-card::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold);opacity:.35; }
+.ll-card:active { background:var(--cream-dark); }
+.ll-rank { font-family:'Playfair Display',serif;font-size:.62rem;font-weight:600;color:var(--gold-dim);letter-spacing:.05em;line-height:1;padding-top:1px;min-width:16px;text-align:center; }
+.ll-info { min-width:0; }
+.ll-name { font-family:'Playfair Display',serif;font-size:.65rem;color:var(--teal);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.ll-land { font-size:.66rem;color:var(--muted);font-style:italic;margin-top:1px; }
+.ll-meta { font-size:.66rem;color:var(--muted);font-style:italic;margin-top:3px;display:flex;gap:.4rem;flex-wrap:wrap; }
+.ll-book-time { color:var(--teal);font-style:normal;font-family:'Playfair Display',serif;font-size:.55rem;letter-spacing:.04em; }
+.ll-score-col { text-align:right;flex-shrink:0; }
+.ll-score-bar-wrap { width:54px;height:5px;background:var(--cream-dark);border-radius:3px;overflow:hidden;margin-bottom:3px; }
+.ll-score-bar { height:100%;border-radius:3px;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .4s ease; }
+.ll-score-label { font-family:'Playfair Display',serif;font-size:.52rem;letter-spacing:.06em;white-space:nowrap; }
+.ll-val-high { color:var(--green); }
+.ll-val-med  { color:var(--yellow); }
+.ll-val-low  { color:var(--muted); }
+.ll-stack-hdr { font-family:'Playfair Display',serif;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:.5rem; }
+.ll-stack { display:flex;align-items:stretch;gap:0;flex-wrap:nowrap;overflow-x:auto;padding-bottom:.25rem;-webkit-overflow-scrolling:touch; }
+.ll-step { display:flex;align-items:stretch;flex-shrink:0; }
+.ll-step-card { background:var(--teal);border-radius:7px;padding:.58rem .72rem;min-width:120px;max-width:150px; }
+.ll-step-num { font-family:'Playfair Display',serif;font-size:.48rem;letter-spacing:.12em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.22rem; }
+.ll-step-name { font-family:'Playfair Display',serif;font-size:.6rem;color:var(--gold-light);line-height:1.3;margin-bottom:.28rem; }
+.ll-step-time { font-family:'Playfair Display',serif;font-size:.56rem;color:var(--gold);letter-spacing:.04em; }
+.ll-step-tip { font-size:.66rem;color:rgba(107,88,54,.75);font-style:italic;margin-top:3px;line-height:1.3; }
+.ll-arrow { display:flex;align-items:center;padding:0 .35rem;color:var(--gold-dim);font-size:.8rem;opacity:.55;flex-shrink:0; }
+.ll-standby-note { font-family:'Cormorant Garamond',serif;font-size:.8rem;color:var(--muted);font-style:italic;border-top:1px solid rgba(168,133,74,.2);padding-top:.55rem;line-height:1.6; }
+.ll-standby-note strong { color:var(--teal);font-style:normal;font-family:'Playfair Display',serif;font-size:.62rem;letter-spacing:.04em; }
+</style>
+</head>
+<body>
+<header>
+<div class="hdr-left">
+<a class="home-btn" href="wdw.html">← Home</a>
+<div class="hdr-div"></div>
+<div class="hdr-title">WDW · Ride Predictor</div>
+</div>
+<div class="hdr-right">
+<span class="badge" id="badge">● LIVE</span>
+<div id="clock">--:-- --</div>
+</div>
+</header>
+
+<div class="build-banner" id="build-banner" hidden>
+<div class="bb-text">
+<strong>This predictor is still learning</strong>
+<span id="bb-detail">Walt Disney World wait history only started collecting recently. Early numbers — especially for weekends and holidays — may be off. It sharpens automatically every day.</span>
+</div>
+<button class="bb-close" onclick="dismissBuildBanner()" aria-label="Dismiss this notice">✕</button>
+</div>
+
+<main>
+<div class="ctx-bar">
+<span class="ctx-lbl">Today</span>
+<span class="ctx-pill" id="ctx-day">–</span>
+<span class="ctx-pill" id="ctx-season">–</span>
+<div class="crowd">
+<span class="ctx-lbl">Crowd</span>
+<div class="dots" id="dots">
+<div class="dot"></div><div class="dot"></div><div class="dot"></div>
+<div class="dot"></div><div class="dot"></div>
+</div>
+<span class="crowd-lbl" id="crowd-lbl">–</span>
+</div>
+<span id="updated"></span>
+<span id="data-source" style="font-family:'Playfair Display',serif;font-size:.52rem;letter-spacing:.08em;padding:.14rem .5rem;border-radius:999px;display:none"></span>
+</div>
+<div class="controls">
+<div class="tabs" id="tabs"></div>
+<div class="search-wrap">
+<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+<circle cx="6.5" cy="6.5" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
+</svg>
+<input type="text" id="q" placeholder="Search rides or lands…" oninput="filter(this.value)">
+</div>
+</div>
+<div class="loading-overlay" id="loading-overlay">
+<div>
+<div class="skeleton lo-label" style="margin-bottom:.72rem"></div>
+<div class="lo-picks">
+<div class="skeleton skel-card"></div>
+<div class="skeleton skel-card"></div>
+<div class="skeleton skel-card"></div>
+<div class="skeleton skel-card"></div>
+</div>
+</div>
+<div>
+<div class="skeleton lo-label" style="margin-bottom:.72rem"></div>
+<div class="lo-grid">
+<div class="skeleton skel-row"></div>
+<div class="skeleton skel-row"></div>
+<div class="skeleton skel-row"></div>
+<div class="skeleton skel-row"></div>
+<div class="skeleton skel-row"></div>
+<div class="skeleton skel-row"></div>
+</div>
+</div>
+</div>
+<div class="main-content" id="main-content">
+<div class="fav-section" id="fav-section">
+<div class="sec-hdr">
+<span class="sec-title">★ My Rides</span>
+<span class="sec-sub">your saved rides at a glance</span>
+</div>
+<div class="picks" id="fav-picks"></div>
+</div>
+<div>
+<div class="sec-hdr">
+<span class="sec-title">Best Bets Right Now</span>
+<span class="sec-sub" id="picks-sub">–</span>
+</div>
+<div class="picks" id="picks"></div>
+</div>
+
+<!-- ── LIGHTNING LANE ADVISOR ── -->
+<div class="ll-section" id="ll-section">
+<div class="ll-hdr">
+<div class="ll-hdr-left">
+<span class="sec-title">⚡ Lightning Lane Advisor</span>
+<span class="sec-sub" id="ll-sub">–</span>
+</div>
+<button class="ll-toggle" id="ll-toggle" onclick="toggleLL()">Show ▾</button>
+</div>
+<div class="ll-collapsed" id="ll-collapsed"></div>
+<div class="ll-body" id="ll-body">
+<div>
+<div class="ll-stack-hdr">Top LL Targets Today</div>
+<div class="ll-grid" id="ll-grid"></div>
+</div>
+<div id="ll-stack-wrap">
+<div class="ll-stack-hdr">Suggested Booking Sequence</div>
+<div class="ll-stack" id="ll-stack"></div>
+</div>
+<div class="ll-standby-note" id="ll-standby-note"></div>
+</div>
+</div>
+
+<div>
+<div class="sec-hdr">
+<span class="sec-title">All Attractions</span>
+<span class="sec-sub">predicted wait · live where available</span>
+</div>
+<div class="grid" id="grid"></div>
+</div>
+</div>
+<div class="legend">
+<div class="li"><div class="ld" style="background:var(--green)"></div>Go now (under 20 min)</div>
+<div class="li"><div class="ld" style="background:#c9a000"></div>Moderate (20–40 min)</div>
+<div class="li"><div class="ld" style="background:var(--red)"></div>Skip for now (over 40 min)</div>
+<div class="li" style="margin-left:auto;font-size:.68rem;opacity:.7">LIVE = Queue-Times · EST = historical estimate</div>
+</div>
+</main>
+<div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
+<div class="modal" id="modal">
+<div class="modal-handle"></div>
+<button class="modal-close" onclick="closeModal()">✕ CLOSE</button>
+<div class="modal-ride-name" id="modal-name"></div>
+<div class="modal-land" id="modal-land"></div>
+<div class="modal-chart-wrap">
+<canvas id="modal-canvas" role="img" aria-label="Wait time prediction chart"></canvas>
+</div>
+<div class="modal-stats" id="modal-stats"></div>
+</div>
+</div>
+<script>
+/* Which resort this predictor covers. All behaviour lives in predict-core.js,
+   shared with the Disneyland predictor (predict.html).
+
+   Each ride's baseline curve `p` is 18 numbers, one per hour 6am-11pm. It is
+   only the COLD-START shape — used until Supabase has >=10 real samples for
+   that ride/hour/day-type/season, at which point the real average takes over.
+   To keep the roster readable, the curves are built here from a peak value and
+   a named shape rather than typed out by hand:
+     std   - typical double hump: late-morning build, midday dip, evening peak
+     early - busiest right after rope drop, eases through the day
+     late  - builds steadily to a hard peak near park close (railroads, TRON)
+     flat  - low, fairly even all day (people-movers, small-theatre shows)
+   The peak is roughly what a busy day tops out at; ordinary days scale down
+   from it via the crowd multiplier in predict-core.js.
+
+   `name` MUST match the exact ride_name the wait-times collector writes to
+   Supabase (curly apostrophes, ™, quotes and all) or the historical blend for
+   that ride never matches. `qt` is the lower-case Queue-Times name to match
+   live waits on; for rides Disney reskins seasonally use a stable stem. */
+const SHAPE = {
+  std:   [.12,.12,.20,.38,.58,.76,.88,.93,.86,.79,.73,.75,.83,.93,.86,.71,.55,.38],
+  early: [.16,.20,.40,.66,.86,.95,.92,.85,.78,.72,.68,.68,.72,.75,.70,.58,.45,.30],
+  late:  [.08,.08,.12,.22,.36,.50,.60,.66,.66,.66,.68,.74,.85,.95,.97,.90,.74,.52],
+  flat:  [.28,.28,.42,.60,.74,.84,.90,.92,.90,.86,.84,.86,.90,.92,.88,.78,.62,.46],
+};
+function curve(peak, shape) {
+  return (SHAPE[shape] || SHAPE.std).map(f => Math.max(3, Math.round(peak * f)));
+}
+
+const PREDICT = {
+  parks: [
+    {
+      key: "mk", name: "Magic Kingdom", tabLabel: "Magic Kingdom",
+      qtId: 6, twId: "75ea578a-adc8-4116-a54d-dccb60765ef9", closeIdx: 17,
+      rides: [
+        {id:'sdmt',   name:'Seven Dwarfs Mine Train', land:'Fantasyland', qt:'seven dwarfs mine train', ll:true,  p:curve(62,'std')},
+        {id:'tron',   name:'TRON Lightcycle / Run', land:'Tomorrowland', qt:'tron lightcycle', ll:true,  p:curve(105,'late')},
+        {id:'space',  name:'Space Mountain', land:'Tomorrowland', qt:'space mountain', ll:true,  p:curve(58,'std')},
+        {id:'btmr',   name:'Big Thunder Mountain Railroad', land:'Frontierland', qt:'big thunder mountain railroad', ll:true,  p:curve(60,'std')},
+        {id:'tiana',  name:"Tiana's Bayou Adventure", land:'Frontierland', qt:"tiana's bayou adventure", ll:true,  p:curve(52,'std')},
+        {id:'peter',  name:"Peter Pan's Flight", land:'Fantasyland', qt:"peter pan's flight", ll:true,  p:curve(58,'early')},
+        {id:'jungle', name:'Jungle Cruise', land:'Adventureland', qt:'jungle cruise', ll:true,  p:curve(45,'std')},
+        {id:'hm',     name:'Haunted Mansion', land:'Liberty Square', qt:'haunted mansion', ll:true,  p:curve(40,'std')},
+        {id:'potc',   name:'Pirates of the Caribbean', land:'Adventureland', qt:'pirates of the caribbean', ll:true,  p:curve(38,'std')},
+        {id:'buzz',   name:'Buzz Lightyear’s Space Ranger Spin', land:'Tomorrowland', qt:'buzz lightyear', ll:true,  p:curve(45,'std')},
+        {id:'pooh',   name:'The Many Adventures of Winnie the Pooh', land:'Fantasyland', qt:'the many adventures of winnie the pooh', ll:true,  p:curve(40,'std')},
+        {id:'iasw',   name:'"it\'s a small world"', land:'Fantasyland', qt:"it's a small world", ll:true,  p:curve(32,'std')},
+        {id:'mermaid',name:'Under the Sea - Journey of The Little Mermaid', land:'Fantasyland', qt:'under the sea', ll:true,  p:curve(34,'std')},
+        {id:'teacups',name:'Mad Tea Party', land:'Fantasyland', qt:'mad tea party', ll:true,  p:curve(20,'std')},
+        {id:'aladdin',name:'The Magic Carpets of Aladdin', land:'Adventureland', qt:'the magic carpets of aladdin', ll:true,  p:curve(24,'std')},
+        {id:'barn',   name:'The Barnstormer', land:'Fantasyland', qt:'the barnstormer', ll:true,  p:curve(30,'std')},
+        {id:'dumbo',  name:'Dumbo the Flying Elephant', land:'Fantasyland', qt:'dumbo the flying elephant', ll:true,  p:curve(30,'std')},
+        {id:'speedway',name:'Tomorrowland Speedway', land:'Tomorrowland', qt:'tomorrowland speedway', ll:true,  p:curve(34,'std')},
+        {id:'astro',  name:'Astro Orbiter', land:'Tomorrowland', qt:'astro orbiter', ll:false, p:curve(30,'std')},
+        {id:'carrousel',name:'Prince Charming Regal Carrousel', land:'Fantasyland', qt:'prince charming regal carrousel', ll:false, p:curve(12,'flat')},
+        {id:'tta',    name:'Tomorrowland Transit Authority PeopleMover', land:'Tomorrowland', qt:'peoplemover', ll:false, p:curve(18,'flat')},
+        {id:'tiki',   name:"Walt Disney's Enchanted Tiki Room", land:'Adventureland', qt:"walt disney's enchanted tiki room", ll:false, p:curve(12,'flat')},
+        {id:'philhar',name:"Mickey's PhilharMagic", land:'Fantasyland', qt:"mickey's philharmagic", ll:true,  p:curve(16,'flat')},
+        {id:'laugh',  name:'Monsters, Inc. Laugh Floor', land:'Tomorrowland', qt:'laugh floor', ll:false, p:curve(16,'flat')},
+        {id:'bears',  name:'Country Bear Musical Jamboree', land:'Frontierland', qt:'country bear', ll:false, p:curve(12,'flat')},
+        {id:'wdwrr',  name:'Walt Disney World Railroad - Main Street, U.S.A.', land:'Main Street, U.S.A.', qt:'walt disney world railroad - main street, u.s.a.', ll:false, p:curve(18,'late')},
+        {id:'belle',  name:'Enchanted Tales with Belle', land:'Fantasyland', qt:'enchanted tales with belle', ll:false, p:curve(26,'std')},
+      ],
+    },
+    {
+      key: "epcot", name: "EPCOT", tabLabel: "EPCOT",
+      qtId: 5, twId: "47f90d2c-e191-4239-a466-5892ef59a88b", closeIdx: 15,
+      rides: [
+        {id:'cosmic', name:'Guardians of the Galaxy: Cosmic Rewind', land:'World Discovery', qt:'guardians of the galaxy', ll:true,  p:curve(100,'late')},
+        {id:'testtrack',name:'Test Track', land:'World Discovery', qt:'test track', ll:true,  p:curve(85,'std')},
+        {id:'remy',   name:"Remy's Ratatouille Adventure", land:'World Showcase', qt:"remy's ratatouille adventure", ll:true,  p:curve(62,'std')},
+        {id:'frozen', name:'Frozen Ever After', land:'World Showcase', qt:'frozen ever after', ll:true,  p:curve(60,'early')},
+        {id:'soarin', name:"Soarin' Across America", land:'World Nature', qt:"soarin'", ll:true,  p:curve(50,'std')},
+        {id:'mission',name:'Mission: SPACE', land:'World Discovery', qt:'mission: space', ll:true,  p:curve(26,'std')},
+        {id:'nemo',   name:'The Seas with Nemo & Friends', land:'World Nature', qt:'the seas with nemo', ll:true,  p:curve(28,'flat')},
+        {id:'sse',    name:'Spaceship Earth', land:'World Celebration', qt:'spaceship earth', ll:true,  p:curve(32,'std')},
+        {id:'land',   name:'Living with the Land', land:'World Nature', qt:'living with the land', ll:true,  p:curve(26,'flat')},
+        {id:'granfiesta',name:'Gran Fiesta Tour Starring The Three Caballeros', land:'World Showcase', qt:'gran fiesta tour', ll:false, p:curve(26,'flat')},
+        {id:'figment',name:'Journey Into Imagination With Figment', land:'World Celebration', qt:'journey into imagination', ll:true,  p:curve(22,'flat')},
+        {id:'turtle', name:'Turtle Talk With Crush', land:'World Nature', qt:'turtle talk', ll:false, p:curve(14,'flat')},
+        {id:'canada', name:'Canada Far and Wide in Circle-Vision 360', land:'World Showcase', qt:'canada far and wide', ll:false, p:curve(12,'flat')},
+      ],
+    },
+    {
+      key: "hs", name: "Hollywood Studios", tabLabel: "Hollywood Studios",
+      qtId: 7, twId: "288747d1-8b4f-4a64-867e-ea7c9b27bad8", closeIdx: 15,
+      rides: [
+        {id:'rotr',   name:'Star Wars: Rise of the Resistance', land:"Star Wars: Galaxy's Edge", qt:'star wars: rise of the resistance', ll:true,  p:curve(88,'std')},
+        {id:'slinky', name:'Slinky Dog Dash', land:'Toy Story Land', qt:'slinky dog dash', ll:true,  p:curve(100,'std')},
+        {id:'tot',    name:'The Twilight Zone™ Tower of Terror', land:'Sunset Boulevard', qt:'tower of terror', ll:true,  p:curve(82,'std')},
+        {id:'rnrc',   name:'Rock ’n’ Roller Coaster Starring The Muppets', land:'Sunset Boulevard', qt:"rock 'n' roller coaster starring the muppets", ll:true,  p:curve(68,'std')},
+        {id:'falcon', name:'Millennium Falcon: Smugglers Run', land:"Star Wars: Galaxy's Edge", qt:'millennium falcon: smugglers run', ll:true,  p:curve(48,'std')},
+        {id:'tsmm',   name:'Toy Story Mania!', land:'Pixar Plaza', qt:'toy story mania', ll:true,  p:curve(65,'std')},
+        {id:'mmrr',   name:"Mickey & Minnie's Runaway Railway", land:'Hollywood Boulevard', qt:"mickey & minnie's runaway railway", ll:true,  p:curve(55,'std')},
+        {id:'saucers',name:'Alien Swirling Saucers', land:'Toy Story Land', qt:'alien swirling saucers', ll:true,  p:curve(45,'std')},
+        {id:'startours',name:'Star Tours – The Adventures Continue', land:'Echo Lake', qt:'star tours', ll:true,  p:curve(22,'std')},
+      ],
+    },
+    {
+      key: "ak", name: "Animal Kingdom", tabLabel: "Animal Kingdom",
+      qtId: 8, twId: "1c84a229-8862-4648-9c71-378ddd2c7693", closeIdx: 14,
+      rides: [
+        {id:'fop',    name:'Avatar Flight of Passage', land:'Pandora - The World of Avatar', qt:'avatar flight of passage', ll:true,  p:curve(72,'std')},
+        {id:'navi',   name:"Na'vi River Journey", land:'Pandora - The World of Avatar', qt:"na'vi river journey", ll:true,  p:curve(55,'std')},
+        {id:'everest',name:'Expedition Everest - Legend of the Forbidden Mountain', land:'Asia', qt:'expedition everest - legend of the forbidden mountain', ll:true,  p:curve(48,'std')},
+        {id:'safari', name:'Kilimanjaro Safaris', land:'Africa', qt:'kilimanjaro safaris', ll:true,  p:curve(50,'early')},
+        {id:'kali',   name:'Kali River Rapids', land:'Asia', qt:'kali river rapids', ll:true,  p:curve(55,'std')},
+        {id:'zootopia',name:'Zootopia: Better Zoogether!', land:'Discovery Island', qt:'zootopia', ll:false, p:curve(24,'flat')},
+        {id:'wet',    name:'Wildlife Express Train', land:'Africa', qt:'wildlife express train', ll:false, p:curve(30,'flat')},
+        {id:'bluey',  name:"Bluey's Wild World at Conservation Station", land:'Conservation Station', qt:"bluey's wild world", ll:false, p:curve(30,'std')},
+      ],
+    },
+  ],
+};
+</script>
+<script src="predict-core.js?v=20260905"></script>
+<script>
+/* ── "STILL BUILDING" BANNER ────────────────────────────────────────────────
+   An honest, self-retiring notice for a young predictor. predict-core.js calls
+   window.onPredictRender() after every render with live coverage stats; this
+   shows the banner while the data is thin and takes it down on its own once
+   real history covers most of a park's roster for long enough. Nothing here
+   ever hard-codes a confidence claim — the wording is rebuilt from the actual
+   numbers each time.
+
+   To pin the banner on regardless (e.g. during a public soft launch), set
+   FORCE_BUILD_BANNER = true. To retire it early, set it false and lower the
+   thresholds, or just delete this whole <script> block. */
+const DATA_SINCE = '2026-08-23';        // WDW wait-times collection start in Supabase
+const BANNER_COVERAGE_TARGET = 0.75;    // fraction of a park's rides on real data AND...
+const BANNER_MIN_DAYS = 45;             // ...this many days of history, before it retires
+const FORCE_BUILD_BANNER = false;
+
+let bannerDismissed = false;
+try { bannerDismissed = sessionStorage.getItem('wdwpredict_banner_dismissed') === '1'; } catch(e) {}
+
+function daysSince(iso) {
+  return Math.floor((Date.now() - new Date(iso + 'T00:00:00')) / 86400000);
+}
+function dismissBuildBanner() {
+  bannerDismissed = true;
+  try { sessionStorage.setItem('wdwpredict_banner_dismissed', '1'); } catch(e) {}
+  const el = document.getElementById('build-banner');
+  if (el) el.hidden = true;
+}
+window.dismissBuildBanner = dismissBuildBanner;
+
+window.onPredictRender = function(stats) {
+  const el = document.getElementById('build-banner');
+  if (!el) return;
+  const days = daysSince(DATA_SINCE);
+  const mature = stats.usingRealData
+    && stats.coverage >= BANNER_COVERAGE_TARGET
+    && days >= BANNER_MIN_DAYS;
+  const show = FORCE_BUILD_BANNER || (!bannerDismissed && !mature);
+  el.hidden = !show;
+  if (!show) return;
+  const pct = Math.round(stats.coverage * 100);
+  const basis = stats.usingRealData
+    ? `Right now ${stats.ridesWithHistory} of ${stats.totalRides} ${stats.parkName} rides (${pct}%) are running on real measured data; the rest use a starting estimate. `
+    : `${stats.parkName} is on starting estimates while today's history loads. `;
+  document.getElementById('bb-detail').textContent =
+    `Walt Disney World wait history began ${days} days ago. ` + basis +
+    `Early numbers — especially weekends and holiday periods — may be off. It sharpens automatically every day.`;
+};
+</script>
+</body>
+</html>

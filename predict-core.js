@@ -2,7 +2,7 @@
  * --------------------------------------------------------------------------
  * Shared behaviour for the ride-wait predictor pages:
  *   predict.html      (Disneyland Resort - Disneyland + California Adventure)
- *   wdwpredict.html   (Walt Disney World - planned)
+ *   wdwpredict.html   (Walt Disney World - Magic Kingdom / EPCOT / HS / AK)
  *
  * Each page ("shell") loads this file AFTER defining a global `PREDICT`
  * object that lists which parks it covers and the per-ride baseline data:
@@ -203,6 +203,30 @@ const m = effectiveMult(crowdLevel(dayType(now), season(now)));
 const filled = rideProfile.map((v, i) => v !== null ? v / m : ride.p[i]);
 const band = historicalBands?.[park]?.[ride.name] || null;
 return { p: filled, real: true, band };
+}
+
+// How much of the CURRENT park's roster is running on real Supabase history
+// right now (vs. the hand-authored cold-start curve). A shell can define
+// window.onPredictRender(stats) to surface this — e.g. a "still building its
+// history" banner that fades out on its own as coverage climbs. Both the
+// per-park data-source badge and any shell banner read from here, so the
+// honesty on screen always tracks the actual data, never a stale hard-coded
+// claim.
+function predictCoverage() {
+const rides = ridesOf(park);
+let real = 0;
+if (usingRealData && historicalProfiles && historicalProfiles[park]) {
+rides.forEach(r => { if (historicalProfiles[park][r.name]) real++; });
+}
+return {
+park,
+parkName: parkCfg(park).name,
+totalRides: rides.length,
+ridesWithHistory: real,
+coverage: rides.length ? real / rides.length : 0,
+usingRealData,
+autoTune: autoTuneFactor[park] || null
+};
 }
 
 function getSeason(month) {
@@ -551,9 +575,11 @@ document.getElementById('ctx-season').textContent=s;
 document.getElementById('crowd-lbl').textContent=['','Low','Mild','Moderate','Busy','Very Busy'][cl];
 document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i<cl));
 const dsBadge = document.getElementById('data-source');
+const cov = predictCoverage();
 if (usingRealData) {
 const tune = autoTuneFactor[park];
-dsBadge.textContent = '✦ Real historical data' + (tune ? ` (crowd ×${tune.toFixed(2)} auto-tuned)` : '');
+dsBadge.textContent = `✦ Real data · ${cov.ridesWithHistory}/${cov.totalRides} rides`
++ (tune ? ` · crowd ×${tune.toFixed(2)} auto-tuned` : '');
 dsBadge.style.display = 'inline';
 dsBadge.style.background = 'rgba(45,106,45,.18)';
 dsBadge.style.color = 'var(--green)';
@@ -639,6 +665,9 @@ if(!visCount) nr.style.display='block';
 ag.appendChild(nr);
 renderFavs();
 renderLL();
+if (typeof window.onPredictRender === 'function') {
+try { window.onPredictRender(predictCoverage()); } catch(e) { console.warn('onPredictRender threw:', e); }
+}
 }
 
 function toggleFav(id, btn) {
