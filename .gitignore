@@ -1,0 +1,6 @@
+# Supabase CLI scratch (linked-project state, version cache)
+supabase/.temp/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
