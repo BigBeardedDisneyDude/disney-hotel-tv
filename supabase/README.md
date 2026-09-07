@@ -22,17 +22,42 @@ lost or recreated.
 - **Table data** — `wait_times` history, `conversations`. Not backed up; the
   predictor tolerates a cold history (falls back to its hand-authored baseline
   curves) and rebuilds coverage automatically as the collector runs.
-- **The base `wait_times` table definition / RLS policies** — created by hand
-  early on, not yet captured as a migration. Columns: `id`, `park`,
-  `ride_name`, `wait_time` (null when closed), `is_open`, `recorded_at`,
-  `day_of_week`, `hour_of_day`, `month`, `is_weekend`, `season`. If you rebuild,
-  run `supabase db dump --schema public` against the live project first and
-  commit that so the table shape is captured too.
+- **The base `wait_times` / `conversations` table definitions and any RLS
+  policies** — made by hand early on, not yet captured. The authoritative way
+  to grab them is a `db dump` (needs the database password, one-time link):
+
+  ```
+  supabase link --project-ref qumvjdwimpvnaijjwght     # prompts for DB password
+  supabase db dump --schema public -f supabase/schema.sql
+  git add supabase/schema.sql && git commit
+  ```
+
+  Until that's done, here is the `wait_times` shape **reconstructed from the
+  collector code and observed data** — close enough to rebuild against, but not
+  verified against the live DDL (exact int widths, constraints, and RLS may
+  differ):
+
+  ```sql
+  create table public.wait_times (
+    id           bigint generated always as identity primary key,
+    park         text        not null,   -- 'dl' 'dca' 'mk' 'epcot' 'hs' 'ak'
+    ride_name    text        not null,
+    wait_time    integer,                -- null when the ride is closed
+    is_open      boolean     not null,
+    recorded_at  timestamptz not null,
+    day_of_week  smallint,               -- 0=Sun .. 6=Sat (Pacific)
+    hour_of_day  smallint,               -- 0..23 (Pacific)
+    month        smallint,               -- 1..12 (Pacific)
+    is_weekend   boolean,
+    season       text                    -- 'holiday' 'summer' 'spring_break' 'regular'
+  );
+  ```
 
 ## Rebuild from scratch
 
 1. Create the project, then link it: `supabase link --project-ref <ref>`.
-2. Recreate the `wait_times` table (from a `db dump`, see above).
+2. Recreate the `wait_times` (and `conversations`) tables — from
+   `supabase/schema.sql` if it exists, else the reconstructed DDL above.
 3. `supabase db push` — applies the migrations in `migrations/` (indexes + the
    pg_cron schedule; enables the `pg_cron` and `pg_net` extensions).
 4. `supabase functions deploy collect-waits && supabase functions deploy prune-waits`.
