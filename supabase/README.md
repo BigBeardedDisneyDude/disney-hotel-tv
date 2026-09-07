@@ -12,7 +12,8 @@ lost or recreated.
 | `functions/collect-waits/` | Edge Function: every 15 min, fetches Queue-Times for all six US Disney parks, tags each row with Pacific-time context, inserts to `wait_times`. |
 | `functions/prune-waits/` | Edge Function: weekly, deletes `wait_times` rows older than 120 days (Supabase free-tier size limit). |
 | `functions/README.md` | Function details, known limitations, env vars, deploy commands. |
-| `migrations/*_add_wait_times_indexes.sql` | The two indexes that keep predictor page loads off a full-table scan. |
+| `schema.sql` | Base table definitions (`wait_times`, `conversations`), their original indexes, and RLS policies. |
+| `migrations/*_add_wait_times_indexes.sql` | The covering index added 2026-09-07 to keep predictor page loads off a full-table scan. |
 | `migrations/*_schedule_cron_jobs.sql` | The `pg_cron` schedule that invokes the two functions. |
 
 ## What is NOT here (and can't be)
@@ -22,42 +23,17 @@ lost or recreated.
 - **Table data** — `wait_times` history, `conversations`. Not backed up; the
   predictor tolerates a cold history (falls back to its hand-authored baseline
   curves) and rebuilds coverage automatically as the collector runs.
-- **The base `wait_times` / `conversations` table definitions and any RLS
-  policies** — made by hand early on, not yet captured. The authoritative way
-  to grab them is a `db dump` (needs the database password, one-time link):
-
-  ```
-  supabase link --project-ref qumvjdwimpvnaijjwght     # prompts for DB password
-  supabase db dump --schema public -f supabase/schema.sql
-  git add supabase/schema.sql && git commit
-  ```
-
-  Until that's done, here is the `wait_times` shape **reconstructed from the
-  collector code and observed data** — close enough to rebuild against, but not
-  verified against the live DDL (exact int widths, constraints, and RLS may
-  differ):
-
-  ```sql
-  create table public.wait_times (
-    id           bigint generated always as identity primary key,
-    park         text        not null,   -- 'dl' 'dca' 'mk' 'epcot' 'hs' 'ak'
-    ride_name    text        not null,
-    wait_time    integer,                -- null when the ride is closed
-    is_open      boolean     not null,
-    recorded_at  timestamptz not null,
-    day_of_week  smallint,               -- 0=Sun .. 6=Sat (Pacific)
-    hour_of_day  smallint,               -- 0..23 (Pacific)
-    month        smallint,               -- 1..12 (Pacific)
-    is_weekend   boolean,
-    season       text                    -- 'holiday' 'summer' 'spring_break' 'regular'
-  );
-  ```
+- **Exact RLS policy bodies** — `schema.sql` has the column types, defaults,
+  keys and indexes verbatim (captured by introspection, since the CLI
+  `db dump` needs Docker), but the RLS policies there are written as fully
+  permissive (`true`), which is how the anon key is actually used. If you ever
+  need them exact, run in the SQL Editor:
+  `select polname, pg_get_expr(polqual, polrelid), pg_get_expr(polwithcheck, polrelid) from pg_policy where polrelid = 'public.wait_times'::regclass;`
 
 ## Rebuild from scratch
 
 1. Create the project, then link it: `supabase link --project-ref <ref>`.
-2. Recreate the `wait_times` (and `conversations`) tables — from
-   `supabase/schema.sql` if it exists, else the reconstructed DDL above.
+2. Recreate the tables: run `supabase/schema.sql` in the SQL Editor.
 3. `supabase db push` — applies the migrations in `migrations/` (indexes + the
    pg_cron schedule; enables the `pg_cron` and `pg_net` extensions).
 4. `supabase functions deploy collect-waits && supabase functions deploy prune-waits`.
@@ -91,8 +67,12 @@ select cron.alter_job(job_id := <id>, command := $$ ... $$);
 
 - **2026-09-06** — migrated off two disabled GitHub Actions workflows (deleted
   from the repo); committed the Edge Function source here.
-- **2026-09-07** — added the two `wait_times` indexes after the free-tier DB
-  flapped to "unhealthy" (predictor loads were sequential-scanning ~1.1M rows).
-  Found and fixed the `prune-waits` cron job: it had been calling the function
-  with no `Authorization` header, so pruning had silently never run. Corrected
-  in the live DB and captured here as `*_schedule_cron_jobs.sql`.
+- **2026-09-07** — added the `idx_wait_times_predictor` covering index after
+  the free-tier DB flapped to "unhealthy" (predictor loads were
+  sequential-scanning ~1.1M rows; the pre-existing `idx_waits_lookup` was the
+  wrong column order for the query). A second index added the same day,
+  `idx_wait_times_recorded_at`, turned out to duplicate the pre-existing
+  `idx_waits_recorded_at` and was dropped. Found and fixed the `prune-waits`
+  cron job: it had been calling the function with no `Authorization` header, so
+  pruning had silently never run. Captured the cron schedule as
+  `*_schedule_cron_jobs.sql` and the base tables as `schema.sql`.
