@@ -234,7 +234,7 @@ async function runTool(name,input){
     return'Live waits for '+(input.park==='disneyland'?'Disneyland':'DCA')+':\n'+open.slice(0,15).map(r=>r.name+': '+r.wait_time+' min').join('\n');
   }
   if(name==='get_park_hours'){
-    const ids={disneyland:'7340550b-c14d-4def-80bb-acbe51f931d1',dca:'832fcd51-ea19-4e77-85c7-75d5843b127d'};
+    const ids={disneyland:'7340550b-c14d-4def-80bb-acdb51d49a66',dca:'832fcd51-ea19-4e77-85c7-75d5843b127c'};
     const data=await fetchProxy('https://api.themeparks.wiki/v1/entity/'+ids[input.park]+'/schedule');
     if(!data?.schedule)return'Could not fetch park hours.';
     const todayStr=new Date().toLocaleDateString('en-CA',{timeZone:'America/Los_Angeles'});
