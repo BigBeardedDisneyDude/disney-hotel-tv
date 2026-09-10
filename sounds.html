@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Park Sounds — Magic Key TV</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:       #c9a84c;
+      --gold-light: #e8cc7a;
+      --teal-dark:  #1a3a4a;
+      --teal-mid:   #21495c;
+      --warm-white: #fff8ee;
+      --green:      #5cb87a;
+    }
+
+    html, body {
+      width: 100%; min-height: 100%;
+      background: var(--teal-dark);
+      color: var(--warm-white);
+      font-family: 'Raleway', sans-serif;
+    }
+
+    /* ── Header (shared look with the rest of Magic Key TV) ───────────── */
+    #header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: linear-gradient(180deg, rgba(22,52,68,1) 0%, rgba(22,52,68,0.96) 100%);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      border-bottom: 2px solid var(--gold);
+      padding: 10px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 6px 12px;
+    }
+    #header-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex-shrink: 1; }
+    #back-btn {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 10px; letter-spacing: .22em;
+      color: var(--gold); text-transform: uppercase; background: none;
+      border: 1px solid rgba(201,168,76,.35); border-radius: 3px; padding: 5px 10px;
+      cursor: pointer; transition: all .25s; white-space: nowrap; flex-shrink: 0;
+    }
+    #back-btn:hover { background: rgba(201,168,76,.12); border-color: var(--gold); }
+    #back-btn::before { content: '\2190 '; }
+    #wordmark { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .dh-logo {
+      font-family: 'Cinzel', serif; font-weight: 400;
+      font-size: clamp(12px, 3.2vw, 18px);
+      letter-spacing: .08em; color: var(--warm-white); white-space: nowrap;
+    }
+    .d-letter { font-style: italic; color: var(--gold-light); }
+    .dh-sub {
+      font-family: 'Raleway', sans-serif; font-weight: 200; font-size: 8px;
+      letter-spacing: .3em; color: var(--gold); text-transform: uppercase; opacity: .85;
+    }
+    #header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0; }
+    #page-title {
+      font-family: 'Cinzel', serif; font-weight: 600;
+      font-size: clamp(14px, 3.8vw, 22px);
+      letter-spacing: .08em; color: var(--warm-white);
+    }
+    #page-subtitle {
+      font-family: 'Raleway', sans-serif; font-weight: 200; font-size: clamp(8px, 2vw, 10px);
+      letter-spacing: .22em; color: var(--gold-light); text-transform: uppercase;
+    }
+    @media (max-width: 440px) {
+      #header { flex-direction: column; align-items: flex-start; padding: 10px 16px 8px; }
+      #header-right { align-items: flex-start; width: 100%;
+        border-top: 1px solid rgba(201,168,76,.15); padding-top: 6px; margin-top: 2px; }
+      #page-subtitle { display: none; }
+    }
+
+    #main { padding: 96px 12px 60px; max-width: 900px; margin: 0 auto; }
+    @media (min-width: 600px) { #main { padding: 108px 40px 60px; } }
+    @media (max-width: 440px) { #main { padding-top: 128px; } }
+
+    /* ── Now-playing panel ───────────────────────────────────────────── */
+    #now {
+      background: linear-gradient(160deg, rgba(255,248,238,.06) 0%, rgba(255,248,238,.02) 100%);
+      border: 1px solid rgba(201,168,76,.22);
+      border-radius: 6px;
+      padding: 22px 20px;
+      margin-bottom: 26px;
+    }
+    #now-top { display: flex; align-items: center; gap: 18px; }
+
+    #play-btn {
+      flex-shrink: 0;
+      width: 62px; height: 62px; border-radius: 50%;
+      background: var(--gold); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .15s, background .2s, box-shadow .2s;
+      box-shadow: 0 4px 18px rgba(201,168,76,.28);
+    }
+    #play-btn:hover { transform: scale(1.05); background: var(--gold-light); }
+    #play-btn:active { transform: scale(.97); }
+    #play-btn svg { width: 26px; height: 26px; fill: var(--teal-dark); }
+    #play-btn.loading { background: rgba(201,168,76,.35); box-shadow: none; cursor: default; }
+    #play-btn.loading svg { display: none; }
+    #play-btn .mini-spin {
+      display: none; width: 24px; height: 24px;
+      border: 2px solid rgba(26,58,74,.35); border-top-color: var(--teal-dark);
+      border-radius: 50%; animation: spin .8s linear infinite;
+    }
+    #play-btn.loading .mini-spin { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #now-text { min-width: 0; flex: 1; }
+    #now-label {
+      font-family: 'Raleway', sans-serif; font-weight: 200; font-size: 9px;
+      letter-spacing: .32em; text-transform: uppercase; color: rgba(255,248,238,.4);
+      margin-bottom: 4px;
+    }
+    #now-area {
+      font-family: 'Cinzel', serif; font-weight: 600; font-size: clamp(17px, 4.6vw, 24px);
+      letter-spacing: .04em; color: var(--warm-white); line-height: 1.2;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #now-note {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: clamp(12px, 3vw, 14px); color: var(--gold-light); margin-top: 2px;
+    }
+    #now-time {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 10px;
+      letter-spacing: .14em; color: rgba(255,248,238,.3); margin-top: 6px;
+    }
+    #now-time .bars { color: var(--green); letter-spacing: .05em; }
+
+    /* volume + toggles row */
+    #controls {
+      display: flex; align-items: center; gap: 18px 22px; flex-wrap: wrap;
+      margin-top: 20px; padding-top: 16px;
+      border-top: 1px solid rgba(201,168,76,.14);
+    }
+    .ctl { display: flex; align-items: center; gap: 9px; }
+    .ctl-label {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 10px;
+      letter-spacing: .2em; text-transform: uppercase; color: rgba(255,248,238,.45);
+      white-space: nowrap;
+    }
+    #vol {
+      -webkit-appearance: none; appearance: none;
+      width: 130px; height: 3px; border-radius: 3px;
+      background: rgba(255,248,238,.18); outline: none; cursor: pointer;
+    }
+    #vol::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--gold); cursor: pointer; border: none;
+    }
+    #vol::-moz-range-thumb {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--gold); cursor: pointer; border: none;
+    }
+    select.pill, .toggle {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 10px;
+      letter-spacing: .16em; text-transform: uppercase; color: var(--gold);
+      background: none; border: 1px solid rgba(201,168,76,.35); border-radius: 3px;
+      padding: 6px 10px; cursor: pointer; transition: all .2s;
+    }
+    select.pill { color: var(--warm-white); }
+    select.pill option { background: var(--teal-dark); color: var(--warm-white); }
+    .toggle[aria-pressed="true"] { background: var(--gold); color: var(--teal-dark); border-color: var(--gold); }
+    .toggle:hover, select.pill:hover { border-color: var(--gold); }
+
+    #wander-hint {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: 12px; color: rgba(255,248,238,.35);
+      width: 100%; margin-top: -4px;
+    }
+    #wander-hint.hidden { display: none; }
+
+    /* ── Area tiles ──────────────────────────────────────────────────── */
+    .park-group { margin-bottom: 24px; }
+    .park-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .park-name {
+      font-family: 'Cinzel', serif; font-weight: 600; font-size: clamp(10px, 2.5vw, 12px);
+      letter-spacing: .16em; color: var(--gold); text-transform: uppercase; white-space: nowrap;
+    }
+    .park-rule { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(201,168,76,.22), transparent); }
+
+    .tile-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    @media (min-width: 520px) { .tile-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 800px) { .tile-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .tile {
+      text-align: left; cursor: pointer;
+      background: rgba(255,248,238,.035);
+      border: 1px solid rgba(201,168,76,.14);
+      border-left: 3px solid rgba(201,168,76,.25);
+      border-radius: 0 4px 4px 0;
+      padding: 12px 14px;
+      transition: background .16s, border-color .16s, transform .16s;
+      min-height: 58px;
+    }
+    .tile:hover { background: rgba(255,248,238,.07); transform: translateX(2px); }
+    .tile-name {
+      font-family: 'Raleway', sans-serif; font-weight: 400; font-size: clamp(12px, 2.8vw, 13px);
+      color: rgba(255,248,238,.86); line-height: 1.3;
+    }
+    .tile-note {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: 12px; color: rgba(255,248,238,.4); margin-top: 2px;
+    }
+    .tile.active {
+      background: rgba(201,168,76,.14);
+      border-left-color: var(--gold);
+      border-color: rgba(201,168,76,.4);
+    }
+    .tile.active .tile-name { color: var(--warm-white); }
+    .tile.playing .tile-name::after {
+      content: ' ●'; color: var(--green); font-size: 9px; vertical-align: middle;
+    }
+    .tile.errored { opacity: .45; }
+    .tile.errored .tile-note { color: #e88; }
+
+    /* ── Footer ──────────────────────────────────────────────────────── */
+    .ornament { text-align: center; margin: 44px 0 10px; color: rgba(201,168,76,.2); font-size: 14px; letter-spacing: .5em; }
+    .attribution {
+      text-align: center; font-family: 'Raleway', sans-serif; font-weight: 300;
+      font-size: 10px; letter-spacing: .1em; color: rgba(255,248,238,.28);
+      line-height: 1.8; margin-bottom: 30px;
+    }
+    .attribution a { color: rgba(201,168,76,.5); text-decoration: none; }
+    .attribution a:hover { color: var(--gold); }
+
+    /* ── TV mode nudges ──────────────────────────────────────────────── */
+    body.tv-mode #main { max-width: 1200px; }
+    body.tv-mode #now-area { font-size: 30px; }
+    body.tv-mode .tile-name { font-size: 15px; }
+    body.tv-mode #play-btn { width: 74px; height: 74px; }
+  </style>
+  <link rel="stylesheet" href="tv-mode.css?v=20260904">
+</head>
+<body>
+<script src="tv-mode.js?v=20260904"></script>
+
+<div id="header">
+  <div id="header-left">
+    <button id="back-btn" onclick="goHome()">Home</button>
+    <div id="wordmark">
+      <div class="dh-logo"><span class="d-letter">M</span>agic Key TV</div>
+      <div class="dh-sub">Disneyland Resort</div>
+    </div>
+  </div>
+  <div id="header-right">
+    <div id="page-title">Park Sounds</div>
+    <div id="page-subtitle">Ambient Area Music</div>
+  </div>
+</div>
+
+<div id="main">
+  <div id="now">
+    <div id="now-top">
+      <button id="play-btn" aria-label="Play or pause" onclick="togglePlay()">
+        <svg id="ic-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <span class="mini-spin"></span>
+      </button>
+      <div id="now-text">
+        <div id="now-label">Now Playing</div>
+        <div id="now-area">Pick an area below</div>
+        <div id="now-note">Hour-long background-music loops from around the Disneyland Resort.</div>
+        <div id="now-time"></div>
+      </div>
+    </div>
+
+    <div id="controls">
+      <div class="ctl">
+        <span class="ctl-label">Volume</span>
+        <input id="vol" type="range" min="0" max="1" step="0.01" value="0.7" />
+      </div>
+      <div class="ctl">
+        <span class="ctl-label">Wander</span>
+        <button class="toggle" id="wander-btn" aria-pressed="false" onclick="toggleWander()">Off</button>
+      </div>
+      <div class="ctl">
+        <span class="ctl-label">Sleep</span>
+        <select class="pill" id="sleep" onchange="setSleep(this.value)">
+          <option value="0">Off</option>
+          <option value="30">30 min</option>
+          <option value="60">60 min</option>
+          <option value="90">90 min</option>
+        </select>
+      </div>
+      <div id="wander-hint" class="hidden">Wander is on &mdash; the loop drifts to another area every 30 minutes.</div>
+    </div>
+  </div>
+
+  <div id="groups"></div>
+
+  <div class="ornament">&#10022; &nbsp; &#10022; &nbsp; &#10022;</div>
+  <div class="attribution">
+    Recordings preserved by Disney fans, hosted at the
+    <a href="https://archive.org/details/@disney_avenue" target="_blank" rel="noopener">Internet Archive</a>.<br>
+    Track research: <a href="https://dlrmusicloops.com/" target="_blank" rel="noopener">Disneyland Resort Music Loops</a>.
+    Music &copy; The Walt Disney Company.
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────
+ *  Park Sounds — a small ambient-music widget for the Disney command
+ *  centre. Plays hour-long area-music loops straight from the Internet
+ *  Archive as plain <audio> (no player SDK, no ads, no tracking).
+ *
+ *  Adding an area = one entry in CHANNELS below:
+ *    id        stable key used for the saved "last area"
+ *    name      shown on the tile
+ *    park      which group it sits under (must match a PARK_ORDER entry)
+ *    note      small italic caption (era / sub-area); optional
+ *    item      archive.org identifier
+ *    file      the exact .mp3 filename inside that item
+ *
+ *  To add a live radio stream later: give the channel a `stream: true`
+ *  and put the HTTPS stream URL in `file` with `item` left ''. The
+ *  engine already treats a stream as a non-looping <audio> source.
+ * ─────────────────────────────────────────────────────────────────── */
+
+const PARK_ORDER = ['Disneyland Park', 'Disney California Adventure', 'Around the Resort'];
+
+const CHANNELS = [
+  // ── Disneyland Park ──────────────────────────────────────────────
+  { id:'main-street',        name:'Main Street, U.S.A.',            park:'Disneyland Park', note:'Current loop',
+    item:'18MainStreetUSAMusicLoop', file:'18 Main Street USA Music Loop.mp3' },
+  { id:'main-street-morning',name:'Main Street — Morning',      park:'Disneyland Park', note:'1976–1991',
+    item:'151MainStreetUSAMorningMusicLoop19761991', file:'151 Main Street, USA Morning Music Loop (1976 - 1991).mp3' },
+  { id:'main-street-evening',name:'Main Street — Evening',      park:'Disneyland Park', note:'1976–1991',
+    item:'152MainStreetUSAEveningMusicLoop19761991', file:'152 Main Street, USA Evening Music Loop (1976 - 1991).mp3' },
+  { id:'central-plaza',      name:'Central Plaza',                   park:'Disneyland Park', note:'The Hub',
+    item:'281CentralPlazaAreaBackgroundMusicDisneylandMagicalAudioTour', file:'281 Central Plaza - Area Background Music (Disneyland Magical Audio Tour).mp3' },
+  { id:'new-orleans-square', name:'New Orleans Square',              park:'Disneyland Park',
+    item:'179DisneylandsNewOrleansSquareMusicLoop', file:"179 Disneyland's New Orleans Square Music Loop.mp3" },
+  { id:'frontierland',       name:'Frontierland',                    park:'Disneyland Park', note:'Current loop',
+    item:'185DisneylandsFrontierlandAreaMusicNewVersion', file:"185 Disneyland's Frontierland Area Music (New Version).mp3" },
+  { id:'frontierland-old',   name:'Frontierland — Classic',     park:'Disneyland Park',
+    item:'28FrontierlandAreaMusicOldVersion', file:'28 Frontierland Area Music (Old Version).mp3' },
+  { id:'big-thunder',        name:'Big Thunder Trail',               park:'Disneyland Park',
+    item:'183BigThunderMountainAreaMusic', file:'183 Big Thunder Mountain Area Music.mp3' },
+  { id:'matterhorn',         name:'Matterhorn',                      park:'Disneyland Park',
+    item:'191MatterhornAreaMusic', file:'191 Matterhorn Area Music.mp3' },
+  { id:'pirates-queue',      name:'Pirates of the Caribbean',        park:'Disneyland Park', note:'Queue loop',
+    item:'276PiratesOfTheCaribbeanQueueLoop', file:'276 Pirates of the Caribbean Queue Loop.mp3' },
+
+  // ── Disney California Adventure ──────────────────────────────────
+  { id:'buena-vista-street', name:'Buena Vista Street',              park:'Disney California Adventure',
+    item:'27BuenaVistaStreetMusicLoop', file:'27 Buena Vista Street Music Loop.mp3' },
+  { id:'grizzly-peak',       name:'Grizzly Peak Airfield',           park:'Disney California Adventure',
+    item:'176GrizzlyPeakAirfieldAreaMusicLoop', file:'176 Grizzly Peak Airfield Area Music Loop.mp3' },
+  { id:'paradise-pier',      name:'Paradise Pier',                   park:'Disney California Adventure',
+    item:'177ParadisePierAreaMusic', file:'177 Paradise Pier Area Music.mp3' },
+
+  // ── Around the Resort ───────────────────────────────────────────
+  { id:'grand-californian',  name:'Grand Californian Hotel',         park:'Around the Resort',
+    item:'169DisneysGrandCalifornianHotelAreaMusic', file:"169 Disney's Grand Californian Hotel Area Music.mp3" },
+];
+
+const LS_KEY    = 'dh_sounds';
+const LS_TV_KEY = 'dh_tv_settings';
+const FADE_MS   = 1800;   // crossfade length
+const LOAD_TIMEOUT_MS = 14000;
+const WANDER_EVERY_MS = 30 * 60 * 1000;
+
+function archiveURL(ch) {
+  if (ch.stream) return ch.file;
+  return 'https://archive.org/download/' + ch.item + '/' + encodeURIComponent(ch.file);
+}
+
+/* ── State ─────────────────────────────────────────────────────────── */
+let masterVol = 0.7;
+let curCh     = null;      // channel object currently loaded
+let playing   = false;
+let loadingId = null;      // channel id mid-load
+let wander    = false;
+let wanderTimer = null;
+let sleepTimer  = null;
+let fadeTimer   = null;
+let loadGuard   = null;
+
+/* Two <audio> elements we crossfade between. */
+const aud = [new Audio(), new Audio()];
+aud.forEach(a => { a.preload = 'none'; a.crossOrigin = 'anonymous'; });
+let front = 0;             // index of the element that is (or will be) audible
+
+/* ── Persistence ───────────────────────────────────────────────────── */
+function save() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      areaId: curCh ? curCh.id : null,
+      vol: masterVol,
+      wander: wander,
+    }));
+  } catch (e) {}
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    if (typeof s.vol === 'number') masterVol = Math.min(1, Math.max(0, s.vol));
+    if (s.wander) { wander = true; }
+    if (s.areaId) {
+      const ch = CHANNELS.find(c => c.id === s.areaId);
+      if (ch) { curCh = ch; }
+    }
+  } catch (e) {}
+}
+
+/* ── Rendering ─────────────────────────────────────────────────────── */
+function buildTiles() {
+  const host = document.getElementById('groups');
+  host.innerHTML = '';
+  PARK_ORDER.forEach(park => {
+    const inPark = CHANNELS.filter(c => c.park === park);
+    if (!inPark.length) return;
+    const grp = document.createElement('div');
+    grp.className = 'park-group';
+    grp.innerHTML = '<div class="park-head"><span class="park-name">' + park +
+                    '</span><span class="park-rule"></span></div>';
+    const grid = document.createElement('div');
+    grid.className = 'tile-grid';
+    inPark.forEach(ch => {
+      const b = document.createElement('button');
+      b.className = 'tile';
+      b.id = 'tile-' + ch.id;
+      b.innerHTML = '<div class="tile-name">' + ch.name + '</div>' +
+                    (ch.note ? '<div class="tile-note">' + ch.note + '</div>' : '');
+      b.onclick = () => selectChannel(ch, true);
+      grid.appendChild(b);
+    });
+    grp.appendChild(grid);
+    host.appendChild(grp);
+  });
+  refreshTiles();
+}
+
+function refreshTiles() {
+  CHANNELS.forEach(ch => {
+    const t = document.getElementById('tile-' + ch.id);
+    if (!t) return;
+    t.classList.toggle('active', !!curCh && curCh.id === ch.id);
+    t.classList.toggle('playing', !!curCh && curCh.id === ch.id && playing);
+  });
+}
+
+function setNow(area, note, isLoading) {
+  document.getElementById('now-area').textContent = area;
+  document.getElementById('now-note').textContent = note || '';
+  document.getElementById('play-btn').classList.toggle('loading', !!isLoading);
+  document.getElementById('ic-play').innerHTML = playing
+    ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'   // pause icon
+    : '<path d="M8 5v14l11-7z"/>';               // play icon
+  refreshTiles();
+}
+
+/* ── Time read-out (updates while playing) ─────────────────────────── */
+function fmt(s) {
+  if (!isFinite(s) || s < 0) s = 0;
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+setInterval(() => {
+  const el = document.getElementById('now-time');
+  const a = aud[front];
+  if (playing && curCh && !curCh.stream && a.duration) {
+    el.innerHTML = '<span class="bars">&#9612;&#9612;&#9612;</span> &nbsp;' +
+                   fmt(a.currentTime) + ' / ' + fmt(a.duration);
+  } else if (playing && curCh && curCh.stream) {
+    el.innerHTML = '<span class="bars">&#9612;&#9612;&#9612;</span> &nbsp;live';
+  } else {
+    el.textContent = '';
+  }
+}, 1000);
+
+/* ── Core: pick a channel and crossfade to it ──────────────────────── */
+function selectChannel(ch, fromClick) {
+  clearErrored(ch);
+  if (curCh && curCh.id === ch.id && (playing || loadingId === ch.id)) return; // already on it
+
+  curCh = ch;
+  loadingId = ch.id;
+  const back = 1 - front;
+  const a = aud[back];
+
+  a.src = archiveURL(ch);
+  a.loop = !ch.stream;
+  a.volume = 0;
+  setNow('Loading…', ch.name + (ch.note ? ' · ' + ch.note : ''), true);
+
+  clearTimeout(loadGuard);
+  loadGuard = setTimeout(() => {
+    if (loadingId === ch.id) failChannel(ch);
+  }, LOAD_TIMEOUT_MS);
+
+  const onReady = () => {
+    a.removeEventListener('canplay', onReady);
+    if (loadingId !== ch.id) return;          // superseded by a newer click
+    clearTimeout(loadGuard);
+    loadingId = null;
+    a.play().then(() => {
+      crossfade(back);
+      playing = true;
+      setNow(ch.name, ch.note || '', false);
+      save();
+      if (wander) armWander();
+    }).catch(() => failChannel(ch));
+  };
+  a.addEventListener('canplay', onReady);
+  a.addEventListener('error', function onErr() {
+    a.removeEventListener('error', onErr);
+    if (loadingId === ch.id) failChannel(ch);
+  });
+  a.load();
+}
+
+function crossfade(toIdx) {
+  clearInterval(fadeTimer);
+  const rising = aud[toIdx], falling = aud[1 - toIdx];
+  const start = performance.now();
+  const from = falling.volume, target = masterVol;
+  fadeTimer = setInterval(() => {
+    const k = Math.min(1, (performance.now() - start) / FADE_MS);
+    rising.volume = target * k;
+    falling.volume = from * (1 - k);
+    if (k >= 1) {
+      clearInterval(fadeTimer);
+      try { if (!falling.paused) falling.pause(); } catch (e) {}
+      falling.removeAttribute('src');
+    }
+  }, 40);
+  front = toIdx;
+}
+
+function failChannel(ch) {
+  clearTimeout(loadGuard);
+  loadingId = null;
+  const t = document.getElementById('tile-' + ch.id);
+  if (t) {
+    t.classList.add('errored');
+    const note = t.querySelector('.tile-note') || (() => {
+      const d = document.createElement('div'); d.className = 'tile-note'; t.appendChild(d); return d;
+    })();
+    note.textContent = 'Unavailable right now — try again later';
+  }
+  if (curCh && curCh.id === ch.id && !playing) {
+    curCh = null;
+    setNow('Pick an area below', 'That loop would not load. The Internet Archive may be having a slow moment.', false);
+  }
+}
+function clearErrored(ch) {
+  const t = document.getElementById('tile-' + ch.id);
+  if (t) t.classList.remove('errored');
+}
+
+/* ── Play / pause button ──────────────────────────────────────────── */
+function togglePlay() {
+  if (loadingId) return;
+  if (!curCh) {                                   // nothing chosen yet
+    selectChannel(CHANNELS[0], true);
+    return;
+  }
+  const a = aud[front];
+  if (playing) {
+    // quick fade down, keep position
+    clearInterval(fadeTimer);
+    const from = a.volume, start = performance.now();
+    fadeTimer = setInterval(() => {
+      const k = Math.min(1, (performance.now() - start) / 350);
+      a.volume = from * (1 - k);
+      if (k >= 1) { clearInterval(fadeTimer); a.pause(); }
+    }, 30);
+    playing = false;
+    disarmWander();
+    setNow(curCh.name, curCh.note || '', false);
+    save();
+  } else {
+    if (!a.src) { selectChannel(curCh, true); return; }   // resumed after a reload
+    a.play().then(() => {
+      playing = true;
+      clearInterval(fadeTimer);
+      const start = performance.now();
+      fadeTimer = setInterval(() => {
+        const k = Math.min(1, (performance.now() - start) / 400);
+        a.volume = masterVol * k;
+        if (k >= 1) clearInterval(fadeTimer);
+      }, 30);
+      setNow(curCh.name, curCh.note || '', false);
+      if (wander) armWander();
+    }).catch(() => failChannel(curCh));
+  }
+}
+
+/* ── Volume ───────────────────────────────────────────────────────── */
+const volEl = document.getElementById('vol');
+volEl.addEventListener('input', () => {
+  masterVol = parseFloat(volEl.value);
+  if (playing && !fadeTimer) aud[front].volume = masterVol;
+  else if (playing) aud[front].volume = masterVol;   // during a fade, let it settle here too
+  save();
+});
+
+/* ── Wander mode ──────────────────────────────────────────────────── */
+function toggleWander() {
+  wander = !wander;
+  const btn = document.getElementById('wander-btn');
+  btn.setAttribute('aria-pressed', wander ? 'true' : 'false');
+  btn.textContent = wander ? 'On' : 'Off';
+  document.getElementById('wander-hint').classList.toggle('hidden', !wander);
+  if (wander && playing) armWander(); else disarmWander();
+  save();
+}
+function armWander() {
+  disarmWander();
+  wanderTimer = setInterval(() => {
+    if (!playing) return;
+    const pool = CHANNELS.filter(c => !curCh || c.id !== curCh.id);
+    const next = pool[Math.floor(Math.random() * pool.length)];
+    if (next) selectChannel(next, false);
+  }, WANDER_EVERY_MS);
+}
+function disarmWander() { clearInterval(wanderTimer); wanderTimer = null; }
+
+/* ── Sleep timer ──────────────────────────────────────────────────── */
+function setSleep(mins) {
+  clearTimeout(sleepTimer); sleepTimer = null;
+  const m = parseInt(mins, 10);
+  if (!m) return;
+  sleepTimer = setTimeout(() => {
+    const a = aud[front];
+    const from = a.volume, start = performance.now();
+    clearInterval(fadeTimer);
+    fadeTimer = setInterval(() => {
+      const k = Math.min(1, (performance.now() - start) / 8000);
+      a.volume = from * (1 - k);
+      if (k >= 1) {
+        clearInterval(fadeTimer); a.pause(); playing = false;
+        disarmWander();
+        setNow(curCh ? curCh.name : 'Pick an area below', 'Sleep timer ended. Press play to start again.', false);
+        document.getElementById('sleep').value = '0';
+      }
+    }, 40);
+  }, m * 60 * 1000);
+}
+
+/* ── Home button (carries family/trip settings back like other pages) */
+function goHome() {
+  try {
+    const raw = localStorage.getItem(LS_TV_KEY);
+    if (raw) {
+      const s = JSON.parse(raw), p = new URLSearchParams();
+      if (s.name) p.set('family', s.name);
+      if (s.trip) p.set('trip', s.trip);
+      const qs = p.toString();
+      window.location.href = 'index.html' + (qs ? '?' + qs : '');
+      return;
+    }
+  } catch (e) {}
+  window.location.href = 'index.html';
+}
+
+/* ── Boot ─────────────────────────────────────────────────────────── */
+load();
+volEl.value = masterVol;
+if (wander) {
+  document.getElementById('wander-btn').setAttribute('aria-pressed', 'true');
+  document.getElementById('wander-btn').textContent = 'On';
+  document.getElementById('wander-hint').classList.remove('hidden');
+}
+buildTiles();
+if (curCh) {
+  // Restore the last area visually, but browsers block autoplay before a
+  // gesture — so show it parked and let the play button pick it back up.
+  setNow(curCh.name, (curCh.note ? curCh.note + ' — ' : '') + 'press play to resume', false);
+  refreshTiles();
+}
+</script>
+</body>
+</html>
