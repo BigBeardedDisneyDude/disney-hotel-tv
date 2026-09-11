@@ -35,6 +35,9 @@
  * IMPORTANT: bump the `?v=` on every shell's `<script src="predict-core.js?v=...">`
  * whenever you edit this file, so browsers don't keep serving a stale cached copy.
  *
+ * The shell must also load dh-proxy.js and dh-season.js BEFORE this file
+ * (for window.DH's shared Worker-proxy fetch/cache and season classifier).
+ *
  * The shell also supplies: the page styling, the <header> + home link, the
  * <title>, and these containers for this file to fill / drive:
  *
@@ -229,60 +232,14 @@ autoTune: autoTuneFactor[park] || null
 };
 }
 
-function getSeason(month) {
-if (month === 12 || month === 1) return 'holiday';
-if (month >= 6 && month <= 8) return 'summer';
-if (month === 3 || month === 4) return 'spring_break';
-return 'regular';
-}
-
-// ── LIVE WAITS (Queue-Times via Worker proxy) ────────────────────────────────
-const WORKER_PROXY = 'https://restless-glade-a1e4.andpcooke.workers.dev/proxy?url=';
-// Last-resort fallback if our own Worker is down or over its free-tier request
-// ceiling — the Worker is a single point of failure shared by this page, the
-// wait-times pages and the Rainmeter widget. Only tried when the Worker fails.
-const FALLBACK_PROXY = 'https://api.allorigins.win/raw?url=';
-
-// Returns { ok, status, data } so callers that need the real HTTP status (park
-// hours does, to tell a rotted ThemeParks.wiki id apart from a rate limit)
-// can see it, instead of just success/failure.
-async function fetchProxyStatus(url) {
-try {
-const r = await fetch(WORKER_PROXY + encodeURIComponent(url), {signal:AbortSignal.timeout(9000)});
-if (r.ok) return { ok: true, status: r.status, data: await r.json() };
-return { ok: false, status: r.status, data: null };
-} catch(e) {
-return { ok: false, status: 0, data: null };
-}
-}
-async function fetchProxy(url) {
-const primary = await fetchProxyStatus(url);
-if (primary.ok) return primary.data;
-try {
-const r = await fetch(FALLBACK_PROXY + encodeURIComponent(url), {signal:AbortSignal.timeout(9000)});
-if (r.ok) {
-console.warn('[predict] Worker proxy failed (status ' + primary.status + ') — used fallback CORS proxy for', url);
-return JSON.parse(await r.text());
-}
-} catch(e) {}
-return null;
-}
-
-// ── SMALL LOCALSTORAGE RESPONSE CACHE ────────────────────────────────────────
-// Keeps the last good response around so a transient fetch failure degrades to
-// "slightly stale data, clearly labeled" instead of blanking the page.
-function cacheGet(key, maxAgeMs) {
-try {
-const raw = localStorage.getItem(key);
-if (!raw) return null;
-const { t, v } = JSON.parse(raw);
-if (Date.now() - t > maxAgeMs) return null;
-return { value: v, ageMs: Date.now() - t };
-} catch(e) { return null; }
-}
-function cacheSet(key, v) {
-try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), v })); } catch(e) {}
-}
+// Season classifier, Worker-proxy fetch (with CORS-proxy fallback) and the
+// localStorage response cache now live in dh-season.js / dh-proxy.js, shared
+// with waits-core.js and mainstreet.html.
+const getSeason = DH.getSeason;
+const fetchProxyStatus = DH.fetchProxyStatus;
+const fetchProxy = DH.fetchProxy;
+const cacheGet = DH.cacheGet;
+const cacheSet = DH.cacheSet;
 const WAITS_CACHE_MAX_AGE_MS = 20 * 60 * 1000; // generous ceiling above the ~60s normal freshness
 // Normalise a ride name for matching: lower-case, unify curly/〝smart〞
 // apostrophes and dashes to plain ASCII, collapse whitespace. Queue-Times is
@@ -297,7 +254,7 @@ return String(s == null ? '' : s).toLowerCase()
 }
 function liveCacheKey(parkId) { return `dh_live_cache_${parkId}`; }
 async function loadLive(parkId) {
-const d = await fetchProxy(`https://queue-times.com/parks/${parkId}/queue_times.json`);
+const d = await fetchProxy(`https://queue-times.com/parks/${parkId}/queue_times.json`, 'predict');
 if (!d?.lands) {
 const cached = cacheGet(liveCacheKey(parkId), WAITS_CACHE_MAX_AGE_MS);
 if (cached) {

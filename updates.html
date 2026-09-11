@@ -132,9 +132,10 @@ async function fetchFeed(feedUrl){const url=`https://api.rss2json.com/v1/api.jso
 async function loadFeed(){const key=document.getElementById('source-select').value,src=SOURCES[key];setState('loading');document.getElementById('status-text').textContent='Loading…';try{const results=await Promise.allSettled(src.feeds.map(fetchFeed));let allItems=[],errors=[];results.forEach((r,i)=>{if(r.status==='fulfilled')allItems=allItems.concat(r.value);else errors.push(`${SOURCE_LABELS[src.feeds[i]]||src.feeds[i]}: ${r.reason?.message}`);});allItems.sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));if(!allItems.length&&errors.length)throw new Error(errors.join(' | '));renderDigest(allItems);}catch(e){setState('error');document.getElementById('err-detail').textContent=e.message||'Unknown error';document.getElementById('status-text').textContent='Failed to load';}}
 loadFeed();
 </script>
+<script src="dh-settings.js?v=20260910"></script>
 <script>
 const LS_KEY='dh_tv_settings';
-function goHome(){try{const raw=localStorage.getItem(LS_KEY);if(raw){const s=JSON.parse(raw),p=new URLSearchParams();if(s.name)p.set('family',s.name);if(s.trip)p.set('trip',s.trip);const qs=p.toString();window.location.href='index.html'+(qs?'?'+qs:'');return;}}catch(e){}window.location.href='index.html';}
+function goHome(){ DH.goHome(LS_KEY, 'index.html'); }
 </script>
 </body>
 </html>

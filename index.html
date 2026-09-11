@@ -458,10 +458,10 @@ style="position:absolute;top:-9999px;left:-9999px;width:1px;height:1px;"
 allow="autoplay">
 </iframe>
 
+<script src="dh-settings.js?v=20260910"></script>
 <script>
 const LS_KEY = 'dh_tv_settings';
-function loadSettings() { try { const raw = localStorage.getItem(LS_KEY); if (raw) return JSON.parse(raw); } catch(e) {} return { name: '', trip: '' }; }
-function persistSettings(name, trip) { try { localStorage.setItem(LS_KEY, JSON.stringify({ name, trip })); } catch(e) {} }
+const { load: loadSettings, persist: persistSettings } = DH.settingsStore(LS_KEY);
 
 const urlParams = new URLSearchParams(window.location.search);
 const isWallpaperMode = urlParams.get('wallpaper') === '1';

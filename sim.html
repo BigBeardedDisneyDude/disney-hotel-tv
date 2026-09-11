@@ -134,6 +134,7 @@
   <a href="mapview.html">Map</a>
 </nav>
 
+<script src="dh-proxy.js?v=20260910"></script>
 <script>
 
 const SUPABASE_URL = 'https://qumvjdwimpvnaijjwght.supabase.co';
@@ -574,21 +575,12 @@ function rideWait(db) { return waitData[db] ?? 25; }
 // waittimes.html) via the site Worker proxy, so all pages always agree.
 // Supabase rows can be hours stale (pg_cron is idle overnight), so it's
 // predictions-only.
-const WORKER_PROXY = 'https://restless-glade-a1e4.andpcooke.workers.dev/proxy?url=';
-
 async function fetchWaits() {
   document.getElementById('data-badge').textContent = 'Fetching...';
   const qtUrl = 'https://queue-times.com/parks/16/queue_times.json';
   try {
-    let data = null;
-    try {
-      const res = await fetch(WORKER_PROXY + encodeURIComponent(qtUrl), { signal: AbortSignal.timeout(9000) });
-      if (res.ok) {
-        const payload = await res.json();
-        if (payload?.lands) data = payload;
-      }
-    } catch (e) {}
-    if (!data) throw new Error('Proxy fetch failed');
+    const data = await DH.fetchProxy(qtUrl, 'sim');
+    if (!data?.lands) throw new Error('Proxy fetch failed');
     waitData = {};
     const allRides = (data.lands || []).flatMap(l => l.rides || []).concat(data.rides || []);
     allRides.forEach(ride => {

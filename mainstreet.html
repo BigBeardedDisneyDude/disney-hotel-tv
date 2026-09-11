@@ -123,6 +123,8 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
     </div>
   </div>
 </div>
+<script src="dh-proxy.js?v=20260910"></script>
+<script src="dh-season.js?v=20260910"></script>
 <script>
 const SUPABASE_URL='https://qumvjdwimpvnaijjwght.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1bXZqZHdpbXB2bmFpamp3Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NzQ4ODcsImV4cCI6MjA5MzQ1MDg4N30.BjBeX8GSZkZoUnW3Ecy3MTPdHVV-6E2U1oJnVHiyr5I';
@@ -131,7 +133,7 @@ const FIREBASE_PROJECT='disneyland-rides';
 const FIREBASE_API_KEY='AIzaSyAprWH3naFPXPRgSr9qTbq2rbEntYpJ5Pw';
 const FIRESTORE_URL=`https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents`;
 const MIN_SAMPLES=10;
-function getSeason(m){if(m===12||m===1)return'holiday';if(m>=6&&m<=8)return'summer';if(m===3||m===4)return'spring_break';return'regular';}
+const getSeason=DH.getSeason;
 function genId(){return'chat_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);}
 const SB_CONV=`${SUPABASE_URL}/rest/v1/conversations`;
 const SB_HDRS={apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'};
@@ -214,8 +216,7 @@ const DCA=[
   {name:"Goofy's Sky School",ll:true,p:[5,5,10,15,20,30,35,35,30,25,20,25,30,30,25,20,15,10]},
 ];
 const HRS=['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm','11pm'];
-const WORKER_PROXY=`${WORKER_URL}/proxy?url=`;
-async function fetchProxy(url){try{const r=await fetch(WORKER_PROXY+encodeURIComponent(url),{signal:AbortSignal.timeout(9000)});if(r.ok)return await r.json();}catch(e){}return null;}
+const fetchProxy=(url)=>DH.fetchProxy(url,'mainstreet');
 const TOOLS=[
   {name:'get_wait_times',description:'Get current live wait times for Disneyland or DCA from Queue-Times.',input_schema:{type:'object',properties:{park:{type:'string',enum:['disneyland','dca']}},required:['park']}},
   {name:'get_park_hours',description:"Get today's operating hours for Disneyland or DCA from ThemeParks.wiki.",input_schema:{type:'object',properties:{park:{type:'string',enum:['disneyland','dca']}},required:['park']}},

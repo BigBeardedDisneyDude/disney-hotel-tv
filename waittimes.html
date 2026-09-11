@@ -287,14 +287,13 @@ const RESORT = {
   ],
 };
 </script>
+<script src="dh-proxy.js?v=20260910"></script>
+<script src="dh-settings.js?v=20260910"></script>
 <script src="waits-core.js?v=20260904"></script>
 
 <script>
 const LS_KEY = 'dh_tv_settings';
-function goHome() {
-  try{const raw=localStorage.getItem(LS_KEY);if(raw){const s=JSON.parse(raw),p=new URLSearchParams();if(s.name)p.set('family',s.name);if(s.trip)p.set('trip',s.trip);const qs=p.toString();window.location.href='index.html'+(qs?'?'+qs:'');return;}}catch(e){}
-  window.location.href='index.html';
-}
+function goHome() { DH.goHome(LS_KEY, 'index.html'); }
 </script>
 </body>
 </html>

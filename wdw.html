@@ -547,10 +547,10 @@
 <iframe id="sc-player" src="about:blank"
   style="position:absolute;top:-9999px;left:-9999px;width:1px;height:1px;" allow="autoplay"></iframe>
 
+<script src="dh-settings.js?v=20260910"></script>
 <script>
 const LS_KEY = 'wdw_tv_settings';
-function loadSettings() { try { const r = localStorage.getItem(LS_KEY); if (r) return JSON.parse(r); } catch(e) {} return { name: '', trip: '' }; }
-function persistSettings(n, t) { try { localStorage.setItem(LS_KEY, JSON.stringify({ name: n, trip: t })); } catch(e) {} }
+const { load: loadSettings, persist: persistSettings } = DH.settingsStore(LS_KEY);
 
 const stored = loadSettings();
 const params = { name: stored.name || '', trip: stored.trip || '' };

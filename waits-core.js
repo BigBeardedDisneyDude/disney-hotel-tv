@@ -29,6 +29,9 @@
  * plus the static #status-text, #last-updated, #loading, #error elements and
  * the #stat-open / #stat-avg / #stat-max / #stat-short stat values.
  *
+ * The shell must also load dh-proxy.js BEFORE this file (for window.DH's
+ * shared Worker-proxy fetch + response cache).
+ *
  * IMPORTANT: bump the `?v=` on every shell's `<script src="waits-core.js?v=...">`
  * whenever you edit this file, so browsers don't keep serving a stale cached copy.
  * --------------------------------------------------------------------------
@@ -36,29 +39,17 @@
 (function () {
   'use strict';
 
-  var WORKER_PROXY = 'https://restless-glade-a1e4.andpcooke.workers.dev/proxy?url=';
-  // Last-resort fallback if our own Worker is down or over its free-tier request
-  // ceiling — it's a single point of failure shared by every page that fetches
-  // park data. Only tried when the Worker itself fails.
-  var FALLBACK_PROXY = 'https://api.allorigins.win/raw?url=';
+  // Worker-proxy fetch (with CORS-proxy fallback) and the localStorage
+  // response cache now live in dh-proxy.js, shared with predict-core.js and
+  // mainstreet.html — load that file before this one.
+  var cacheGet = DH.cacheGet;
+  var cacheSet = DH.cacheSet;
   function qtUrl(id) { return 'https://queue-times.com/parks/' + id + '/queue_times.json'; }
 
   // Small localStorage cache so a transient fetch failure shows slightly stale,
   // clearly-labeled data instead of blanking the panel.
   var WAITS_CACHE_MAX_AGE_MS = 20 * 60 * 1000;
   function cacheKey(parkKey) { return 'dh_waits_cache_' + parkKey; }
-  function cacheGet(key, maxAgeMs) {
-    try {
-      var raw = localStorage.getItem(key);
-      if (!raw) return null;
-      var parsed = JSON.parse(raw);
-      if (Date.now() - parsed.t > maxAgeMs) return null;
-      return { value: parsed.v, ageMs: Date.now() - parsed.t };
-    } catch (e) { return null; }
-  }
-  function cacheSet(key, v) {
-    try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), v: v })); } catch (e) {}
-  }
 
   var PARKS = {};                 // key -> park config, for quick lookup
   var PARK_KEYS = [];             // park keys, in display order
@@ -85,15 +76,9 @@
   }
 
   async function fetchJSON(url) {
-    try {
-      var res = await fetch(WORKER_PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(9000) });
-      if (res.ok) return res.json();
-    } catch (e) {}
-    // Worker failed — try the fallback CORS proxy before giving up.
-    var fb = await fetch(FALLBACK_PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(9000) });
-    if (!fb.ok) throw new Error('Proxy HTTP ' + fb.status);
-    console.warn('[waits] Worker proxy failed — used fallback CORS proxy for', url);
-    return JSON.parse(await fb.text());
+    var data = await DH.fetchProxy(url, 'waits');
+    if (data == null) throw new Error('Proxy fetch failed for ' + url);
+    return data;
   }
 
   function showLoading(on) { $('loading').style.display = on ? 'flex' : 'none'; }

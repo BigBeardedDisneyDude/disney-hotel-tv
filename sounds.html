@@ -235,6 +235,7 @@
 </head>
 <body>
 <script src="tv-mode.js?v=20260904"></script>
+<script src="dh-settings.js?v=20260910"></script>
 
 <div id="header">
   <div id="header-left">
@@ -641,20 +642,7 @@ function setSleep(mins) {
 }
 
 /* ── Home button (carries family/trip settings back like other pages) */
-function goHome() {
-  try {
-    const raw = localStorage.getItem(LS_TV_KEY);
-    if (raw) {
-      const s = JSON.parse(raw), p = new URLSearchParams();
-      if (s.name) p.set('family', s.name);
-      if (s.trip) p.set('trip', s.trip);
-      const qs = p.toString();
-      window.location.href = 'index.html' + (qs ? '?' + qs : '');
-      return;
-    }
-  } catch (e) {}
-  window.location.href = 'index.html';
-}
+function goHome() { DH.goHome(LS_TV_KEY, 'index.html'); }
 
 /* ── Boot ─────────────────────────────────────────────────────────── */
 load();
