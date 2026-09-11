@@ -2,6 +2,8 @@
 // Deploy with: supabase functions deploy prune-waits
 // Then schedule via Supabase Dashboard > Integrations > Cron (weekly)
 
+import { alertOnFailure } from '../_shared/alerts.ts';
+
 // Deletes at most this many rows per batch, so one run can't hold a single
 // DELETE open long enough to hit a statement timeout on the free tier.
 const BATCH_SIZE = 5000;
@@ -38,6 +40,13 @@ Deno.serve(async (_req: Request) => {
     if (!selRes.ok) {
       const text = await selRes.text();
       console.error(`Prune batch select failed: ${selRes.status} ${text}`);
+      await alertOnFailure(
+        'prune-waits',
+        'disney-hotel-tv: prune-waits failed',
+        `Batch select failed (HTTP ${selRes.status}) after deleting ${totalDeleted} row(s) in ${batches} batch(es).\n${text}`,
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
       return new Response(JSON.stringify({ ok: false, error: text, totalDeleted }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
@@ -65,6 +74,13 @@ Deno.serve(async (_req: Request) => {
     if (!delRes.ok) {
       const text = await delRes.text();
       console.error(`Prune batch delete failed: ${delRes.status} ${text}`);
+      await alertOnFailure(
+        'prune-waits',
+        'disney-hotel-tv: prune-waits failed',
+        `Batch delete failed (HTTP ${delRes.status}) after deleting ${totalDeleted} row(s) in ${batches} batch(es).\n${text}`,
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
       return new Response(JSON.stringify({ ok: false, error: text, totalDeleted }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },

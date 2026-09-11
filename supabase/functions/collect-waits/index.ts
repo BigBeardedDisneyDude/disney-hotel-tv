@@ -2,6 +2,8 @@
 // Deploy with: supabase functions deploy collect-waits
 // Then schedule via Supabase Dashboard > Integrations > Cron
 
+import { alertOnFailure } from '../_shared/alerts.ts';
+
 const PARKS: Record<string, number> = {
   dl: 16, dca: 17,
   mk: 6, epcot: 5, hs: 7, ak: 8,
@@ -97,6 +99,22 @@ Deno.serve(async (_req: Request) => {
   }
 
   const ok = insertError === null && failedParks.length === 0;
+
+  if (!ok) {
+    await alertOnFailure(
+      'collect-waits',
+      'disney-hotel-tv: collect-waits failed',
+      [
+        `Time: ${now.toISOString()}`,
+        `Rows inserted this run: ${rows.length}`,
+        `Failed parks: ${failedParks.length ? failedParks.join(', ') : 'none'}`,
+        `Insert error: ${insertError ?? 'none'}`,
+      ].join('\n'),
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+  }
+
   return new Response(JSON.stringify({
     ok,
     inserted: rows.length,

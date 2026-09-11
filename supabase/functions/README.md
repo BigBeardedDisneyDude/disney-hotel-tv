@@ -15,25 +15,39 @@ month, weekend flag, season), and batch-inserts to the `wait_times` table.
 
 Park IDs (Queue-Times): `dl` 16, `dca` 17, `mk` 6, `epcot` 5, `hs` 7, `ak` 8.
 
-Known limitation: if a single park's fetch fails it is logged and skipped, and
-the run still reports success as long as any rows were inserted — so a
-persistently failing park shows up as silent gaps, not an alarm.
+Hardened 2026-09-10: if any single park's fetch fails, the run now returns
+HTTP 500 with a `failedParks` array (still inserting whatever rows the other
+parks did return) instead of silently reporting success — see Alerting below.
 
 ## `prune-waits`
 
 Runs **weekly**. Deletes `wait_times` rows older than 120 days to keep the
 database under the Supabase free-tier size limit.
 
-Known limitation: the function reports success even if the `DELETE` matched
-zero rows or was truncated, so the logs alone don't confirm it is keeping
-pace. If the table grows unbounded, check that this function is actually on a
-schedule and that its `DELETE` is completing rather than hitting a statement
-timeout on a large first pass.
+Hardened 2026-09-10: deletes in batches of 5000 (ordered by `recorded_at`,
+capped at 50 batches/run as a circuit breaker — a real backlog just continues
+on the next scheduled run) instead of one unbounded `DELETE`, and reports the
+true deleted-row count via `Prefer: count=exact` on the batch delete's
+`Content-Range` header, so the response actually confirms it did something.
+
+## Alerting
+
+Added 2026-09-10. Both functions call `alertOnFailure()` from
+`../_shared/alerts.ts` on their failure path, which emails
+**andpcooke@gmail.com** via [Resend](https://resend.com) whenever a run isn't
+fully clean (a failed park fetch, a failed insert, or a failed delete batch).
+Re-alerts for the same function are throttled to at most once every 3 hours
+(tracked in the `function_alerts` table — see
+`migrations/*_add_function_alerts_table.sql`) so a sustained outage sends a
+handful of emails, not one every 15 minutes. Requires the `RESEND_API_KEY`
+secret; if it's unset, `alertOnFailure()` just logs and does nothing — a
+missing key never makes the pipeline itself fail.
 
 ## Environment
 
 Both read `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from the function
-environment (set in the Supabase dashboard, never committed).
+environment (set in the Supabase dashboard, never committed). The alerting
+path additionally reads `RESEND_API_KEY` (same place).
 
 ## Deploy / update
 

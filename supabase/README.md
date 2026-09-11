@@ -11,15 +11,18 @@ lost or recreated.
 |---|---|
 | `functions/collect-waits/` | Edge Function: every 15 min, fetches Queue-Times for all six US Disney parks, tags each row with Pacific-time context, inserts to `wait_times`. |
 | `functions/prune-waits/` | Edge Function: weekly, deletes `wait_times` rows older than 120 days (Supabase free-tier size limit). |
+| `functions/_shared/alerts.ts` | Emails andpcooke@gmail.com via Resend when either function fails, throttled per function. |
 | `functions/README.md` | Function details, known limitations, env vars, deploy commands. |
 | `schema.sql` | Base table definitions (`wait_times`, `conversations`), their original indexes, and RLS policies. |
 | `migrations/*_add_wait_times_indexes.sql` | The covering index added 2026-09-07 to keep predictor page loads off a full-table scan. |
 | `migrations/*_schedule_cron_jobs.sql` | The `pg_cron` schedule that invokes the two functions. |
+| `migrations/*_add_function_alerts_table.sql` | The `function_alerts` throttle table the alert emails use. |
 
 ## What is NOT here (and can't be)
 
-- **`SUPABASE_SERVICE_ROLE_KEY`** — the functions read it from their own
-  environment (Supabase dashboard → Edge Functions → Secrets). Never committed.
+- **`SUPABASE_SERVICE_ROLE_KEY`** / **`RESEND_API_KEY`** — the functions read
+  both from their own environment (Supabase dashboard → Edge Functions →
+  Secrets, or `supabase secrets set`). Never committed.
 - **Table data** — `wait_times` history, `conversations`. Not backed up; the
   predictor tolerates a cold history (falls back to its hand-authored baseline
   curves) and rebuilds coverage automatically as the collector runs.
@@ -37,8 +40,8 @@ lost or recreated.
 3. `supabase db push` — applies the migrations in `migrations/` (indexes + the
    pg_cron schedule; enables the `pg_cron` and `pg_net` extensions).
 4. `supabase functions deploy collect-waits && supabase functions deploy prune-waits`.
-5. In the dashboard, set the `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
-   function secrets.
+5. In the dashboard, set the `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and
+   `RESEND_API_KEY` function secrets.
 6. Update the anon-key bearer token in the cron migration if the new project
    has a different one, then re-run that migration.
 
@@ -76,3 +79,8 @@ select cron.alter_job(job_id := <id>, command := $$ ... $$);
   cron job: it had been calling the function with no `Authorization` header, so
   pruning had silently never run. Captured the cron schedule as
   `*_schedule_cron_jobs.sql` and the base tables as `schema.sql`.
+- **2026-09-10** — hardened both functions so failures stop being silent
+  (`collect-waits` returns 500 + `failedParks` on any park fetch failure;
+  `prune-waits` deletes in batches and reports the real deleted-row count via
+  `count=exact`), and added email alerting on failure (`functions/_shared/
+  alerts.ts`, via Resend, throttled through the new `function_alerts` table).
