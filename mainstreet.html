@@ -350,7 +350,7 @@ async function callAgent(userMessage){
   let loops=0;
   while(loops<6){
     loops++;
-    const res=await fetch(WORKER_URL+'/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SYSTEM,tools:TOOLS,messages:conversationHistory})});
+    const res=await fetch(WORKER_URL+'/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-5',max_tokens:1000,system:SYSTEM,tools:TOOLS,messages:conversationHistory})});
     const data=await res.json();
     const toolBlocks=data.content.filter(b=>b.type==='tool_use');
     const textBlock=data.content.find(b=>b.type==='text');

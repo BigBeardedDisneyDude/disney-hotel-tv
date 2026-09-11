@@ -5,8 +5,23 @@ two jobs:
 
 | Route | Method | Purpose |
 | --- | --- | --- |
-| `/` (any path except `/proxy`) | `POST` | Anthropic Messages API proxy for the MainStreet chat. Holds `ANTHROPIC_API_KEY`. |
+| `/` (any path except `/proxy`) | `POST` | Anthropic Messages API proxy for the MainStreet chat. Holds `ANTHROPIC_API_KEY`. Origin-checked + rate-limited (see below). |
 | `/proxy?url=<encoded>` | `GET` | Allow-listed CORS passthrough for `queue-times.com` and `api.themeparks.wiki`. Replaces the old public CORS proxies. |
+
+## Messages-route protection
+
+Since this route holds the real `ANTHROPIC_API_KEY`, an unprotected copy of the
+Worker URL would let anyone script unlimited paid API calls against it. Two
+checks in `worker.js` guard against that:
+
+- **Origin allowlist** (`isAllowedOrigin`) — rejects (403) any POST whose
+  `Origin` header isn't in `ALLOWED_ORIGINS` or a `localhost`/`127.0.0.1` dev
+  origin. A real browser fetch from `mainstreet.html` always sends `Origin`
+  cross-origin, so this doesn't affect normal use.
+- **Per-IP rate limit** (`isRateLimited`) — 20 requests/minute per
+  `CF-Connecting-IP` (a header only Cloudflare sets, so it can't be spoofed),
+  tracked in the same kind of best-effort in-isolate `Map` as the `/proxy`
+  cache. It resets on isolate churn, so it's a deterrent, not a hard cap.
 
 ## Why `/proxy` exists
 

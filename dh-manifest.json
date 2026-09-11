@@ -1,0 +1,25 @@
+{
+  "name": "Magic Key TV",
+  "short_name": "Magic Key TV",
+  "description": "Disneyland Resort home screen — clock, weather, trip countdown, and today's park schedule",
+  "start_url": "/disney-hotel-tv/index.html",
+  "scope": "/disney-hotel-tv/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#1a3a4a",
+  "theme_color": "#1a3a4a",
+  "icons": [
+    {
+      "src": "mainstreet-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "mainstreet-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
