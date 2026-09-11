@@ -35,6 +35,10 @@ Deno.serve(async (_req: Request) => {
   const now = new Date();
   const ctx = getContext(now);
   const rows: object[] = [];
+  // Every park that failed to fetch is a silent gap in the prediction history
+  // unless we surface it — collected here so the response (and therefore any
+  // cron/monitoring that checks the status code) can flag it.
+  const failedParks: string[] = [];
 
   for (const [park, parkId] of Object.entries(PARKS)) {
     let data: any;
@@ -47,6 +51,7 @@ Deno.serve(async (_req: Request) => {
       data = await res.json();
     } catch (err) {
       console.error(`Failed to fetch ${park}:`, err.message);
+      failedParks.push(park);
       continue;
     }
 
@@ -64,35 +69,41 @@ Deno.serve(async (_req: Request) => {
     }
   }
 
+  let insertError: string | null = null;
   if (rows.length === 0) {
     console.log('No rows to insert — all parks may have failed');
-    return new Response(JSON.stringify({ ok: true, inserted: 0 }), {
-      headers: { 'Content-Type': 'application/json' },
+  } else {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times`, {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'apikey':        SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer':        'return=minimal',
+      },
+      body: JSON.stringify(rows),
     });
+
+    if (!res.ok) {
+      insertError = await res.text();
+      console.error(`Supabase insert failed: ${res.status} ${insertError}`);
+    } else {
+      console.log(`✓ Stored ${rows.length} rows at ${now.toISOString()}`);
+    }
   }
 
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times`, {
-    method: 'POST',
-    headers: {
-      'Content-Type':  'application/json',
-      'apikey':        SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Prefer':        'return=minimal',
-    },
-    body: JSON.stringify(rows),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    console.error(`Supabase insert failed: ${res.status} ${text}`);
-    return new Response(JSON.stringify({ ok: false, error: text }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  if (failedParks.length > 0) {
+    console.error(`Parks that failed to fetch this run: ${failedParks.join(', ')}`);
   }
 
-  console.log(`✓ Stored ${rows.length} rows at ${now.toISOString()}`);
-  return new Response(JSON.stringify({ ok: true, inserted: rows.length }), {
+  const ok = insertError === null && failedParks.length === 0;
+  return new Response(JSON.stringify({
+    ok,
+    inserted: rows.length,
+    failedParks,
+    ...(insertError ? { insertError } : {}),
+  }), {
+    status: ok ? 200 : 500,
     headers: { 'Content-Type': 'application/json' },
   });
 });
