@@ -3,6 +3,7 @@
 // Then schedule via Supabase Dashboard > Integrations > Cron
 
 import { alertOnFailure } from '../_shared/alerts.ts';
+import { isRide } from '../_shared/nonRideFilter.ts';
 
 const PARKS: Record<string, number> = {
   dl: 16, dca: 17,
@@ -41,6 +42,7 @@ Deno.serve(async (_req: Request) => {
   // unless we surface it — collected here so the response (and therefore any
   // cron/monitoring that checks the status code) can flag it.
   const failedParks: string[] = [];
+  let nonRidesSkipped = 0;
 
   for (const [park, parkId] of Object.entries(PARKS)) {
     let data: any;
@@ -59,6 +61,10 @@ Deno.serve(async (_req: Request) => {
 
     for (const land of data.lands ?? []) {
       for (const ride of land.rides ?? []) {
+        if (!isRide(ride.name, park)) {
+          nonRidesSkipped++;
+          continue;
+        }
         rows.push({
           park,
           ride_name:   ride.name,
@@ -69,6 +75,10 @@ Deno.serve(async (_req: Request) => {
         });
       }
     }
+  }
+
+  if (nonRidesSkipped > 0) {
+    console.log(`Filtered ${nonRidesSkipped} non-ride entries (shows/meets/walkthroughs) before insert`);
   }
 
   let insertError: string | null = null;
