@@ -75,22 +75,40 @@ Deno.serve(async (_req: Request) => {
   if (rows.length === 0) {
     console.log('No rows to insert — all parks may have failed');
   } else {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times`, {
-      method: 'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'apikey':        SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Prefer':        'return=minimal',
-      },
-      body: JSON.stringify(rows),
-    });
+    // The insert occasionally hits a transient Gateway Timeout from Supabase's
+    // free-tier infra with no fault of ours — retry a couple of times before
+    // treating it as a real failure, so a one-off blip doesn't silently drop
+    // a whole 15-minute snapshot.
+    const INSERT_ATTEMPTS = 3;
+    for (let attempt = 1; attempt <= INSERT_ATTEMPTS; attempt++) {
+      if (attempt > 1) {
+        await new Promise((r) => setTimeout(r, 1500 * (attempt - 1)));
+      }
 
-    if (!res.ok) {
-      insertError = await res.text();
-      console.error(`Supabase insert failed: ${res.status} ${insertError}`);
-    } else {
-      console.log(`✓ Stored ${rows.length} rows at ${now.toISOString()}`);
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times`, {
+          method: 'POST',
+          headers: {
+            'Content-Type':  'application/json',
+            'apikey':        SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Prefer':        'return=minimal',
+          },
+          body: JSON.stringify(rows),
+        });
+
+        if (res.ok) {
+          insertError = null;
+          console.log(`✓ Stored ${rows.length} rows at ${now.toISOString()}${attempt > 1 ? ` (attempt ${attempt})` : ''}`);
+          break;
+        }
+
+        insertError = await res.text();
+        console.error(`Supabase insert attempt ${attempt} failed: ${res.status} ${insertError}`);
+      } catch (err) {
+        insertError = (err as Error).message;
+        console.error(`Supabase insert attempt ${attempt} threw: ${insertError}`);
+      }
     }
   }
 
