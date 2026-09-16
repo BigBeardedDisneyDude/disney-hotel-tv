@@ -10,13 +10,15 @@ lost or recreated.
 | Path | What it is |
 |---|---|
 | `functions/collect-waits/` | Edge Function: every 15 min, fetches Queue-Times for all six US Disney parks, tags each row with Pacific-time context, inserts to `wait_times`. |
-| `functions/prune-waits/` | Edge Function: weekly, deletes `wait_times` rows older than 120 days (Supabase free-tier size limit). |
+| `functions/prune-waits/` | Edge Function: daily, deletes `wait_times` rows older than 120 days (Supabase free-tier size limit). |
 | `functions/_shared/alerts.ts` | Emails andpcooke@gmail.com via Resend when either function fails, throttled per function. |
 | `functions/README.md` | Function details, known limitations, env vars, deploy commands. |
 | `schema.sql` | Base table definitions (`wait_times`, `conversations`), their original indexes, and RLS policies. |
 | `migrations/*_add_wait_times_indexes.sql` | The covering index added 2026-09-07 to keep predictor page loads off a full-table scan. |
 | `migrations/*_schedule_cron_jobs.sql` | The `pg_cron` schedule that invokes the two functions. |
 | `migrations/*_add_function_alerts_table.sql` | The `function_alerts` throttle table the alert emails use. |
+| `migrations/*_prune_waits_daily.sql` | Moved `prune-waits` from weekly to daily (2026-09-15) after a silent failure — see History. |
+| `migrations/*_add_wait_time_rollups.sql` | The `wait_time_rollups` materialized view (2026-09-15): avg + p25/p75 wait per park/ride/hour/day-of-week/season, refreshed nightly by a direct `pg_cron` SQL command. `predict.html`/`wdwpredict.html` read this instead of aggregating ~1M+ raw `wait_times` rows client-side on every load. |
 
 ## What is NOT here (and can't be)
 
@@ -53,7 +55,12 @@ There is no Cron UI in this project's dashboard version — use the SQL Editor:
 -- list jobs
 select jobid, jobname, schedule, active, command from cron.job;
 
--- recent run outcomes (DB-side only; does not show the function's HTTP status)
+-- recent run outcomes (DB-side only; does not show the function's HTTP status).
+-- IMPORTANT: for a net.http_post job, "succeeded" here only means the SQL call
+-- queued the async request -- it is NOT proof the HTTP request was delivered or
+-- that the function completed. On 2026-09-15, prune-waits logged "succeeded"
+-- for a week while silently deleting nothing. Verify by downstream effect
+-- (e.g. wait_times' oldest row age) instead of trusting this table alone.
 select jobid, status, return_message, start_time
 from cron.job_run_details order by start_time desc limit 20;
 
@@ -84,3 +91,15 @@ select cron.alter_job(job_id := <id>, command := $$ ... $$);
   `prune-waits` deletes in batches and reports the real deleted-row count via
   `count=exact`), and added email alerting on failure (`functions/_shared/
   alerts.ts`, via Resend, throttled through the new `function_alerts` table).
+- **2026-09-15** — found `prune-waits`' first scheduled run after the 2026-09-07
+  auth fix had logged "succeeded" but deleted nothing (`wait_times`' oldest row
+  drifted to 127+ days; `function_alerts` had zero rows for it, meaning the
+  function's own error handling never even fired). A manual invoke with the
+  identical URL/auth worked instantly, so the function and credentials were
+  fine — the likely culprit was the `pg_cron`→`pg_net` delivery path going
+  stale between infrequent (weekly) invocations, unlike `collect-waits` which
+  fires every 15 min and has never shown this. Fixed by switching the schedule
+  to daily. Separately, added the `wait_time_rollups` materialized view so the
+  predictor stops reading ~1M+ raw rows per page load; its nightly refresh is
+  a plain SQL `pg_cron` command (not a `net.http_post`), specifically to avoid
+  the same silent-delivery-failure class of bug.

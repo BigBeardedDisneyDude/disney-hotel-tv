@@ -65,29 +65,20 @@ let usingRealData = false;
 // (not enough same-day data yet to trust a correction). See effectiveMult().
 let autoTuneFactor = {};
 
-function percentile(sortedAsc, p) {
-if (!sortedAsc.length) return null;
-const idx = (sortedAsc.length - 1) * p;
-const lo = Math.floor(idx), hi = Math.ceil(idx);
-if (lo === hi) return sortedAsc[lo];
-return sortedAsc[lo] + (sortedAsc[hi] - sortedAsc[lo]) * (idx - lo);
-}
-
 // PostgREST (Supabase's REST layer) caps a response at 1000 rows by default,
-// with no error or warning — it just silently truncates. Combined with the
-// `order=ride_name,hour_of_day` below, an unpaginated query only ever sees
-// rides early in the alphabet, no matter how much history actually exists.
-// On a single busy day-type/season bucket for one park, the true row count is
-// easily 10x that cap (confirmed 11k+ for a Friday/regular-season/Disneyland
-// query on 2026-09-05), so this must page through everything rather than
-// trust the first page. MAX_ROWS is a circuit breaker, not a normal limit.
+// with no error or warning — it just silently truncates. A single park can
+// have ~60 rides × 18 modelled hours = up to ~1080 rollup rows for one
+// day-of-week/season combo, which can just clear that cap, so this still
+// pages through everything rather than trust the first page. MAX_ROWS is a
+// circuit breaker, not a normal limit — actual rollup row counts are two
+// orders of magnitude below it.
 const SUPABASE_PAGE_SIZE = 1000;
-const SUPABASE_MAX_ROWS = 20000;
+const SUPABASE_MAX_ROWS = 5000;
 async function fetchAllRows(params) {
 const rows = [];
 let offset = 0;
 while (true) {
-const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_times?${params}`, {
+const res = await fetch(`${SUPABASE_URL}/rest/v1/wait_time_rollups?${params}`, {
 headers: {
 apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
 Range: `${offset}-${offset + SUPABASE_PAGE_SIZE - 1}`
@@ -103,6 +94,12 @@ offset += SUPABASE_PAGE_SIZE;
 return rows;
 }
 
+// Reads the wait_time_rollups materialized view (avg + p25/p75 + sample_count
+// per park/ride/hour/day-of-week/season, refreshed nightly by pg_cron — see
+// supabase/migrations/20260915180000_add_wait_time_rollups.sql) instead of
+// paging through raw wait_times and aggregating client-side. Same filters and
+// same MIN_SAMPLES threshold as the old client-side aggregation; the rollup
+// just does that math once on the server instead of on every page load.
 async function loadHistoricalProfiles() {
 if (SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
 const now = new Date();
@@ -112,48 +109,35 @@ const seasonKey = getSeason(pt.getMonth() + 1);
 try {
 const perPark = await Promise.all(PREDICT.parks.map(p => {
 const params = new URLSearchParams({
-select: 'park,ride_name,hour_of_day,wait_time',
+select: 'park,ride_name,hour_of_day,sample_count,avg_wait,p25_wait,p75_wait',
 park: `eq.${p.key}`,
 day_of_week: `eq.${dow}`,
-season: `eq.${seasonKey}`,
-is_open: 'eq.true',
-wait_time: 'gte.0',
-order: 'ride_name,hour_of_day'
+season: `eq.${seasonKey}`
 });
 return fetchAllRows(params);
 }));
-const rows = perPark.flat();
+const rows = perPark.flat().filter(row => row.sample_count >= MIN_SAMPLES);
 if (!rows.length) return;
-const buckets = {};
-for (const row of rows) {
-const key = `${row.park}|${row.ride_name}|${row.hour_of_day}`;
-if (!buckets[key]) buckets[key] = [];
-buckets[key].push(row.wait_time);
-}
 const profiles = {}, bands = {};
 PREDICT.parks.forEach(p => { profiles[p.key] = {}; bands[p.key] = {}; });
 // Reference point for measuring drift below: what the hand-authored table
 // would have predicted for today's day-type/season, before any tuning.
 const baselineMult = mult(crowdLevel(dayType(now), season(now)));
 const ratiosByPark = {};
-for (const [key, waits] of Object.entries(buckets)) {
-if (waits.length < MIN_SAMPLES) continue;
-const [pk, rideName, hourStr] = key.split('|');
+for (const row of rows) {
+const pk = row.park, rideName = row.ride_name;
 if (!profiles[pk]) continue;             // a park this page doesn't show
-const hour = parseInt(hourStr);
-const idx = hour - 6;
+const idx = row.hour_of_day - 6;
 if (idx < 0 || idx > 17) continue;
-const sorted = [...waits].sort((a,b)=>a-b);
-const mean = waits.reduce((a,b)=>a+b,0) / waits.length;
 if (!profiles[pk][rideName]) profiles[pk][rideName] = new Array(18).fill(null);
 if (!bands[pk][rideName]) bands[pk][rideName] = new Array(18).fill(null);
-profiles[pk][rideName][idx] = Math.round(mean);
-bands[pk][rideName][idx] = { p25: Math.round(percentile(sorted, 0.25)), p75: Math.round(percentile(sorted, 0.75)) };
+profiles[pk][rideName][idx] = row.avg_wait;
+bands[pk][rideName][idx] = { p25: row.p25_wait, p75: row.p75_wait };
 // How far off was the hand-authored baseline for this exact (ride, hour)?
 const cfg = PREDICT.parks.find(pp => pp.key === pk);
 const ride = cfg?.rides.find(r => r.name === rideName);
 const predicted = ride ? ride.p[idx] * baselineMult : 0;
-if (predicted > 0) (ratiosByPark[pk] = ratiosByPark[pk] || []).push(mean / predicted);
+if (predicted > 0) (ratiosByPark[pk] = ratiosByPark[pk] || []).push(row.avg_wait / predicted);
 }
 const covered = PREDICT.parks.some(p =>
 Object.keys(profiles[p.key]).length / Math.max(p.rides.length, 1) > 0.5);
