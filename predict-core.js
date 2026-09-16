@@ -377,6 +377,22 @@ if (delta2 < -8) return { arrow: '→', phrase: 'Gets better soon', color: '#c9a
 return { arrow: '→', phrase: 'Holding steady', color: '#c9a000' };
 }
 
+// Unlike getTrend() above (which forecasts the USUAL pattern from the
+// predicted curve, never touching today's live number), this compares
+// today's ACTUAL live wait to what's typical for this exact hour, and calls
+// out a real live spike or drop. Only fires when `hist` is grounded in real
+// measured history (not the hand-authored cold-start curve) and `wait` is a
+// genuine live reading (not itself an estimate) -- otherwise there is
+// nothing trustworthy to compare against. Requires both an absolute (>=10
+// min) and a relative (>=1.5x / <=0.6x) gap so a short queue's normal
+// wiggle (e.g. 5 min -> 8 min) never gets flagged as a "spike".
+function getLiveAnomaly(wait, hist, real, estimated) {
+if (!real || estimated || wait == null || hist == null) return null;
+if (wait - hist >= 10 && wait >= hist * 1.5) return { arrow: '⚡', phrase: 'Unusually busy right now', color: 'var(--red)' };
+if (hist - wait >= 10 && wait <= hist * 0.6) return { arrow: '✨', phrase: 'Shorter than usual — go now', color: 'var(--green)' };
+return null;
+}
+
 function getLive(ride) {
 if (!isParkOpen()) return { wait: null, closed: true };
 if(!live||!Object.keys(live).length) return {wait:null, closed:false};
@@ -492,7 +508,7 @@ const lv=getLive(r);
 const {p, real} = getProfile(r);
 const hist=Math.round(p[hi]*m);
 const {wait, estimated}=resolveWait(lv, hist, r.id);
-const trend=lv.closed?null:getTrend(p,m,hi);
+const trend=lv.closed?null:(getLiveAnomaly(wait,hist,real,estimated)||getTrend(p,m,hi));
 return {...r, p, real, wait, estimated, status:lv.closed?'closed':status(wait), trend, closed:lv.closed};
 })
 .sort((a,b)=>{
@@ -538,7 +554,7 @@ const lv=getLive(r);
 const {p, real} = getProfile(r);
 const hist=Math.round(p[hi]*m);
 const {wait, estimated}=resolveWait(lv, hist, r.id);
-const trend=lv.closed?null:getTrend(p,m,hi);
+const trend=lv.closed?null:(getLiveAnomaly(wait,hist,real,estimated)||getTrend(p,m,hi));
 return {...r, p, real, wait, estimated, status:lv.closed?'closed':status(wait), trend, closed:lv.closed};
 });
 const picks=[...computed].filter(r=>r.status==='go').sort((a,b)=>a.wait-b.wait).slice(0,4);
@@ -808,7 +824,7 @@ const lv=getLive(r);
 const isClosed=lv.closed;
 const hist=Math.round(p[hi]*m);
 const {wait: nowWait, estimated: nowEst} = resolveWait(lv, hist, r.id);
-const trend = isClosed ? null : getTrend(p, m, hi);
+const trend = isClosed ? null : (getLiveAnomaly(nowWait, hist, real, nowEst) || getTrend(p, m, hi));
 const heatHours = [];
 for (let i = start; i <= end; i++) heatHours.push(i);
 const heatMax = Math.max(...heatHours.map(i => p[i]*m), 1);
