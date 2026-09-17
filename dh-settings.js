@@ -2,9 +2,9 @@
  * --------------------------------------------------------------------------
  * Shared "family name + trip date" settings storage and the matching
  * "go home and carry those settings along as URL params" navigation, used
- * across the site's pages. Each home screen (index.html, wdw.html) keeps its
- * own localStorage key since they're separate resorts, but the read/write
- * shape and the "go home" pattern were identical hand-typed copies.
+ * across the site's pages. index.html's Disneyland and WDW scenes share one
+ * localStorage key (family name/trip date don't change based on which
+ * resort you're looking at); other pages pass whichever key they need.
  *
  * Exposes on window.DH:
  *   settingsStore(lsKey) -> { load, persist }

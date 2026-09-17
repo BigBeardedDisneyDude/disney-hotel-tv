@@ -793,6 +793,19 @@ const ACTIVE_RESORT = window.ACTIVE_RESORT;
 const LS_KEY = 'dh_tv_settings';
 const { load: loadSettings, persist: persistSettings } = DH.settingsStore(LS_KEY);
 
+// Family name / trip date are shared across both resorts (one family, one
+// name — doesn't change based on which room you're looking at). This used
+// to be two separate stores (one per resort) from back when they were two
+// separate pages; migrate anything already saved under the old WDW-only
+// key into the shared one, one time, so nobody's existing entry gets lost.
+(function migrateLegacyWdwSettings() {
+  try {
+    if (localStorage.getItem(LS_KEY)) return;
+    const legacy = localStorage.getItem('wdw_tv_settings');
+    if (legacy) localStorage.setItem(LS_KEY, legacy);
+  } catch (e) {}
+})();
+
 const urlParams = new URLSearchParams(window.location.search);
 const isWallpaperMode = urlParams.get('wallpaper') === '1';
 if (isWallpaperMode) {
@@ -1157,8 +1170,7 @@ if (ACTIVE_RESORT === 'dl') (function() {
 // ─────────────────────────────────────────────────────────────────────────────
 // WDW SCENE
 // ─────────────────────────────────────────────────────────────────────────────
-const WDW_LS_KEY = 'wdw_tv_settings';
-const { load: wdwLoadSettings, persist: wdwPersistSettings } = DH.settingsStore(WDW_LS_KEY);
+const { load: wdwLoadSettings, persist: wdwPersistSettings } = DH.settingsStore(LS_KEY);
 
 const wdwStored = wdwLoadSettings();
 const wdwParams = { name: wdwStored.name || '', trip: wdwStored.trip || '' };
