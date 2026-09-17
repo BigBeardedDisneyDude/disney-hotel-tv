@@ -8,7 +8,7 @@
  * video, which is too large to want cached indefinitely).
  * --------------------------------------------------------------------------
  */
-const CACHE = 'dh-tv-v1';
+const CACHE = 'dh-tv-v2';
 const PRECACHE = [
   '/disney-hotel-tv/index.html',
   'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap'
@@ -46,7 +46,26 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Cache-first for the app shell and fonts.
+  // Network-first for actual page loads (index.html itself, in any of its
+  // ?resort= variants) — this is the one thing that changes every time we
+  // ship a fix, so it must never get stuck on a stale cached copy the way
+  // cache-first would. Falls back to whatever's cached only if the network
+  // request fails (offline).
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // Cache-first for everything else (fonts, icons) — these rarely change,
+  // so it's worth saving the network round-trip.
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;

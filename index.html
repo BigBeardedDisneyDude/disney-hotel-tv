@@ -68,6 +68,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font
 #gear-btn svg { width: 16px; height: 16px; fill: rgba(201,168,76,0.7); transition: fill 0.2s; }
 #gear-btn:hover svg { fill: var(--gold-light); }
 #music-btn { position: absolute; top: 0; left: 50%; transform: translate(-50%, -100%); background: #163444; border: 1px solid rgba(201,168,76,0.4); border-bottom: none; border-radius: 14px 14px 0 0; padding: 4px 14px 5px; color: var(--gold-light); font-family: 'Raleway', sans-serif; font-size: 9px; font-weight: 300; letter-spacing: 0.28em; text-transform: uppercase; cursor: pointer; z-index: 102; transition: background 0.3s; white-space: nowrap; }
+/* Desktop-only: this is meant for "leave it on in the background at your desk," not a phone feature. */
+@media (max-width: 768px) { #music-btn { display: none; } }
 #music-btn:hover { background: rgba(201,168,76,0.2); }
 #modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.2s ease; }
 #modal-overlay.open { display: flex; }
@@ -340,6 +342,8 @@ body.resort-wdw { background: var(--wdw-body-bg); }
 @media (max-width: 520px) { #wdw-scene .menu-sublabel { display: none; } }
 #wdw-scene .menu-divider { width: 1px; height: 48px; background: linear-gradient(180deg, transparent, rgba(20,50,65,0.2), transparent); flex-shrink: 0; }
 #wdw-scene #wdw-music-btn { position: absolute; top: 0; left: 50%; transform: translate(-50%, -100%); background: #163444; border: 1px solid rgba(201,168,76,0.4); border-bottom: none; border-radius: 14px 14px 0 0; padding: 4px 14px 5px; color: #e8cc7a; font-family: 'Raleway', sans-serif; font-size: 9px; font-weight: 300; letter-spacing: 0.28em; text-transform: uppercase; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
+/* Desktop-only: this is meant for "leave it on in the background at your desk," not a phone feature. */
+@media (max-width: 768px) { #wdw-scene #wdw-music-btn { display: none; } }
 #wdw-scene #wdw-music-btn:hover { background: rgba(201,168,76,0.2); }
 #wdw-scene #wdw-gear-btn { position: fixed; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); right: 16px; z-index: 102; width: 34px; height: 34px; background: #163444; border: 1px solid rgba(201,168,76,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
 #wdw-scene #wdw-gear-btn:hover { background: rgba(201,168,76,0.15); border-color: rgba(201,168,76,0.7); transform: rotate(30deg); }
