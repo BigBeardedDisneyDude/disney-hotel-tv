@@ -777,7 +777,8 @@ allow="autoplay">
   </div>
 </div>
 
-<iframe id="wdw-sc-player" src="about:blank"
+<iframe id="wdw-sc-player"
+  src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/andrew-cooke-712519831/walt-disney-world-boardwalk&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false"
   style="position:absolute;top:-9999px;left:-9999px;width:1px;height:1px;" allow="autoplay"></iframe>
 
 </div>
@@ -970,6 +971,8 @@ function saveSettings() {
   const selectedResort=document.getElementById('input-resort').value;
   if (selectedResort!==ACTIVE_RESORT) {
     try { localStorage.setItem('dh_active_resort', selectedResort); } catch(e){}
+    const switchBtn=document.getElementById('save-btn');
+    switchBtn.disabled=true; switchBtn.textContent='Switching Resort…'; switchBtn.style.opacity='0.6'; switchBtn.style.cursor='wait';
     window.location.href='index.html?resort='+selectedResort;
     return;
   }
@@ -979,12 +982,27 @@ function saveSettings() {
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); if(e.key==='Enter'&&document.getElementById('modal-overlay').classList.contains('open')) saveSettings(); });
 
-let scWidget=null, scReady=false, scPlaying=false;
+let scWidget=null, scReady=false, scPlaying=false, scPendingPlay=false;
 if (ACTIVE_RESORT === 'dl') {
   const scScript=document.createElement('script'); scScript.src='https://w.soundcloud.com/player/api.js'; document.head.appendChild(scScript);
-  scScript.onload=function(){scWidget=SC.Widget(document.getElementById('sc-player')); scWidget.bind(SC.Widget.Events.READY,function(){scReady=true;scWidget.setVolume(40);}); scWidget.bind(SC.Widget.Events.PLAY,function(){scPlaying=true;}); scWidget.bind(SC.Widget.Events.PAUSE,function(){scPlaying=false;}); scWidget.bind(SC.Widget.Events.FINISH,function(){scWidget.seekTo(0);scWidget.play();});};
+  scScript.onload=function(){
+    scWidget=SC.Widget(document.getElementById('sc-player'));
+    scWidget.bind(SC.Widget.Events.READY,function(){
+      scReady=true; scWidget.setVolume(40);
+      if (scPendingPlay) { scPendingPlay=false; scWidget.play(); }
+    });
+    scWidget.bind(SC.Widget.Events.PLAY,function(){scPlaying=true; document.getElementById('music-btn').textContent='♪ Pause Music';});
+    scWidget.bind(SC.Widget.Events.PAUSE,function(){scPlaying=false; document.getElementById('music-btn').textContent='♪ Play Music';});
+    scWidget.bind(SC.Widget.Events.FINISH,function(){scWidget.seekTo(0);scWidget.play();});
+  };
 }
-function handleMusicBtn(){const btn=document.getElementById('music-btn'); if(!scReady) return; if(scPlaying){scWidget.pause();btn.textContent='♪ Play Music';}else{scWidget.play();btn.textContent='♪ Pause Music';}}
+// On a slow mobile connection the widget may not be ready the instant you tap;
+// queue the play request instead of silently no-oping, and fire it once READY lands.
+function handleMusicBtn(){
+  const btn=document.getElementById('music-btn');
+  if (!scReady) { scPendingPlay=true; btn.textContent='♪ Loading…'; return; }
+  scPlaying ? scWidget.pause() : scWidget.play();
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SHOW BANNER
@@ -1211,6 +1229,8 @@ function wdwSaveSettings() {
   const selectedResort=document.getElementById('wdw-input-resort').value;
   if (selectedResort!==ACTIVE_RESORT) {
     try { localStorage.setItem('dh_active_resort', selectedResort); } catch(e){}
+    const switchBtn=document.getElementById('wdw-save-btn');
+    switchBtn.disabled=true; switchBtn.textContent='Switching Resort…'; switchBtn.style.opacity='0.6'; switchBtn.style.cursor='wait';
     window.location.href='index.html?resort='+selectedResort;
     return;
   }
@@ -1222,17 +1242,28 @@ function wdwSaveSettings() {
 }
 document.addEventListener('keydown', e => { if(e.key==='Escape') wdwCloseModal(); if(e.key==='Enter'&&document.getElementById('wdw-modal-overlay').classList.contains('open')) wdwSaveSettings(); });
 
-let wdwScWidget=null, wdwScReady=false, wdwScPlaying=false;
+let wdwScWidget=null, wdwScReady=false, wdwScPlaying=false, wdwScPendingPlay=false;
+if (ACTIVE_RESORT === 'wdw') {
+  const wdwScScript=document.createElement('script'); wdwScScript.src='https://w.soundcloud.com/player/api.js'; document.head.appendChild(wdwScScript);
+  wdwScScript.onload=function(){
+    wdwScWidget=SC.Widget(document.getElementById('wdw-sc-player'));
+    wdwScWidget.bind(SC.Widget.Events.READY,function(){
+      wdwScReady=true; wdwScWidget.setVolume(40);
+      if (wdwScPendingPlay) { wdwScPendingPlay=false; wdwScWidget.play(); }
+    });
+    wdwScWidget.bind(SC.Widget.Events.PLAY,function(){ wdwScPlaying=true; document.getElementById('wdw-music-btn').textContent='♪ Pause Music'; });
+    wdwScWidget.bind(SC.Widget.Events.PAUSE,function(){ wdwScPlaying=false; document.getElementById('wdw-music-btn').textContent='♪ Play Music'; });
+    wdwScWidget.bind(SC.Widget.Events.FINISH,function(){ wdwScWidget.seekTo(0); wdwScWidget.play(); });
+  };
+}
+// Same fix as the Disneyland scene: queue the play request instead of silently
+// no-oping if the widget isn't ready yet, and never call .play() from an async
+// callback that isn't a direct response to this tap (that's what caused the
+// "flips back to Play Music" bug on mobile — the browser blocked a play() call
+// that arrived a beat after the tap that triggered it).
 function wdwHandleMusicBtn() {
-  const btn=document.getElementById('wdw-music-btn'), iframe=document.getElementById('wdw-sc-player');
-  if (iframe.src==='about:blank') {
-    /* TODO: swap URL for a WDW / BoardWalk ambient track */
-    iframe.src='https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/andrew-cooke-712519831/walt-disney-world-boardwalk&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false';
-    const s=document.createElement('script'); s.src='https://w.soundcloud.com/player/api.js'; document.head.appendChild(s);
-    s.onload=function(){ wdwScWidget=SC.Widget(iframe); wdwScWidget.bind(SC.Widget.Events.READY,function(){ wdwScReady=true; wdwScWidget.setVolume(40); wdwScWidget.play(); wdwScPlaying=true; btn.textContent='♪ Pause Music'; }); wdwScWidget.bind(SC.Widget.Events.PLAY,function(){ wdwScPlaying=true; btn.textContent='♪ Pause Music'; }); wdwScWidget.bind(SC.Widget.Events.PAUSE,function(){ wdwScPlaying=false; btn.textContent='♪ Play Music'; }); wdwScWidget.bind(SC.Widget.Events.FINISH,function(){ wdwScWidget.seekTo(0); wdwScWidget.play(); }); };
-    return;
-  }
-  if (!wdwScReady) return;
+  const btn=document.getElementById('wdw-music-btn');
+  if (!wdwScReady) { wdwScPendingPlay=true; btn.textContent='♪ Loading…'; return; }
   wdwScPlaying ? wdwScWidget.pause() : wdwScWidget.play();
 }
 </script>
