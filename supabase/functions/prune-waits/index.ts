@@ -92,7 +92,14 @@ Deno.serve(async (_req: Request) => {
     totalDeleted += Number.isFinite(batchDeleted) ? batchDeleted : ids.length;
     batches++;
 
-    if (idRows.length < BATCH_SIZE) break; // that was the last batch
+    // NOTE: don't infer "no more rows" from idRows.length < BATCH_SIZE — this
+    // project's PostgREST db-max-rows setting silently caps every select at
+    // 1000 rows regardless of the `limit` param above, so that condition was
+    // always true and this loop always stopped after one ~1000-row batch no
+    // matter how large the real backlog was (found 2026-09-19: 82k+ rows
+    // stuck well past the 120-day cutoff despite daily "succeeded" runs).
+    // The only reliable "done" signal is an empty page, checked at the top
+    // of the loop.
     if (batches === MAX_BATCHES) truncated = true;
   }
 
