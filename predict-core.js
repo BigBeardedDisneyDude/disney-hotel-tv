@@ -105,7 +105,7 @@ if (SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
 const now = new Date();
 const pt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
 const dow = pt.getDay();
-const seasonKey = getSeason(pt.getMonth() + 1);
+const seasonKey = getSeason(pt);
 try {
 const perPark = await Promise.all(PREDICT.parks.map(p => {
 const params = new URLSearchParams({
@@ -327,7 +327,7 @@ return Math.max(start, Math.min(end, raw));
 };
 const dayType = n => [0,6].includes(n.getDay())?'Weekend':'Weekday';
 const season = n => {
-const s = getSeason(n.getMonth() + 1);
+const s = getSeason(n);
 return {holiday:'Holiday Season', summer:'Summer', spring_break:'Spring Break', regular:'Regular Season'}[s];
 };
 const crowdLevel = (d,s) => {if(s==='Holiday Season')return d==='Weekend'?5:4;if(s==='Summer')return d==='Weekend'?5:4;if(s==='Spring Break')return d==='Weekend'?4:3;return d==='Weekend'?3:2;};

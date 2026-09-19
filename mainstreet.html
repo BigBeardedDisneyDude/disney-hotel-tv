@@ -124,7 +124,7 @@ header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem
   </div>
 </div>
 <script src="dh-proxy.js?v=20260910"></script>
-<script src="dh-season.js?v=20260910"></script>
+<script src="dh-season.js?v=20260919"></script>
 <script>
 const SUPABASE_URL='https://qumvjdwimpvnaijjwght.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1bXZqZHdpbXB2bmFpamp3Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NzQ4ODcsImV4cCI6MjA5MzQ1MDg4N30.BjBeX8GSZkZoUnW3Ecy3MTPdHVV-6E2U1oJnVHiyr5I';
@@ -253,7 +253,7 @@ async function runTool(name,input){
   }
   if(name==='predict_wait_times'){
     const pt=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Los_Angeles'}));
-    const dow=pt.getDay(),season=getSeason(pt.getMonth()+1);
+    const dow=pt.getDay(),season=getSeason(pt);
     const parkKey=input.park==='disneyland'?'dl':'dca';
     const rideList=input.park==='disneyland'?DL:DCA;
     const targetHours=input.hours?.length>0?input.hours:[1,2,3].map(i=>(pt.getHours()+i)%24).filter(h=>h>=6&&h<=23);

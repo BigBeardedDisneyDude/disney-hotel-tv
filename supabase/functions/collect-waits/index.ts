@@ -10,6 +10,39 @@ const PARKS: Record<string, number> = {
   mk: 6, epcot: 5, hs: 7, ak: 8,
 };
 
+// Anonymous Gregorian algorithm (Meeus/Jones/Butcher) for Easter Sunday.
+// Kept in sync by hand with the identical copy in dh-season.js (no build
+// step to share code between browser JS and this Deno function) — see that
+// file's header comment for why spring_break is Easter-relative rather
+// than a fixed month.
+function computeEaster(year: number): Date {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31); // 3 = March, 4 = April
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+const SPRING_BREAK_DAYS_BEFORE_EASTER = 21;
+const SPRING_BREAK_DAYS_AFTER_EASTER = 14;
+
+function isSpringBreak(date: Date): boolean {
+  const easter = computeEaster(date.getFullYear());
+  const dayOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((dayOnly.getTime() - easter.getTime()) / 86400000);
+  return diffDays >= -SPRING_BREAK_DAYS_BEFORE_EASTER && diffDays <= SPRING_BREAK_DAYS_AFTER_EASTER;
+}
+
 function getContext(date: Date) {
   const pt = new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
   const month = pt.getMonth() + 1;
@@ -19,7 +52,7 @@ function getContext(date: Date) {
   let season: string;
   if (month === 12 || month === 1)       season = 'holiday';
   else if (month >= 6 && month <= 8)     season = 'summer';
-  else if (month === 3 || month === 4)   season = 'spring_break';
+  else if (isSpringBreak(pt))            season = 'spring_break';
   else                                   season = 'regular';
 
   return {

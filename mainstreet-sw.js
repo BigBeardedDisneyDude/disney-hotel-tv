@@ -1,4 +1,4 @@
-const CACHE = 'mainstreet-v1';
+const CACHE = 'mainstreet-v2';
 const PRECACHE = [
   '/disney-hotel-tv/mainstreet.html',
   'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap'
