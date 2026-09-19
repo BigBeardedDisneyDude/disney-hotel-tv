@@ -14,12 +14,30 @@ const BATCH_SIZE = 5000;
 // weekly run picks up where this one left off.
 const MAX_BATCHES = 50;
 
-Deno.serve(async (_req: Request) => {
-  const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-  const SUPABASE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+// "regular" season repeats every week and recent data predicts it just
+// fine, so it keeps the short window. Special seasons (summer, holiday,
+// spring_break) are rare and short each year, so predict-core.js's
+// season-bucketed rollup benefits from blending in prior years' data
+// instead of only ever knowing the current year's occurrence of that
+// season — added 2026-09-19 at the user's request. Capped at ~2 years
+// rather than kept forever, since ride lineups/capacity do change
+// (refurbs, new attractions) and stale multi-year data could mislead.
+const REGULAR_CUTOFF_DAYS = 120;
+const SPECIAL_SEASON_CUTOFF_DAYS = 730;
 
-  const cutoff = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString();
-
+// Runs one age-based delete pass against a single simple filter (e.g.
+// "season=eq.regular&recorded_at=lt.X"). Kept to ONE equality/range
+// condition pair per pass deliberately — an OR across two different
+// season/cutoff combinations was tried first and made Postgres abandon the
+// recorded_at index for an ORDER BY+LIMIT plan, causing a full table scan
+// that hit the statement timeout (found 2026-09-19). Two simple passes each
+// behave like the original single-cutoff query and stay fast.
+async function prunePass(
+  label: string,
+  ageParam: string,
+  SUPABASE_URL: string,
+  SUPABASE_KEY: string
+): Promise<{ deleted: number; batches: number; truncated: boolean } | { error: string }> {
   let totalDeleted = 0;
   let batches = 0;
   let truncated = false;
@@ -29,7 +47,7 @@ Deno.serve(async (_req: Request) => {
     // lets this use the existing idx_waits_recorded_at index instead of a
     // sequential scan.
     const selRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/wait_times?select=id&recorded_at=lt.${cutoff}&order=recorded_at.asc&limit=${BATCH_SIZE}`,
+      `${SUPABASE_URL}/rest/v1/wait_times?select=id&${ageParam}&order=recorded_at.asc&limit=${BATCH_SIZE}`,
       {
         headers: {
           'apikey':        SUPABASE_KEY,
@@ -39,18 +57,8 @@ Deno.serve(async (_req: Request) => {
     );
     if (!selRes.ok) {
       const text = await selRes.text();
-      console.error(`Prune batch select failed: ${selRes.status} ${text}`);
-      await alertOnFailure(
-        'prune-waits',
-        'disney-hotel-tv: prune-waits failed',
-        `Batch select failed (HTTP ${selRes.status}) after deleting ${totalDeleted} row(s) in ${batches} batch(es).\n${text}`,
-        SUPABASE_URL,
-        SUPABASE_KEY
-      );
-      return new Response(JSON.stringify({ ok: false, error: text, totalDeleted }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      console.error(`Prune batch select failed (${label}): ${selRes.status} ${text}`);
+      return { error: `Batch select failed (HTTP ${selRes.status}) after deleting ${totalDeleted} row(s) in ${batches} batch(es) [${label}].\n${text}` };
     }
 
     const idRows: { id: number }[] = await selRes.json();
@@ -73,18 +81,8 @@ Deno.serve(async (_req: Request) => {
     );
     if (!delRes.ok) {
       const text = await delRes.text();
-      console.error(`Prune batch delete failed: ${delRes.status} ${text}`);
-      await alertOnFailure(
-        'prune-waits',
-        'disney-hotel-tv: prune-waits failed',
-        `Batch delete failed (HTTP ${delRes.status}) after deleting ${totalDeleted} row(s) in ${batches} batch(es).\n${text}`,
-        SUPABASE_URL,
-        SUPABASE_KEY
-      );
-      return new Response(JSON.stringify({ ok: false, error: text, totalDeleted }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      console.error(`Prune batch delete failed (${label}): ${delRes.status} ${text}`);
+      return { error: `Batch delete failed (HTTP ${delRes.status}) after deleting ${totalDeleted} row(s) in ${batches} batch(es) [${label}].\n${text}` };
     }
 
     const contentRange = delRes.headers.get('content-range'); // e.g. "*/5000"
@@ -103,8 +101,48 @@ Deno.serve(async (_req: Request) => {
     if (batches === MAX_BATCHES) truncated = true;
   }
 
-  console.log(`✓ Pruned ${totalDeleted} row(s) older than ${cutoff} in ${batches} batch(es)${truncated ? ' — backlog remains, next scheduled run will continue' : ''}`);
-  return new Response(JSON.stringify({ ok: true, cutoff, totalDeleted, batches, truncated }), {
+  return { deleted: totalDeleted, batches, truncated };
+}
+
+Deno.serve(async (_req: Request) => {
+  const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+  const SUPABASE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+  const regularCutoff = new Date(Date.now() - REGULAR_CUTOFF_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const specialCutoff = new Date(Date.now() - SPECIAL_SEASON_CUTOFF_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+  const regularResult = await prunePass(
+    'regular',
+    `season=eq.regular&recorded_at=lt.${regularCutoff}`,
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+  if ('error' in regularResult) {
+    await alertOnFailure('prune-waits', 'disney-hotel-tv: prune-waits failed', regularResult.error, SUPABASE_URL, SUPABASE_KEY);
+    return new Response(JSON.stringify({ ok: false, error: regularResult.error }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const specialResult = await prunePass(
+    'special-season',
+    `season=neq.regular&recorded_at=lt.${specialCutoff}`,
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+  if ('error' in specialResult) {
+    await alertOnFailure('prune-waits', 'disney-hotel-tv: prune-waits failed', specialResult.error, SUPABASE_URL, SUPABASE_KEY);
+    return new Response(JSON.stringify({ ok: false, error: specialResult.error, regularResult }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const totalDeleted = regularResult.deleted + specialResult.deleted;
+  const truncated = regularResult.truncated || specialResult.truncated;
+  console.log(`✓ Pruned ${totalDeleted} row(s) — regular: ${regularResult.deleted} (< ${regularCutoff}), special seasons: ${specialResult.deleted} (< ${specialCutoff})${truncated ? ' — backlog remains, next scheduled run will continue' : ''}`);
+  return new Response(JSON.stringify({ ok: true, regularCutoff, specialCutoff, totalDeleted, regularResult, specialResult, truncated }), {
     headers: { 'Content-Type': 'application/json' },
   });
 });
