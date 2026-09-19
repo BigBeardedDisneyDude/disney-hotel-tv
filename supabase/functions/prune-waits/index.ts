@@ -19,11 +19,20 @@ const MAX_BATCHES = 50;
 // spring_break) are rare and short each year, so predict-core.js's
 // season-bucketed rollup benefits from blending in prior years' data
 // instead of only ever knowing the current year's occurrence of that
-// season — added 2026-09-19 at the user's request. Capped at ~2 years
-// rather than kept forever, since ride lineups/capacity do change
-// (refurbs, new attractions) and stale multi-year data could mislead.
+// season — added 2026-09-19 at the user's request.
+//
+// Cutoff is ~1 year (not 2): a full year gives one complete prior
+// occurrence of each special season, which is most of the benefit. Went
+// from an initial 2-year (730-day) cutoff down to 1 year the same day
+// after checking the real numbers: at the live insert rate (~12,576
+// rows/day) and current per-row footprint (~196 bytes incl. indexes),
+// special seasons already cover 7 of 12 months, so a full 2-year window
+// would grow this table to ~1.2GB at steady state — well over Supabase's
+// 500MB free-tier cap. A 1-year window keeps it far more sustainable;
+// see the followup-verify-season-retention memory for the numbers this
+// was based on and what to re-check if the insert rate changes a lot.
 const REGULAR_CUTOFF_DAYS = 120;
-const SPECIAL_SEASON_CUTOFF_DAYS = 730;
+const SPECIAL_SEASON_CUTOFF_DAYS = 365;
 
 // Runs one age-based delete pass against a single simple filter (e.g.
 // "season=eq.regular&recorded_at=lt.X"). Kept to ONE equality/range
