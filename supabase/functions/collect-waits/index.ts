@@ -78,16 +78,32 @@ Deno.serve(async (_req: Request) => {
   let nonRidesSkipped = 0;
 
   for (const [park, parkId] of Object.entries(PARKS)) {
+    // A single slow/failed response from Queue-Times shouldn't cost a whole
+    // park's 15-minute snapshot — retry like the Supabase insert below does,
+    // so a transient blip self-heals instead of showing up as a failed park.
     let data: any;
-    try {
-      const res = await fetch(
-        `https://queue-times.com/parks/${parkId}/queue_times.json`,
-        { signal: AbortSignal.timeout(8000) }
-      );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      data = await res.json();
-    } catch (err) {
-      console.error(`Failed to fetch ${park}:`, err.message);
+    let fetchErr: Error | null = null;
+    const FETCH_ATTEMPTS = 3;
+    for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt++) {
+      if (attempt > 1) {
+        await new Promise((r) => setTimeout(r, 1500 * (attempt - 1)));
+      }
+      try {
+        const res = await fetch(
+          `https://queue-times.com/parks/${parkId}/queue_times.json`,
+          { signal: AbortSignal.timeout(8000) }
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        data = await res.json();
+        fetchErr = null;
+        break;
+      } catch (err) {
+        fetchErr = err as Error;
+        console.error(`Fetch ${park} attempt ${attempt} failed:`, fetchErr.message);
+      }
+    }
+    if (fetchErr) {
+      console.error(`Failed to fetch ${park} after ${FETCH_ATTEMPTS} attempts:`, fetchErr.message);
       failedParks.push(park);
       continue;
     }
