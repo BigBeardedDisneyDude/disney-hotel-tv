@@ -124,20 +124,45 @@ PREDICT.parks.forEach(p => { profiles[p.key] = {}; bands[p.key] = {}; });
 // would have predicted for today's day-type/season, before any tuning.
 const baselineMult = mult(crowdLevel(dayType(now), season(now)));
 const ratiosByPark = {};
+// A ride can show up in Supabase under more than one literal name: a
+// trademark symbol ("Indiana Jones™ Adventure"), a seasonal overlay
+// ("Haunted Mansion Holiday", "Soarin' Across America"), or Disney's own
+// inconsistent punctuation (em dash vs hyphen, a title that's officially
+// quote-wrapped like "it's a small world"). Resolve each row to its roster
+// ride via normName() (handles the punctuation/symbol noise) plus an
+// optional per-ride `aliases` list (for genuinely different overlay names),
+// then bucket raw rows by that ride's canonical `.name` so two spellings of
+// the same ride merge into one real profile instead of one silently
+// overwriting -- or simply never matching -- the other.
+const raw = {}; // raw[pk][canonicalName][hourIdx] = [{avg_wait, sample_count, p25_wait, p75_wait}]
 for (const row of rows) {
 const pk = row.park, rideName = row.ride_name;
 if (!profiles[pk]) continue;             // a park this page doesn't show
 const idx = row.hour_of_day - 6;
 if (idx < 0 || idx > 17) continue;
-if (!profiles[pk][rideName]) profiles[pk][rideName] = new Array(18).fill(null);
-if (!bands[pk][rideName]) bands[pk][rideName] = new Array(18).fill(null);
-profiles[pk][rideName][idx] = row.avg_wait;
-bands[pk][rideName][idx] = { p25: row.p25_wait, p75: row.p75_wait };
-// How far off was the hand-authored baseline for this exact (ride, hour)?
 const cfg = PREDICT.parks.find(pp => pp.key === pk);
-const ride = cfg?.rides.find(r => r.name === rideName);
+const ride = cfg?.rides.find(r => normName(r.name) === normName(rideName)
+|| (r.aliases || []).some(a => normName(a) === normName(rideName)));
+const key = ride ? ride.name : rideName;
+raw[pk] = raw[pk] || {};
+raw[pk][key] = raw[pk][key] || new Array(18).fill(null);
+(raw[pk][key][idx] = raw[pk][key][idx] || []).push(row);
+// How far off was the hand-authored baseline for this exact (ride, hour)?
 const predicted = ride ? ride.p[idx] * baselineMult : 0;
 if (predicted > 0) (ratiosByPark[pk] = ratiosByPark[pk] || []).push(row.avg_wait / predicted);
+}
+for (const pk of Object.keys(raw)) {
+for (const key of Object.keys(raw[pk])) {
+profiles[pk][key] = new Array(18).fill(null);
+bands[pk][key] = new Array(18).fill(null);
+raw[pk][key].forEach((bucket, idx) => {
+if (!bucket || !bucket.length) return;
+const totalN = bucket.reduce((s, r) => s + r.sample_count, 0);
+profiles[pk][key][idx] = bucket.reduce((s, r) => s + r.avg_wait * r.sample_count, 0) / totalN;
+const biggest = bucket.reduce((a, b) => (b.sample_count > a.sample_count ? b : a));
+bands[pk][key][idx] = { p25: biggest.p25_wait, p75: biggest.p75_wait };
+});
+}
 }
 const covered = PREDICT.parks.some(p =>
 Object.keys(profiles[p.key]).length / Math.max(p.rides.length, 1) > 0.5);
@@ -230,11 +255,15 @@ const WAITS_CACHE_MAX_AGE_MS = 20 * 60 * 1000; // generous ceiling above the ~60
 // inconsistent about these (e.g. "Soarin’ Across America" with a curly quote),
 // which otherwise breaks the string match against the roster's `qt` value.
 function normName(s) {
-return String(s == null ? '' : s).toLowerCase()
-.replace(/[‘’ʼ`]/g, "'")
-.replace(/[–—]/g, '-')
-.replace(/\s+/g, ' ')
-.trim();
+let t = String(s == null ? '' : s).toLowerCase().trim();
+t = t.replace(/[™®©]/g, '');
+t = t.replace(/^["“”]+|["“”]+$/g, ''); // Disney stylizes some titles with literal
+// quote marks (e.g. Queue-Times reports `"it's a small world"` with the quotes
+// baked into the name) -- strip a wrapping pair so those still match.
+t = t.replace(/[‘’ʼ`]/g, "'");
+t = t.replace(/[–—]/g, '-');
+t = t.replace(/\s+/g, ' ');
+return t.trim();
 }
 function liveCacheKey(parkId) { return `dh_live_cache_${parkId}`; }
 async function loadLive(parkId) {
