@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Crossroads — Magic Key TV</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@200;300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:       #c9a84c;
+      --gold-light: #e8cc7a;
+      --teal-dark:  #1a3a4a;
+      --teal-mid:   #21495c;
+      --warm-white: #fff8ee;
+      --hub:        #e8cc7a;
+      --frontier:   #d98b52;
+      --advent:     #6fbf8a;
+      --water:      #8fd3e8;
+    }
+
+    html, body {
+      width: 100%; min-height: 100%;
+      background: var(--teal-dark);
+      color: var(--warm-white);
+      font-family: 'Raleway', sans-serif;
+    }
+
+    /* ── Fountain video behind everything; brightens as you walk closer ── */
+    #bg-video {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; z-index: 0; opacity: .18;
+      transition: opacity .6s ease;
+      pointer-events: none;
+    }
+    #bg-shade {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(26,58,74,.55) 0%, rgba(26,58,74,.92) 75%);
+    }
+
+    /* ── Header (shared look with the rest of Magic Key TV) ───────────── */
+    #header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: linear-gradient(180deg, rgba(22,52,68,1) 0%, rgba(22,52,68,0.96) 100%);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      border-bottom: 2px solid var(--gold);
+      padding: 10px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 6px 12px;
+    }
+    #header-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex-shrink: 1; }
+    .nav-btn {
+      font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 10px; letter-spacing: .22em;
+      color: var(--gold); text-transform: uppercase; background: none;
+      border: 1px solid rgba(201,168,76,.35); border-radius: 3px; padding: 5px 10px;
+      cursor: pointer; transition: all .25s; white-space: nowrap; flex-shrink: 0;
+    }
+    .nav-btn:hover { background: rgba(201,168,76,.12); border-color: var(--gold); }
+    .nav-btn::before { content: '\2190 '; }
+    #wordmark { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .dh-logo {
+      font-family: 'Cinzel', serif; font-weight: 400;
+      font-size: clamp(12px, 3.2vw, 18px);
+      letter-spacing: .08em; color: var(--warm-white); white-space: nowrap;
+    }
+    .d-letter { font-style: italic; color: var(--gold-light); }
+    .dh-sub {
+      font-family: 'Raleway', sans-serif; font-weight: 200; font-size: 8px;
+      letter-spacing: .3em; color: var(--gold); text-transform: uppercase; opacity: .85;
+    }
+    #header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0; }
+    #page-title {
+      font-family: 'Cinzel', serif; font-weight: 600;
+      font-size: clamp(14px, 3.8vw, 22px);
+      letter-spacing: .08em; color: var(--warm-white);
+    }
+    #page-subtitle {
+      font-family: 'Raleway', sans-serif; font-weight: 200; font-size: clamp(8px, 2vw, 10px);
+      letter-spacing: .22em; color: var(--gold-light); text-transform: uppercase;
+    }
+    @media (max-width: 440px) {
+      #header { flex-direction: column; align-items: flex-start; padding: 10px 16px 8px; }
+      #header-right { align-items: flex-start; width: 100%;
+        border-top: 1px solid rgba(201,168,76,.15); padding-top: 6px; margin-top: 2px; }
+      #page-subtitle { display: none; }
+    }
+
+    #main { position: relative; z-index: 2; padding: 96px 12px 60px; max-width: 980px; margin: 0 auto; }
+    @media (min-width: 600px) { #main { padding: 108px 40px 60px; } }
+    @media (max-width: 440px) { #main { padding-top: 128px; } }
+
+    /* ── Intro + controls row ─────────────────────────────────────────── */
+    #intro {
+      font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 300;
+      font-size: clamp(15px, 3.6vw, 19px); line-height: 1.45;
+      color: rgba(255,248,238,.75); text-align: center; margin: 0 auto 18px; max-width: 640px;
+    }
+    #bar {
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      background: linear-gradient(160deg, rgba(255,248,238,.06) 0%, rgba(255,248,238,.02) 100%);
+      border: 1px solid rgba(201,168,76,.22); border-radius: 6px;
+      padding: 14px 18px; margin-bottom: 16px;
+    }
+    #play-btn {
+      flex-shrink: 0; width: 56px; height: 56px; border-radius: 50%;
+      background: var(--gold); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .15s, background .2s, box-shadow .2s;
+      box-shadow: 0 4px 18px rgba(201,168,76,.28);
+    }
+    #play-btn:hover { transform: scale(1.05); background: var(--gold-light); }
+    #play-btn:active { transform: scale(.97); }
+    #play-btn svg { width: 24px; height: 24px; fill: var(--teal-dark); }
+    #play-btn.loading { background: rgba(201,168,76,.35); box-shadow: none; cursor: default; }
+    #play-btn.loading svg { display: none; }
+    #play-btn .mini-spin {
+      display: none; width: 22px; height: 22px;
+      border: 2px solid rgba(26,58,74,.35); border-top-color: var(--teal-dark);
+      border-radius: 50%; animation: spin .8s linear infinite;
+    }
+    #play-btn.loading .mini-spin { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #where { flex: 1; min-width: 160px; }
+    #where-label {
+      font-weight: 200; font-size: 9px; letter-spacing: .32em; text-transform: uppercase;
+      color: rgba(255,248,238,.4); margin-bottom: 3px;
+    }
+    #where-name {
+      font-family: 'Cinzel', serif; font-weight: 600; font-size: clamp(15px, 4vw, 21px);
+      letter-spacing: .04em; line-height: 1.2;
+    }
+    #where-note { font-size: 12px; font-weight: 300; color: rgba(255,248,238,.55); margin-top: 3px; }
+
+    .ctl { display: flex; align-items: center; gap: 8px; }
+    .ctl-label { font-size: 9px; font-weight: 300; letter-spacing: .25em; text-transform: uppercase; color: rgba(255,248,238,.5); }
+    input[type=range] { width: 120px; accent-color: var(--gold); }
+
+    /* ── The map ──────────────────────────────────────────────────────── */
+    #map-wrap {
+      position: relative;
+      border: 1px solid rgba(201,168,76,.25); border-radius: 8px; overflow: hidden;
+      background: rgba(10,30,40,.45);
+      box-shadow: 0 8px 30px rgba(0,0,0,.35);
+    }
+    #map { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; user-select: none; -webkit-user-select: none; }
+    #map:focus { outline: none; }
+    #map-wrap:focus-within { border-color: var(--gold); }
+    .path { fill: none; stroke: rgba(255,248,238,.09); stroke-linecap: round; }
+    .area-glow { transition: opacity .3s; }
+    .area-name { font-family: 'Cinzel', serif; font-weight: 600; font-size: 30px; letter-spacing: 2px; text-anchor: middle; }
+    .area-sub  { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 15px; letter-spacing: 3px; text-anchor: middle; fill: rgba(255,248,238,.5); text-transform: uppercase; }
+    .meter-bg { fill: rgba(255,248,238,.1); }
+    .area.off .area-name { fill: rgba(255,248,238,.35) !important; }
+    #you-ring { fill: none; stroke: var(--warm-white); stroke-width: 3; opacity: .7; }
+    #you-dot  { fill: var(--warm-white); }
+    #you-pulse { fill: none; stroke: var(--warm-white); stroke-width: 2; opacity: 0; }
+    .playing #you-pulse { animation: pulse 2.4s ease-out infinite; }
+    @keyframes pulse { 0% { r: 18; opacity: .6; } 100% { r: 60; opacity: 0; } }
+    #map-hint {
+      position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; pointer-events: none;
+      font-size: 11px; font-weight: 300; letter-spacing: .15em; color: rgba(255,248,238,.45);
+    }
+
+    /* ── Quick-jump buttons ───────────────────────────────────────────── */
+    #spots { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 16px 0 6px; }
+    .spot {
+      font-family: 'Raleway', sans-serif; font-size: 11px; font-weight: 400; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--warm-white); cursor: pointer;
+      background: rgba(255,248,238,.05); border: 1px solid rgba(201,168,76,.3);
+      border-radius: 20px; padding: 8px 14px; transition: all .2s;
+    }
+    .spot:hover, .spot:focus { background: rgba(201,168,76,.15); border-color: var(--gold); outline: none; }
+
+    .ornament { text-align: center; color: rgba(201,168,76,.35); margin: 26px 0 10px; font-size: 12px; }
+    .attribution {
+      text-align: center; font-size: 11px; font-weight: 300; line-height: 1.6;
+      color: rgba(255,248,238,.35);
+    }
+    .attribution a { color: rgba(201,168,76,.5); text-decoration: none; }
+    .attribution a:hover { color: var(--gold); }
+
+    @media (max-width: 500px) { #map-hint { display: none; } }
+
+    body.tv-mode #main { max-width: 1300px; }
+    body.tv-mode #where-name { font-size: 28px; }
+    body.tv-mode .spot { font-size: 14px; padding: 10px 18px; }
+  </style>
+  <link rel="stylesheet" href="tv-mode.css?v=20260904">
+</head>
+<body>
+<script src="tv-mode.js?v=20260904"></script>
+<script src="dh-settings.js?v=20260910"></script>
+
+<video id="bg-video" src="dlbg-fountain.mp4" autoplay loop muted playsinline preload="auto"></video>
+<div id="bg-shade"></div>
+
+<div id="header">
+  <div id="header-left">
+    <button class="nav-btn" onclick="goHome()">Home</button>
+    <button class="nav-btn" onclick="location.href='sounds.html'">Sounds</button>
+    <div id="wordmark">
+      <div class="dh-logo"><span class="d-letter">M</span>agic Key TV</div>
+      <div class="dh-sub">Disneyland Resort</div>
+    </div>
+  </div>
+  <div id="header-right">
+    <div id="page-title">The Crossroads</div>
+    <div id="page-subtitle">Hub &middot; Frontierland &middot; Adventureland</div>
+  </div>
+</div>
+
+<div id="main">
+  <p id="intro">That quiet little fountain where three lands meet. Press play, then drag
+  yourself around &mdash; walk toward a land and its music drifts in while the water fades behind you.</p>
+
+  <div id="bar">
+    <button id="play-btn" aria-label="Play or pause" onclick="togglePlay()">
+      <svg id="ic-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <span class="mini-spin"></span>
+    </button>
+    <div id="where">
+      <div id="where-label">You are</div>
+      <div id="where-name">By the fountain</div>
+      <div id="where-note">Press play to listen</div>
+    </div>
+    <div class="ctl">
+      <span class="ctl-label">Volume</span>
+      <input id="vol" type="range" min="0" max="1" step="0.01" value="0.8" />
+    </div>
+  </div>
+
+  <div id="map-wrap">
+    <!-- Stylised, not to scale. Coordinates live in SOURCES below. -->
+    <svg id="map" viewBox="0 0 1000 640" tabindex="0" aria-label="Map of the crossroads. Use arrow keys to walk.">
+      <defs>
+        <radialGradient id="g-hub"><stop offset="0" stop-color="var(--hub)" stop-opacity=".35"/><stop offset="1" stop-color="var(--hub)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="g-frontier"><stop offset="0" stop-color="var(--frontier)" stop-opacity=".35"/><stop offset="1" stop-color="var(--frontier)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="g-advent"><stop offset="0" stop-color="var(--advent)" stop-opacity=".35"/><stop offset="1" stop-color="var(--advent)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="g-fountain"><stop offset="0" stop-color="var(--water)" stop-opacity=".45"/><stop offset="1" stop-color="var(--water)" stop-opacity="0"/></radialGradient>
+      </defs>
+
+      <!-- walkways from the fountain out to each land -->
+      <path class="path" stroke-width="70" d="M440 340 C 600 330, 720 300, 860 280"/>
+      <path class="path" stroke-width="70" d="M440 340 C 340 280, 250 190, 150 130"/>
+      <path class="path" stroke-width="70" d="M440 340 C 340 420, 250 500, 150 540"/>
+
+      <g id="areas"></g>
+
+      <!-- you -->
+      <g id="you" transform="translate(440 340)">
+        <circle id="you-pulse" r="18"/>
+        <circle id="you-ring" r="22"/>
+        <circle id="you-dot" r="11"/>
+      </g>
+    </svg>
+    <div id="map-hint">Drag the dot &middot; or use the arrow keys</div>
+  </div>
+
+  <div id="spots"></div>
+
+  <div class="ornament">&#10022; &nbsp; &#10022; &nbsp; &#10022;</div>
+  <div class="attribution">
+    Fountain recorded on a real visit, October 2026.<br>
+    Area loops preserved by Disney fans, hosted at the
+    <a href="https://archive.org/details/@disney_avenue" target="_blank" rel="noopener">Internet Archive</a>.
+    Music &copy; The Walt Disney Company.
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────
+ *  The Crossroads — a "walk around and listen" mixer for the spot where
+ *  the Hub, Frontierland and Adventureland meet.
+ *
+ *  Each sound source sits at a point on the map. Every frame we measure
+ *  how far "you" are from each one and set its volume (closer = louder)
+ *  and its left/right position in the speakers (Frontierland is to your
+ *  left, so it comes out of the left speaker, and so on).
+ *
+ *  Adding / changing a source = one entry in SOURCES:
+ *    id      stable key
+ *    name    shown on the map
+ *    sub     small caption under the name
+ *    x, y    where it sits on the 1000×640 map
+ *    reach   how far away (in map units) you can still hear it
+ *    color   CSS colour for its glow / meter
+ *    local   a file in this repo (looped seamlessly via Web Audio), OR
+ *    item + file   an archive.org identifier and mp3 filename, same as
+ *                  sounds.html. Leave item '' to show it as "no recording yet".
+ * ─────────────────────────────────────────────────────────────────── */
+
+const SOURCES = [
+  { id:'fountain', name:'The Fountain', sub:'Splash & trickle', x:440, y:340, reach:330,
+    color:'var(--water)', glow:'g-fountain', local:'dl-fountain-loop.mp3' },
+  { id:'hub', name:'Central Plaza', sub:'The Hub', x:860, y:280, reach:640,
+    color:'var(--hub)', glow:'g-hub',
+    item:'281CentralPlazaAreaBackgroundMusicDisneylandMagicalAudioTour',
+    file:'281 Central Plaza - Area Background Music (Disneyland Magical Audio Tour).mp3' },
+  { id:'frontier', name:'Frontierland', sub:'Banjos & fiddles', x:150, y:130, reach:640,
+    color:'var(--frontier)', glow:'g-frontier',
+    item:'185DisneylandsFrontierlandAreaMusicNewVersion',
+    file:"185 Disneyland's Frontierland Area Music (New Version).mp3" },
+  // TODO: no verified Adventureland loop yet — paste an archive.org item + file here.
+  { id:'advent', name:'Adventureland', sub:'Jungle drums', x:150, y:540, reach:640,
+    color:'var(--advent)', glow:'g-advent',
+    item:'', file:'' },
+];
+
+/* Quick-jump spots (map coordinates). */
+const SPOTS = [
+  { name:'By the fountain',      x:440, y:340 },
+  { name:'Toward the Hub',       x:740, y:300 },
+  { name:'Frontierland gate',    x:230, y:185 },
+  { name:'Adventureland gate',   x:230, y:495 },
+  { name:'Right in the middle',  x:520, y:330 },
+];
+
+const LS_KEY    = 'dh_crossroads';
+const LS_TV_KEY = 'dh_tv_settings';
+const MAP_W = 1000, MAP_H = 640;
+const KEY_STEP = 28;          // map units per arrow-key press
+const GAIN_SMOOTH = 0.12;     // seconds — how quickly volumes follow you
+
+/* ── State ─────────────────────────────────────────────────────────── */
+let you = { x: 440, y: 340 };
+let masterVol = 0.8;
+let playing = false;
+let starting = false;
+let ctx = null, master = null;
+const nodes = {};             // id -> { gain, pan, el?, buf?, src?, ok }
+
+/* ── Persistence ───────────────────────────────────────────────────── */
+function save() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ x: you.x, y: you.y, vol: masterVol })); } catch (e) {}
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    if (typeof s.x === 'number' && typeof s.y === 'number') you = { x: clampX(s.x), y: clampY(s.y) };
+    if (typeof s.vol === 'number') masterVol = Math.min(1, Math.max(0, s.vol));
+  } catch (e) {}
+}
+const clampX = v => Math.min(MAP_W - 20, Math.max(20, v));
+const clampY = v => Math.min(MAP_H - 20, Math.max(20, v));
+
+/* ── The maths: how loud and where in the speakers ─────────────────── */
+function closeness(s) {                   // 0 = out of earshot, 1 = standing on it
+  const d = Math.hypot(you.x - s.x, you.y - s.y);
+  return Math.max(0, 1 - d / s.reach);
+}
+function levelFor(s) {
+  if (!isAvailable(s)) return 0;
+  return Math.pow(closeness(s), 1.5);     // gentle near the edge, full up close
+}
+function panFor(s) {
+  return Math.max(-1, Math.min(1, (s.x - you.x) / 500)) * 0.75;
+}
+function isAvailable(s) {
+  if (s.local) return true;
+  return !!s.item && !(nodes[s.id] && nodes[s.id].failed);
+}
+
+/* ── Draw areas on the map ─────────────────────────────────────────── */
+function buildMap() {
+  const g = document.getElementById('areas');
+  const NS = 'http://www.w3.org/2000/svg';
+  SOURCES.forEach(s => {
+    const grp = document.createElementNS(NS, 'g');
+    grp.setAttribute('class', 'area');
+    grp.id = 'area-' + s.id;
+    const isFountain = s.id === 'fountain';
+    const label = isFountain ? 64 : 0;    // fountain label sits below its glow
+    grp.innerHTML =
+      '<circle class="area-glow" cx="' + s.x + '" cy="' + s.y + '" r="' + (isFountain ? 110 : 150) + '" fill="url(#' + s.glow + ')"/>' +
+      (isFountain
+        ? '<circle cx="' + s.x + '" cy="' + s.y + '" r="34" fill="none" stroke="' + s.color + '" stroke-opacity=".6" stroke-width="3"/>' +
+          '<circle cx="' + s.x + '" cy="' + s.y + '" r="20" fill="' + s.color + '" fill-opacity=".25"/>'
+        : '') +
+      '<text class="area-name" x="' + s.x + '" y="' + (s.y + label + (isFountain ? 30 : 0)) + '" fill="' + s.color + '"' +
+        (isFountain ? ' style="font-size:20px"' : '') + '>' + s.name + '</text>' +
+      '<text class="area-sub" id="sub-' + s.id + '" x="' + s.x + '" y="' + (s.y + label + (isFountain ? 52 : 26)) + '">' + s.sub + '</text>' +
+      '<rect class="meter-bg" x="' + (s.x - 50) + '" y="' + (s.y + label + (isFountain ? 62 : 38)) + '" width="100" height="5" rx="2.5"/>' +
+      '<rect id="meter-' + s.id + '" x="' + (s.x - 50) + '" y="' + (s.y + label + (isFountain ? 62 : 38)) + '" width="0" height="5" rx="2.5" fill="' + s.color + '"/>';
+    g.appendChild(grp);
+    if (!isAvailable(s)) markOff(s, 'No recording yet');
+  });
+}
+function markOff(s, why) {
+  const grp = document.getElementById('area-' + s.id);
+  if (!grp) return;
+  grp.classList.add('off');
+  document.getElementById('sub-' + s.id).textContent = why;
+}
+
+function buildSpots() {
+  const host = document.getElementById('spots');
+  SPOTS.forEach(sp => {
+    const b = document.createElement('button');
+    b.className = 'spot';
+    b.textContent = sp.name;
+    b.onclick = () => glideTo(sp.x, sp.y);
+    host.appendChild(b);
+  });
+}
+
+/* ── Update everything that depends on where you are ───────────────── */
+function render() {
+  document.getElementById('you').setAttribute('transform', 'translate(' + you.x + ' ' + you.y + ')');
+
+  let nearest = null, nearestK = 0;
+  SOURCES.forEach(s => {
+    const lv = levelFor(s);
+    const k = closeness(s);
+    if (k > nearestK) { nearestK = k; nearest = s; }
+    document.getElementById('meter-' + s.id).setAttribute('width', (lv * 100).toFixed(1));
+    document.querySelector('#area-' + s.id + ' .area-glow').style.opacity = (0.35 + lv * 0.65).toFixed(2);
+
+    const n = nodes[s.id];
+    if (n && ctx) {
+      n.gain.gain.setTargetAtTime(lv, ctx.currentTime, GAIN_SMOOTH);
+      if (n.pan) n.pan.pan.setTargetAtTime(panFor(s), ctx.currentTime, GAIN_SMOOTH);
+    }
+  });
+
+  // The background video gets clearer the closer you are to the water.
+  const f = levelFor(SOURCES[0]);
+  document.getElementById('bg-video').style.opacity = (0.12 + f * 0.5).toFixed(2);
+
+  document.getElementById('where-name').textContent = describe(nearest, nearestK);
+}
+
+function describe(s, k) {
+  if (!s || k < 0.05) return 'Somewhere in between';
+  if (s.id === 'fountain') return k > 0.6 ? 'By the fountain' : 'Near the fountain';
+  return (k > 0.88 ? 'In ' : 'Heading toward ') + s.name;
+}
+
+/* ── Audio ─────────────────────────────────────────────────────────── */
+function archiveURL(s) {
+  return 'https://archive.org/download/' + s.item + '/' + encodeURIComponent(s.file);
+}
+
+// Decoded MP3s carry a few ms of encoder silence at each end; trim it so
+// the fountain loop has no tick at the seam.
+function trimmedLoopPoints(buf) {
+  const ch = buf.getChannelData(0), n = ch.length, thr = 0.0015;
+  let a = 0, b = n - 1;
+  while (a < n && Math.abs(ch[a]) < thr) a++;
+  while (b > a && Math.abs(ch[b]) < thr) b--;
+  return { start: a / buf.sampleRate, end: (b + 1) / buf.sampleRate };
+}
+
+function makeChain(s) {
+  const gain = ctx.createGain();
+  gain.gain.value = 0;
+  let pan = null;
+  if (ctx.createStereoPanner) { pan = ctx.createStereoPanner(); gain.connect(pan); pan.connect(master); }
+  else gain.connect(master);
+  return { gain, pan };
+}
+
+async function startLocal(s) {
+  const n = nodes[s.id] = makeChain(s);
+  const res = await fetch(s.local);
+  const buf = await ctx.decodeAudioData(await res.arrayBuffer());
+  const lp = trimmedLoopPoints(buf);
+  const src = ctx.createBufferSource();
+  src.buffer = buf; src.loop = true; src.loopStart = lp.start; src.loopEnd = lp.end;
+  src.connect(n.gain);
+  src.start(0, lp.start);
+  n.src = src;
+}
+
+function startStream(s) {
+  const n = nodes[s.id] = makeChain(s);
+  const el = new Audio();
+  el.crossOrigin = 'anonymous';           // archive.org sends CORS headers; needed for Web Audio
+  el.loop = true;
+  el.preload = 'auto';
+  el.src = archiveURL(s);
+  n.el = el;
+  ctx.createMediaElementSource(el).connect(n.gain);
+  return new Promise(resolve => {
+    const done = ok => { if (!ok) { n.failed = true; markOff(s, 'Unavailable right now'); render(); } resolve(); };
+    const guard = setTimeout(() => done(false), 15000);
+    el.addEventListener('loadedmetadata', () => {
+      // Drop in at a random point so it feels like the park was already playing.
+      if (isFinite(el.duration) && el.duration > 60) el.currentTime = Math.random() * (el.duration - 30);
+    }, { once: true });
+    el.addEventListener('canplay', () => {
+      clearTimeout(guard);
+      el.play().then(() => done(true)).catch(() => done(false));
+    }, { once: true });
+    el.addEventListener('error', () => { clearTimeout(guard); done(false); }, { once: true });
+    el.load();
+  });
+}
+
+async function startAudio() {
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  master = ctx.createGain();
+  master.gain.value = masterVol;
+  master.connect(ctx.destination);
+  const jobs = SOURCES.filter(s => s.local || s.item).map(s => s.local ? startLocal(s) : startStream(s));
+  // Let the fountain come in straight away; streams join as they load.
+  await jobs[0];
+  Promise.all(jobs.slice(1)).then(render);
+}
+
+function fadeMaster(to, secs) {
+  const t = ctx.currentTime;
+  master.gain.cancelScheduledValues(t);
+  master.gain.setValueAtTime(master.gain.value, t);
+  master.gain.linearRampToValueAtTime(to, t + secs);
+}
+
+async function togglePlay() {
+  if (starting) return;
+  const btn = document.getElementById('play-btn');
+  if (!ctx) {
+    starting = true;
+    btn.classList.add('loading');
+    try {
+      await startAudio();
+      playing = true;
+    } catch (e) {
+      document.getElementById('where-note').textContent = 'Could not start audio on this device.';
+    }
+    starting = false;
+    btn.classList.remove('loading');
+  } else if (playing) {
+    fadeMaster(0, 0.4);
+    setTimeout(() => { if (!playing) { ctx.suspend(); Object.values(nodes).forEach(n => n.el && n.el.pause()); } }, 450);
+    playing = false;
+  } else {
+    await ctx.resume();
+    Object.values(nodes).forEach(n => n.el && !n.failed && n.el.play().catch(() => {}));
+    fadeMaster(masterVol, 0.4);
+    playing = true;
+  }
+  document.getElementById('ic-play').innerHTML = playing
+    ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'
+    : '<path d="M8 5v14l11-7z"/>';
+  document.getElementById('where-note').textContent = playing ? 'Drag the dot to wander' : 'Paused';
+  document.getElementById('map-wrap').classList.toggle('playing', playing);
+  render();
+}
+
+/* ── Moving around: drag, tap, arrow keys, quick-jump glide ────────── */
+const svg = document.getElementById('map');
+let dragging = false, glideRaf = null, saveTimer = null;
+
+function moveTo(x, y) {
+  you = { x: clampX(x), y: clampY(y) };
+  render();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 400);
+}
+function toMap(evt) {
+  const pt = svg.createSVGPoint();
+  pt.x = evt.clientX; pt.y = evt.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+svg.addEventListener('pointerdown', e => {
+  cancelAnimationFrame(glideRaf);
+  dragging = true;
+  svg.setPointerCapture(e.pointerId);
+  const p = toMap(e); moveTo(p.x, p.y);
+});
+svg.addEventListener('pointermove', e => { if (dragging) { const p = toMap(e); moveTo(p.x, p.y); } });
+['pointerup', 'pointercancel'].forEach(t => svg.addEventListener(t, () => { dragging = false; }));
+
+function glideTo(x, y) {
+  cancelAnimationFrame(glideRaf);
+  const from = { ...you }, t0 = performance.now();
+  const dur = Math.min(2600, 300 + Math.hypot(x - from.x, y - from.y) * 3);   // a stroll, not a teleport
+  const step = now => {
+    const k = Math.min(1, (now - t0) / dur);
+    const e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    moveTo(from.x + (x - from.x) * e, from.y + (y - from.y) * e);
+    if (k < 1) glideRaf = requestAnimationFrame(step);
+  };
+  glideRaf = requestAnimationFrame(step);
+}
+
+// Arrow keys (TV remotes send these) walk you around; Enter / Space plays.
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'select') return;
+  const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+  if (d && (e.target === document.body || e.target === svg)) {
+    e.preventDefault();
+    cancelAnimationFrame(glideRaf);
+    moveTo(you.x + d[0] * KEY_STEP, you.y + d[1] * KEY_STEP);
+  } else if ((e.key === 'Enter' || e.key === ' ') && (e.target === document.body || e.target === svg)) {
+    e.preventDefault();
+    togglePlay();
+  }
+});
+
+/* ── Volume ────────────────────────────────────────────────────────── */
+const volEl = document.getElementById('vol');
+volEl.addEventListener('input', () => {
+  masterVol = parseFloat(volEl.value);
+  if (ctx && playing) master.gain.setTargetAtTime(masterVol, ctx.currentTime, 0.05);
+  save();
+});
+
+/* ── Home button (carries family/trip settings back like other pages) */
+function goHome() { DH.goHome(LS_TV_KEY, 'index.html'); }
+
+/* ── Boot ──────────────────────────────────────────────────────────── */
+load();
+volEl.value = masterVol;
+buildMap();
+buildSpots();
+render();
+</script>
+</body>
+</html>
