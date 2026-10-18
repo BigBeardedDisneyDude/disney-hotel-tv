@@ -129,6 +129,16 @@
     #play-btn.loading .mini-spin { display: block; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    .toggle-btn {
+      flex-shrink: 0;
+      font-family: 'Raleway', sans-serif; font-weight: 400; font-size: 11px; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--warm-white); cursor: pointer;
+      background: rgba(255,248,238,.05); border: 1px solid rgba(201,168,76,.3);
+      border-radius: 20px; padding: 10px 16px; transition: all .2s;
+    }
+    .toggle-btn:hover { background: rgba(201,168,76,.15); border-color: var(--gold); }
+    .toggle-btn.active { background: var(--gold); color: var(--teal-dark); border-color: var(--gold); font-weight: 600; }
+
     #where { flex: 1; min-width: 160px; }
     #where-label {
       font-weight: 200; font-size: 9px; letter-spacing: .32em; text-transform: uppercase;
@@ -227,6 +237,7 @@
       <svg id="ic-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
       <span class="mini-spin"></span>
     </button>
+    <button id="auto-btn" class="toggle-btn" onclick="toggleAutoWalk()" aria-pressed="false">Auto-Walk</button>
     <div id="where">
       <div id="where-label">You are</div>
       <div id="where-name">By the fountain</div>
@@ -547,7 +558,7 @@ function buildSpots() {
     const b = document.createElement('button');
     b.className = 'spot';
     b.textContent = sp.name;
-    b.onclick = () => glideTo(sp.x, sp.y);
+    b.onclick = () => { stopAutoWalk(); glideTo(sp.x, sp.y); };
     host.appendChild(b);
   });
 }
@@ -728,12 +739,77 @@ async function togglePlay() {
     fadeMaster(masterVol, 0.4);
     playing = true;
   }
+  if (!playing) stopAutoWalk();
   document.getElementById('ic-play').innerHTML = playing
     ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'
     : '<path d="M8 5v14l11-7z"/>';
   document.getElementById('where-note').textContent = playing ? 'Drag the dot to wander' : 'Paused';
   document.getElementById('map-wrap').classList.toggle('playing', playing);
   render();
+}
+
+/* ── Auto-Walk: amble between the lands with real music on their own ── */
+const AUTO_DWELL_MS = 14000;   // how long to linger at each stop
+let autoWalk = false, autoTimer = null;
+
+async function toggleAutoWalk() {
+  if (autoWalk) { stopAutoWalk(); return; }
+  autoWalk = true;
+  const btn = document.getElementById('auto-btn');
+  btn.classList.add('active');
+  btn.setAttribute('aria-pressed', 'true');
+  btn.textContent = 'Stop Auto-Walk';
+  if (!playing) await togglePlay();
+  if (!playing) { stopAutoWalk(); return; }   // audio couldn't start on this device
+  document.getElementById('where-note').textContent = 'Ambling on its own — drag anytime to take over';
+  autoWalkLoop();
+}
+function stopAutoWalk() {
+  if (!autoWalk) return;
+  autoWalk = false;
+  clearTimeout(autoTimer);
+  const btn = document.getElementById('auto-btn');
+  btn.classList.remove('active');
+  btn.setAttribute('aria-pressed', 'false');
+  btn.textContent = 'Auto-Walk';
+  if (playing) document.getElementById('where-note').textContent = 'Drag the dot to wander';
+}
+async function autoWalkLoop() {
+  while (autoWalk) {
+    const stops = SOURCES.filter(isAvailable);
+    if (!stops.length) break;
+    for (const s of stops) {
+      if (!autoWalk) break;
+      await autoGlideTo(s.x, s.y);
+      if (!autoWalk) break;
+      await autoSleep(AUTO_DWELL_MS);
+    }
+  }
+}
+function autoSleep(ms) {
+  return new Promise(resolve => {
+    const deadline = performance.now() + ms;
+    const check = () => {
+      if (!autoWalk || performance.now() >= deadline) { resolve(); return; }
+      autoTimer = setTimeout(check, 200);   // short poll so cancelling feels instant
+    };
+    check();
+  });
+}
+function autoGlideTo(x, y) {
+  return new Promise(resolve => {
+    cancelAnimationFrame(glideRaf);
+    const from = { ...you }, t0 = performance.now();
+    const dur = Math.max(2500, Math.hypot(x - from.x, y - from.y) * 11);   // a real amble, not a stroll
+    const step = now => {
+      if (!autoWalk) { resolve(); return; }
+      const k = Math.min(1, (now - t0) / dur);
+      const e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      moveTo(from.x + (x - from.x) * e, from.y + (y - from.y) * e);
+      if (k < 1) glideRaf = requestAnimationFrame(step); else resolve();
+    };
+    glideRaf = requestAnimationFrame(step);
+  });
 }
 
 /* ── Moving around: drag, tap, arrow keys, quick-jump glide ────────── */
@@ -752,6 +828,7 @@ function toMap(evt) {
   return pt.matrixTransform(svg.getScreenCTM().inverse());
 }
 svg.addEventListener('pointerdown', e => {
+  stopAutoWalk();
   cancelAnimationFrame(glideRaf);
   dragging = true;
   svg.setPointerCapture(e.pointerId);
@@ -780,6 +857,7 @@ document.addEventListener('keydown', e => {
   const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
   if (d && (e.target === document.body || e.target === svg)) {
     e.preventDefault();
+    stopAutoWalk();
     cancelAnimationFrame(glideRaf);
     moveTo(you.x + d[0] * KEY_STEP, you.y + d[1] * KEY_STEP);
   } else if ((e.key === 'Enter' || e.key === ' ') && (e.target === document.body || e.target === svg)) {
