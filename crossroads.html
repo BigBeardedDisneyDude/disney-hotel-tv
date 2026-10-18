@@ -561,12 +561,18 @@ function render() {
 
   let nearest = null, nearestK = 0;
   SOURCES.forEach(s => {
+    const k = closeness(s);
+    if (k > nearestK) { nearestK = k; nearest = s; }
+  });
+
+  SOURCES.forEach(s => {
     if (ctx && playing && !s.local && s.item && !startedStreams.has(s.id) && withinPreload(s)) {
       beginStream(s).then(render);
     }
-    const lv = levelFor(s);
-    const k = closeness(s);
-    if (k > nearestK) { nearestK = k; nearest = s; }
+    // Standing fully inside one land mutes everywhere else, not just fades
+    // it down — only actually being *between* two lands should blend them.
+    let lv = levelFor(s);
+    if (s !== nearest) lv *= Math.max(0, 1 - nearestK);
     document.getElementById('meter-' + s.id).setAttribute('width', (lv * 100).toFixed(1));
     document.querySelector('#area-' + s.id + ' .area-glow').style.opacity = (0.35 + lv * 0.65).toFixed(2);
 
