@@ -18,6 +18,13 @@
       --frontier:   #d98b52;
       --advent:     #6fbf8a;
       --water:      #8fd3e8;
+      --mainstreet: #d4645a;
+      --nos:        #a673c9;
+      --bayou:      #b08968;
+      --fantasy:    #e6a8c4;
+      --toontown:   #c9d94c;
+      --tomorrow:   #4a90d9;
+      --galaxy:     #6a7fd1;
     }
 
     html, body {
@@ -149,8 +156,8 @@
     #map-wrap:focus-within { border-color: var(--gold); }
     .path { fill: none; stroke: rgba(255,248,238,.09); stroke-linecap: round; }
     .area-glow { transition: opacity .3s; }
-    .area-name { font-family: 'Cinzel', serif; font-weight: 600; font-size: 30px; letter-spacing: 2px; text-anchor: middle; }
-    .area-sub  { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 15px; letter-spacing: 3px; text-anchor: middle; fill: rgba(255,248,238,.5); text-transform: uppercase; }
+    .area-name { font-family: 'Cinzel', serif; font-weight: 600; font-size: 24px; letter-spacing: 1.5px; text-anchor: middle; }
+    .area-sub  { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: 12px; letter-spacing: 2.5px; text-anchor: middle; fill: rgba(255,248,238,.5); text-transform: uppercase; }
     .meter-bg { fill: rgba(255,248,238,.1); }
     .area.off .area-name { fill: rgba(255,248,238,.35) !important; }
     #you-ring { fill: none; stroke: var(--warm-white); stroke-width: 3; opacity: .7; }
@@ -207,13 +214,13 @@
   </div>
   <div id="header-right">
     <div id="page-title">The Crossroads</div>
-    <div id="page-subtitle">Hub &middot; Frontierland &middot; Adventureland</div>
+    <div id="page-subtitle">A Walk Around The Whole Park</div>
   </div>
 </div>
 
 <div id="main">
-  <p id="intro">That quiet little fountain where three lands meet. Press play, then drag
-  yourself around &mdash; walk toward a land and its music drifts in while the water fades behind you.</p>
+  <p id="intro">Press play, then drag yourself around the whole park &mdash; walk toward a
+  land and its music drifts in, fading behind you as you wander on to the next one.</p>
 
   <div id="bar">
     <button id="play-btn" aria-label="Play or pause" onclick="togglePlay()">
@@ -233,23 +240,28 @@
 
   <div id="map-wrap">
     <!-- Stylised, not to scale. Coordinates live in SOURCES below. -->
-    <svg id="map" viewBox="0 0 1000 640" tabindex="0" aria-label="Map of the crossroads. Use arrow keys to walk.">
+    <svg id="map" viewBox="0 0 1024 986" tabindex="0" aria-label="Map of the park. Use arrow keys to walk.">
       <defs>
         <radialGradient id="g-hub"><stop offset="0" stop-color="var(--hub)" stop-opacity=".35"/><stop offset="1" stop-color="var(--hub)" stop-opacity="0"/></radialGradient>
         <radialGradient id="g-frontier"><stop offset="0" stop-color="var(--frontier)" stop-opacity=".35"/><stop offset="1" stop-color="var(--frontier)" stop-opacity="0"/></radialGradient>
         <radialGradient id="g-advent"><stop offset="0" stop-color="var(--advent)" stop-opacity=".35"/><stop offset="1" stop-color="var(--advent)" stop-opacity="0"/></radialGradient>
         <radialGradient id="g-fountain"><stop offset="0" stop-color="var(--water)" stop-opacity=".45"/><stop offset="1" stop-color="var(--water)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="g-mainstreet"><stop offset="0" stop-color="var(--mainstreet)" stop-opacity=".35"/><stop offset="1" stop-color="var(--mainstreet)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="g-nos"><stop offset="0" stop-color="var(--nos)" stop-opacity=".35"/><stop offset="1" stop-color="var(--nos)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="g-bayou"><stop offset="0" stop-color="var(--bayou)" stop-opacity=".35"/><stop offset="1" stop-color="var(--bayou)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="g-fantasy"><stop offset="0" stop-color="var(--fantasy)" stop-opacity=".35"/><stop offset="1" stop-color="var(--fantasy)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="g-toontown"><stop offset="0" stop-color="var(--toontown)" stop-opacity=".35"/><stop offset="1" stop-color="var(--toontown)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="g-tomorrow"><stop offset="0" stop-color="var(--tomorrow)" stop-opacity=".35"/><stop offset="1" stop-color="var(--tomorrow)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="g-galaxy"><stop offset="0" stop-color="var(--galaxy)" stop-opacity=".35"/><stop offset="1" stop-color="var(--galaxy)" stop-opacity="0"/></radialGradient>
       </defs>
 
-      <!-- walkways from the fountain out to each land -->
-      <path class="path" stroke-width="70" d="M440 340 C 600 330, 720 300, 860 280"/>
-      <path class="path" stroke-width="70" d="M440 340 C 340 280, 250 190, 150 130"/>
-      <path class="path" stroke-width="70" d="M440 340 C 340 420, 250 500, 150 540"/>
+      <!-- real park walkways, built from NODES/EDGES below -->
+      <g id="walkways"></g>
 
       <g id="areas"></g>
 
       <!-- you -->
-      <g id="you" transform="translate(440 340)">
+      <g id="you" transform="translate(470 490)">
         <circle id="you-pulse" r="18"/>
         <circle id="you-ring" r="22"/>
         <circle id="you-dot" r="11"/>
@@ -271,60 +283,168 @@
 
 <script>
 /* ─────────────────────────────────────────────────────────────────────
- *  The Crossroads — a "walk around and listen" mixer for the spot where
- *  the Hub, Frontierland and Adventureland meet.
+ *  The Crossroads — a "walk around and listen" mixer for the whole park.
+ *  Started as just the spot where the Hub, Frontierland and Adventureland
+ *  meet; grew into every land, using the real walkway layout and ride
+ *  coordinates from sim.html as a map.
  *
  *  Each sound source sits at a point on the map. Every frame we measure
  *  how far "you" are from each one and set its volume (closer = louder)
- *  and its left/right position in the speakers (Frontierland is to your
- *  left, so it comes out of the left speaker, and so on).
+ *  and its left/right position in the speakers.
  *
  *  Adding / changing a source = one entry in SOURCES:
  *    id      stable key
  *    name    shown on the map
  *    sub     small caption under the name
- *    x, y    where it sits on the 1000×640 map
+ *    x, y    where it sits on the 1024×986 map (same coordinate space as
+ *            sim.html's RIDES/NODES, so real ride spots drop straight in)
  *    reach   how far away (in map units) you can still hear it
  *    color   CSS colour for its glow / meter
  *    local   a file in this repo (looped seamlessly via Web Audio), OR
  *    item + file   an archive.org identifier and mp3 filename, same as
  *                  sounds.html. Leave item '' to show it as "no recording yet".
+ *                  Streamed sources only start loading once you're actually
+ *                  near them (see PRELOAD_MARGIN / beginStream below).
  * ─────────────────────────────────────────────────────────────────── */
 
 const SOURCES = [
-  { id:'fountain', name:'The Fountain', sub:'Splash & trickle', x:440, y:340, reach:330,
+  { id:'fountain', name:'The Fountain', sub:'Splash & trickle', x:470, y:490, reach:220,
     color:'var(--water)', glow:'g-fountain', local:'dl-fountain-loop.mp3' },
-  { id:'hub', name:'Central Plaza', sub:'The Hub', x:860, y:280, reach:640,
+  { id:'mainstreet', name:'Main Street, U.S.A.', sub:'Ragtime & trolleys', x:583, y:820, reach:260,
+    color:'var(--mainstreet)', glow:'g-mainstreet', item:'', file:'' },
+  { id:'hub', name:'Central Plaza', sub:'The Hub', x:544, y:560, reach:260,
     color:'var(--hub)', glow:'g-hub',
     item:'281CentralPlazaAreaBackgroundMusicDisneylandMagicalAudioTour',
     file:'281 Central Plaza - Area Background Music (Disneyland Magical Audio Tour).mp3' },
-  { id:'frontier', name:'Frontierland', sub:'Banjos & fiddles', x:150, y:130, reach:640,
+  { id:'frontier', name:'Frontierland', sub:'Banjos & fiddles', x:330, y:430, reach:260,
     color:'var(--frontier)', glow:'g-frontier',
     item:'185DisneylandsFrontierlandAreaMusicNewVersion',
     file:"185 Disneyland's Frontierland Area Music (New Version).mp3" },
-  // TODO: no verified Adventureland loop yet — paste an archive.org item + file here.
-  { id:'advent', name:'Adventureland', sub:'Jungle drums', x:150, y:540, reach:640,
-    color:'var(--advent)', glow:'g-advent',
-    item:'', file:'' },
+  { id:'advent', name:'Adventureland', sub:'Jungle drums', x:480, y:672, reach:260,
+    color:'var(--advent)', glow:'g-advent', item:'', file:'' },
+  { id:'nos', name:'New Orleans Square', sub:'Jazz & jambalaya', x:210, y:670, reach:260,
+    color:'var(--nos)', glow:'g-nos', item:'', file:'' },
+  { id:'bayou', name:'Bayou Country', sub:'Backwater banjo', x:119, y:534, reach:260,
+    color:'var(--bayou)', glow:'g-bayou', item:'', file:'' },
+  { id:'fantasy', name:'Fantasyland', sub:'Storybook waltzes', x:602, y:380, reach:260,
+    color:'var(--fantasy)', glow:'g-fantasy', item:'', file:'' },
+  { id:'toontown', name:'Toontown', sub:'Cartoon capers', x:634, y:92, reach:260,
+    color:'var(--toontown)', glow:'g-toontown', item:'', file:'' },
+  { id:'tomorrow', name:'Tomorrowland', sub:'Synths & stars', x:772, y:546, reach:260,
+    color:'var(--tomorrow)', glow:'g-tomorrow', item:'', file:'' },
+  { id:'galaxy', name:"Galaxy's Edge", sub:'A world away', x:175, y:224, reach:260,
+    color:'var(--galaxy)', glow:'g-galaxy', item:'', file:'' },
+  // Every land above besides the fountain, Central Plaza and Frontierland
+  // is a stub (item:'') until a verified recording gets sourced for it —
+  // same "No recording yet" pattern, one land at a time.
 ];
 
-/* Quick-jump spots (map coordinates). */
-const SPOTS = [
-  { name:'By the fountain',      x:440, y:340 },
-  { name:'Toward the Hub',       x:740, y:300 },
-  { name:'Frontierland gate',    x:230, y:185 },
-  { name:'Adventureland gate',   x:230, y:495 },
-  { name:'Right in the middle',  x:520, y:330 },
+/* Quick-jump spots — one per land, at the same point as its SOURCES entry. */
+const SPOTS = SOURCES.map(s => ({ name: s.name, x: s.x, y: s.y }));
+
+/* The real park walking-path graph (copied from sim.html's NODES/EDGES —
+   this is a self-contained-pages site, so no shared module to import). Used
+   only to draw the walkway lines on the map; it doesn't constrain movement. */
+const NODES = [
+  { id:  0, x: 544, y: 895 },{ id:100, x: 623, y: 899 },
+  { id:  1, x: 544, y: 848 },{ id:101, x: 608, y: 848 },
+  { id:  2, x: 576, y: 657 },{ id:102, x: 600, y: 800 },
+  { id:  3, x: 578, y: 727 },{ id:103, x: 596, y: 750 },
+  { id:  4, x: 579, y: 788 },{ id:104, x: 592, y: 700 },
+  { id:  5, x: 544, y: 650 },{ id:105, x: 588, y: 650 },
+  { id:  6, x: 544, y: 600 },{ id:106, x: 584, y: 600 },
+  { id:  7, x: 544, y: 560 },{ id:107, x: 580, y: 560 },
+  { id:  8, x: 555, y: 510 },{ id:  9, x: 490, y: 520 },
+  { id: 10, x: 430, y: 530 },{ id: 11, x: 610, y: 515 },
+  { id: 12, x: 660, y: 520 },{ id: 13, x: 555, y: 470 },
+  { id: 20, x: 420, y: 560 },{ id: 21, x: 400, y: 590 },
+  { id: 22, x: 385, y: 620 },{ id: 23, x: 370, y: 650 },
+  { id: 24, x: 353, y: 678 },{ id: 25, x: 340, y: 660 },
+  { id: 26, x: 310, y: 660 },{ id: 27, x: 280, y: 660 },
+  { id: 28, x: 250, y: 660 },{ id: 29, x: 220, y: 640 },
+  { id: 30, x: 220, y: 629 },{ id: 31, x: 200, y: 610 },
+  { id: 32, x: 175, y: 580 },{ id: 33, x: 200, y: 535 },
+  { id: 34, x: 158, y: 535 },{ id:203, x: 662, y: 474 },
+  { id:204, x:  78, y: 546 },{ id: 35, x: 400, y: 660 },
+  { id: 36, x: 420, y: 670 },{ id: 37, x: 440, y: 665 },
+  { id: 38, x: 467, y: 661 },{ id: 39, x: 430, y: 695 },
+  { id: 40, x: 340, y: 694 },{ id: 41, x: 260, y: 694 },
+  { id: 42, x: 217, y: 694 },{ id: 50, x: 400, y: 530 },
+  { id: 51, x: 400, y: 505 },{ id: 52, x: 398, y: 504 },
+  { id: 53, x: 380, y: 490 },{ id: 54, x: 360, y: 475 },
+  { id: 60, x: 370, y: 420 },{ id: 61, x: 375, y: 380 },
+  { id: 62, x: 339, y: 360 },{ id: 63, x: 326, y: 300 },
+  { id: 64, x: 325, y: 280 },{ id: 65, x: 290, y: 255 },
+  { id: 66, x: 245, y: 230 },{ id: 67, x:  61, y: 294 },
+  { id: 68, x: 185, y: 255 },{ id: 72, x:  57, y: 344 },
+  { id: 73, x: 107, y: 413 },{ id: 74, x: 175, y: 490 },
+  { id: 69, x: 220, y: 220 },{ id: 70, x: 260, y: 185 },
+  { id: 71, x: 289, y: 154 },{ id: 80, x: 555, y: 440 },
+  { id: 81, x: 540, y: 410 },{ id: 82, x: 540, y: 385 },
+  { id: 83, x: 544, y: 368 },{ id: 84, x: 555, y: 350 },
+  { id: 85, x: 553, y: 321 },{ id: 86, x: 570, y: 310 },
+  { id: 89, x: 683, y: 327 },{ id:200, x: 446, y: 323 },
+  { id:201, x: 406, y: 279 },{ id:202, x: 392, y: 253 },
+  { id: 90, x: 725, y: 201 },{ id: 91, x: 560, y: 395 },
+  { id: 92, x: 559, y: 410 },{ id: 93, x: 586, y: 336 },
+  { id: 94, x: 600, y: 360 },{ id: 95, x: 610, y: 375 },
+  { id: 96, x: 620, y: 380 },{ id: 97, x: 604, y: 404 },
+  { id: 98, x: 630, y: 390 },{ id: 99, x: 650, y: 380 },
+  { id:110, x: 667, y: 389 },{ id:111, x: 700, y: 375 },
+  { id:112, x: 720, y: 374 },{ id:113, x: 739, y: 374 },
+  { id:120, x: 680, y: 320 },{ id:121, x: 680, y: 280 },
+  { id:122, x: 660, y: 240 },{ id:123, x: 640, y: 210 },
+  { id:124, x: 620, y: 190 },{ id:125, x: 600, y: 165 },
+  { id:126, x: 610, y: 155 },{ id:127, x: 575, y: 115 },
+  { id:128, x: 545, y:  98 },{ id:129, x: 650, y: 150 },
+  { id:130, x: 670, y: 110 },{ id:131, x: 670, y:  68 },
+  { id:132, x: 686, y: 110 },{ id:205, x: 668, y: 192 },
+  { id:140, x: 670, y: 540 },{ id:141, x: 685, y: 555 },
+  { id:142, x: 700, y: 560 },{ id:143, x: 703, y: 584 },
+  { id:144, x: 715, y: 540 },{ id:147, x: 775, y: 495 },
+  { id:148, x: 801, y: 479 },{ id:149, x: 823, y: 479 },
+  { id:150, x: 853, y: 477 },{ id:151, x: 878, y: 519 },
+  { id:152, x: 795, y: 530 },{ id:153, x: 795, y: 560 },
+  { id:154, x: 795, y: 600 },{ id:155, x: 795, y: 660 },
+  { id:156, x: 956, y: 523 },
+];
+const EDGES = [
+  [0,1],[100,101],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],
+  [101,102],[102,103],[103,104],[104,105],[105,106],[106,107],
+  [1,101],[2,102],[3,103],[4,104],[5,105],[6,106],[7,107],
+  [7,8],[107,8],[8,9],[8,11],[8,13],[9,10],[11,12],
+  [10,20],[20,21],[21,22],[22,23],[23,24],[23,25],
+  [25,26],[26,27],[27,28],[28,29],[29,30],[30,31],[31,32],[32,33],
+  [6,38],[22,35],[23,35],[35,36],[36,37],[37,38],[37,39],[38,39],
+  [40,41],[41,42],[42,28],[41,29],
+  [9,50],[50,51],[51,52],[50,53],[53,54],
+  [54,60],[53,60],[60,61],[61,62],[62,63],[63,64],[64,65],[65,66],
+  [66,67],[66,68],[68,69],[69,70],[70,71],[71,69],[70,65],
+  [68,72],[72,73],[73,74],[74,33],[13,80],[80,81],[81,82],[82,83],[82,91],
+  [83,84],[84,85],[89,90],[91,92],[91,94],[92,97],
+  [94,95],[94,96],[95,96],[95,98],[96,97],[97,98],
+  [98,99],[99,110],[110,111],[111,112],[112,113],
+  [89,120],[120,121],[121,122],[122,123],[123,124],[124,125],
+  [125,126],[128,127],[130,128],[129,130],[129,124],
+  [124,129],[129,130],[130,131],[130,132],
+  [67,72],[74,34],[203,110],[205,123],[205,122],[205,129],[131,128],
+  [203,11],[203,10],[204,74],[33,74],[85,86],[86,90],[94,93],
+  [200,62],[200,85],[201,200],[202,201],[202,71],[89,113],[155,151],
+  [113,147],[11,147],[85,62],
+  [12,140],[140,141],[141,142],[142,143],[142,144],
+  [144,153],[147,148],[148,149],[149,150],[150,151],[150,156],
+  [147,152],[152,153],[153,154],[154,155],[149,152],
 ];
 
 const LS_KEY    = 'dh_crossroads';
 const LS_TV_KEY = 'dh_tv_settings';
-const MAP_W = 1000, MAP_H = 640;
-const KEY_STEP = 28;          // map units per arrow-key press
+const MAP_W = 1024, MAP_H = 986;
+const KEY_STEP = 34;          // map units per arrow-key press
 const GAIN_SMOOTH = 0.12;     // seconds — how quickly volumes follow you
+const PRELOAD_MARGIN = 150;   // start loading a stream this far before it's actually audible
 
 /* ── State ─────────────────────────────────────────────────────────── */
-let you = { x: 440, y: 340 };
+let you = { x: 470, y: 490 };
 let masterVol = 0.8;
 let playing = false;
 let starting = false;
@@ -361,6 +481,27 @@ function isAvailable(s) {
   if (s.local) return true;
   return !!s.item && !(nodes[s.id] && nodes[s.id].failed);
 }
+function withinPreload(s) {
+  return Math.hypot(you.x - s.x, you.y - s.y) < s.reach + PRELOAD_MARGIN;
+}
+
+/* ── Draw the real park walkways behind everything ──────────────────── */
+function buildPaths() {
+  const g = document.getElementById('walkways');
+  const NS = 'http://www.w3.org/2000/svg';
+  const byId = {};
+  NODES.forEach(n => byId[n.id] = n);
+  EDGES.forEach(([a, b]) => {
+    const na = byId[a], nb = byId[b];
+    if (!na || !nb) return;
+    const line = document.createElementNS(NS, 'line');
+    line.setAttribute('class', 'path');
+    line.setAttribute('x1', na.x); line.setAttribute('y1', na.y);
+    line.setAttribute('x2', nb.x); line.setAttribute('y2', nb.y);
+    line.setAttribute('stroke-width', '16');
+    g.appendChild(line);
+  });
+}
 
 /* ── Draw areas on the map ─────────────────────────────────────────── */
 function buildMap() {
@@ -371,18 +512,24 @@ function buildMap() {
     grp.setAttribute('class', 'area');
     grp.id = 'area-' + s.id;
     const isFountain = s.id === 'fountain';
-    const label = isFountain ? 64 : 0;    // fountain label sits below its glow
-    grp.innerHTML =
-      '<circle class="area-glow" cx="' + s.x + '" cy="' + s.y + '" r="' + (isFountain ? 110 : 150) + '" fill="url(#' + s.glow + ')"/>' +
-      (isFountain
-        ? '<circle cx="' + s.x + '" cy="' + s.y + '" r="34" fill="none" stroke="' + s.color + '" stroke-opacity=".6" stroke-width="3"/>' +
-          '<circle cx="' + s.x + '" cy="' + s.y + '" r="20" fill="' + s.color + '" fill-opacity=".25"/>'
-        : '') +
-      '<text class="area-name" x="' + s.x + '" y="' + (s.y + label + (isFountain ? 30 : 0)) + '" fill="' + s.color + '"' +
-        (isFountain ? ' style="font-size:20px"' : '') + '>' + s.name + '</text>' +
-      '<text class="area-sub" id="sub-' + s.id + '" x="' + s.x + '" y="' + (s.y + label + (isFountain ? 52 : 26)) + '">' + s.sub + '</text>' +
-      '<rect class="meter-bg" x="' + (s.x - 50) + '" y="' + (s.y + label + (isFountain ? 62 : 38)) + '" width="100" height="5" rx="2.5"/>' +
-      '<rect id="meter-' + s.id + '" x="' + (s.x - 50) + '" y="' + (s.y + label + (isFountain ? 62 : 38)) + '" width="0" height="5" rx="2.5" fill="' + s.color + '"/>';
+    let html = '<circle class="area-glow" cx="' + s.x + '" cy="' + s.y + '" r="' + (isFountain ? 110 : 150) + '" fill="url(#' + s.glow + ')"/>';
+    if (isFountain) {
+      // The fountain sits right at the junction of several lands, too tight
+      // a spot for a full text label — just a small landmark ring+dot (its
+      // name shows in the "You are" bar instead, via describe() below).
+      html +=
+        '<circle cx="' + s.x + '" cy="' + s.y + '" r="34" fill="none" stroke="' + s.color + '" stroke-opacity=".6" stroke-width="3"/>' +
+        '<circle cx="' + s.x + '" cy="' + s.y + '" r="20" fill="' + s.color + '" fill-opacity=".25"/>' +
+        '<rect class="meter-bg" x="' + (s.x - 36) + '" y="' + (s.y + 46) + '" width="72" height="4" rx="2"/>' +
+        '<rect id="meter-' + s.id + '" x="' + (s.x - 36) + '" y="' + (s.y + 46) + '" width="0" height="4" rx="2" fill="' + s.color + '"/>';
+    } else {
+      html +=
+        '<text class="area-name" x="' + s.x + '" y="' + s.y + '" fill="' + s.color + '">' + s.name + '</text>' +
+        '<text class="area-sub" id="sub-' + s.id + '" x="' + s.x + '" y="' + (s.y + 22) + '">' + s.sub + '</text>' +
+        '<rect class="meter-bg" x="' + (s.x - 50) + '" y="' + (s.y + 34) + '" width="100" height="5" rx="2.5"/>' +
+        '<rect id="meter-' + s.id + '" x="' + (s.x - 50) + '" y="' + (s.y + 34) + '" width="0" height="5" rx="2.5" fill="' + s.color + '"/>';
+    }
+    grp.innerHTML = html;
     g.appendChild(grp);
     if (!isAvailable(s)) markOff(s, 'No recording yet');
   });
@@ -411,6 +558,9 @@ function render() {
 
   let nearest = null, nearestK = 0;
   SOURCES.forEach(s => {
+    if (ctx && playing && !s.local && s.item && !startedStreams.has(s.id) && withinPreload(s)) {
+      beginStream(s).then(render);
+    }
     const lv = levelFor(s);
     const k = closeness(s);
     if (k > nearestK) { nearestK = k; nearest = s; }
@@ -524,15 +674,27 @@ function skipPastSilence(el, analyser, triesLeft) {
   }, 500);
 }
 
+// Big archive.org area tracks (70-120MB each) only start loading once you're
+// actually near enough to need them — with ~10 lands, loading all of them on
+// Play would mean pulling close to a gigabyte of audio up front.
+const startedStreams = new Set();
+function beginStream(s) {
+  if (startedStreams.has(s.id)) return Promise.resolve();
+  startedStreams.add(s.id);
+  return startStream(s);
+}
+
 async function startAudio() {
   ctx = new (window.AudioContext || window.webkitAudioContext)();
   master = ctx.createGain();
   master.gain.value = masterVol;
   master.connect(ctx.destination);
-  const jobs = SOURCES.filter(s => s.local || s.item).map(s => s.local ? startLocal(s) : startStream(s));
-  // Let the fountain come in straight away; streams join as they load.
-  await jobs[0];
-  Promise.all(jobs.slice(1)).then(render);
+  const localJobs = SOURCES.filter(s => s.local).map(startLocal);
+  const streamJobs = SOURCES.filter(s => s.item && withinPreload(s)).map(beginStream);
+  // Let the fountain come in straight away; whatever land you're already
+  // near joins as it loads, everything else waits until you walk there.
+  if (localJobs.length) await localJobs[0];
+  Promise.all(localJobs.slice(1).concat(streamJobs)).then(render);
 }
 
 function fadeMaster(to, secs) {
@@ -640,6 +802,7 @@ function goHome() { DH.goHome(LS_TV_KEY, 'index.html'); }
 /* ── Boot ──────────────────────────────────────────────────────────── */
 load();
 volEl.value = masterVol;
+buildPaths();
 buildMap();
 buildSpots();
 render();
