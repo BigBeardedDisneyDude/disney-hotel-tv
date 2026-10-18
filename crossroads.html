@@ -481,7 +481,11 @@ function startStream(s) {
   el.preload = 'auto';
   el.src = archiveURL(s);
   n.el = el;
-  ctx.createMediaElementSource(el).connect(n.gain);
+  const mediaSrc = ctx.createMediaElementSource(el);
+  mediaSrc.connect(n.gain);
+  const analyser = ctx.createAnalyser();
+  analyser.fftSize = 512;
+  mediaSrc.connect(analyser);             // tap only, doesn't feed the speakers
   return new Promise(resolve => {
     const done = ok => { if (!ok) { n.failed = true; markOff(s, 'Unavailable right now'); render(); } resolve(); };
     const guard = setTimeout(() => done(false), 15000);
@@ -491,11 +495,33 @@ function startStream(s) {
     }, { once: true });
     el.addEventListener('canplay', () => {
       clearTimeout(guard);
-      el.play().then(() => done(true)).catch(() => done(false));
+      el.play().then(() => { done(true); skipPastSilence(el, analyser); }).catch(() => done(false));
     }, { once: true });
     el.addEventListener('error', () => { clearTimeout(guard); done(false); }, { once: true });
     el.load();
   });
+}
+
+// These archive.org area loops run 70+ minutes and aren't music the whole
+// way through — a random drop-in point can land in a quiet stretch (ambient
+// crowd noise, a gap between phrases). Check what's actually audible right
+// after playback starts, and nudge forward until it's not near-silent.
+function skipPastSilence(el, analyser, triesLeft) {
+  if (triesLeft === undefined) triesLeft = 5;
+  if (triesLeft <= 0) return;
+  setTimeout(() => {
+    const data = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(data);
+    let maxDev = 0;
+    for (let i = 0; i < data.length; i++) maxDev = Math.max(maxDev, Math.abs(data[i] - 128));
+    if (maxDev < 6) {
+      const dur = el.duration;
+      let t = el.currentTime + 18;
+      if (isFinite(dur) && dur > 0) t %= dur;
+      el.currentTime = t;
+      skipPastSilence(el, analyser, triesLeft - 1);
+    }
+  }, 500);
 }
 
 async function startAudio() {
