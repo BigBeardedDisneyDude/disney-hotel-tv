@@ -63,10 +63,27 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font
 .menu-sublabel { font-family: 'Raleway', sans-serif; font-weight: 300; font-size: clamp(7px, 1.5vw, 9px); letter-spacing: 0.1em; color: rgba(20,50,65,0.6); text-transform: uppercase; text-align: center; }
 @media (max-width: 520px) { .menu-sublabel { display: none; } }
 .menu-divider { width: 1px; height: 48px; background: linear-gradient(180deg, transparent, rgba(20,50,65,0.2), transparent); flex-shrink: 0; }
+/* All 8 menu items in one row ran out of room on a phone-width screen —
+   icons shrank to nothing and labels collided into unreadable text. Wrap
+   to two rows of 4 instead of squeezing everything into one. */
+@media (max-width: 480px) {
+  #menu-bar { flex-wrap: wrap; justify-content: center; row-gap: 8px; column-gap: 0; }
+  #menu-bar .menu-divider { display: none; }
+  #menu-bar .menu-item { flex: 0 1 25%; min-width: 0; padding: 4px 2px; }
+}
 #gear-btn { position: fixed; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); right: 16px; z-index: 102; width: 34px; height: 34px; background: #163444; border: 1px solid rgba(201,168,76,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
 #gear-btn:hover { background: rgba(201,168,76,0.15); border-color: rgba(201,168,76,0.7); transform: rotate(30deg); }
 #gear-btn svg { width: 16px; height: 16px; fill: rgba(201,168,76,0.7); transition: fill 0.2s; }
 #gear-btn:hover svg { fill: var(--gold-light); }
+/* The footer wrapping to two rows (above) made it taller — #gear-btn's
+   bottom offset was calibrated for the old single-row height and now
+   overlaps the second row. Push it up above the taller footer instead.
+   Must come after #gear-btn's own unconditional rule above: a media-query
+   rule doesn't automatically win just because it matches — source order
+   still applies, so placing this earlier got silently overridden. */
+@media (max-width: 480px) {
+  #gear-btn { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+}
 #music-btn { position: absolute; top: 0; left: 50%; transform: translate(-50%, -100%); background: #163444; border: 1px solid rgba(201,168,76,0.4); border-bottom: none; border-radius: 14px 14px 0 0; padding: 4px 14px 5px; color: var(--gold-light); font-family: 'Raleway', sans-serif; font-size: 9px; font-weight: 300; letter-spacing: 0.28em; text-transform: uppercase; cursor: pointer; z-index: 102; transition: background 0.3s; white-space: nowrap; }
 /* Desktop-only: this is meant for "leave it on in the background at your desk," not a phone feature. */
 @media (max-width: 768px) { #music-btn { display: none; } }
@@ -316,10 +333,6 @@ body.resort-wdw { background: var(--wdw-body-bg); }
   #wdw-scene #wdw-header-inner { padding: 10px 16px 8px; gap: 8px; }
   #wdw-scene .bw-logo { font-size: clamp(16px, 5vw, 22px); }
   #wdw-scene #wdw-welcome-name { font-size: clamp(15px, 5vw, 22px); }
-  #wdw-scene #wdw-footer-inner { flex-direction: column; align-items: stretch; gap: 6px; padding: 8px 12px 10px; }
-  #wdw-scene #wdw-footer-left { display: none; }
-  #wdw-scene #wdw-footer-nav { justify-content: space-around; width: 100%; }
-  #wdw-scene .menu-divider { height: 32px; }
 }
 #wdw-scene #wdw-header-bottom-rule { height: 1px; background: linear-gradient(90deg, transparent 0%, var(--wdw-tan-dark) 20%, var(--wdw-tan-light) 50%, var(--wdw-tan-dark) 80%, transparent 100%); opacity: 0.5; }
 #wdw-scene #wdw-main { position: fixed; inset: 0; z-index: 1; }
@@ -349,6 +362,21 @@ body.resort-wdw { background: var(--wdw-body-bg); }
 #wdw-scene #wdw-gear-btn:hover { background: rgba(201,168,76,0.15); border-color: rgba(201,168,76,0.7); transform: rotate(30deg); }
 #wdw-scene #wdw-gear-btn svg { width: 16px; height: 16px; fill: rgba(201,168,76,0.7); transition: fill 0.2s; }
 #wdw-scene #wdw-gear-btn:hover svg { fill: #e8cc7a; }
+/* Everything below must come after wdw-footer-inner/-left/-nav and
+   .menu-item/.menu-divider's own unconditional rules above (same reason
+   as the #gear-btn comment) — these were originally declared earlier in
+   the file, before their unconditional counterparts, so despite matching
+   at this width they were silently losing the cascade and never actually
+   applying. Moved here 2026-10-27 fixing the matching bug on the default
+   (non-WDW) scene. */
+@media (max-width: 480px) {
+  #wdw-scene #wdw-gear-btn { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+  #wdw-scene #wdw-footer-inner { flex-direction: column; align-items: stretch; gap: 6px; padding: 8px 12px 10px; }
+  #wdw-scene #wdw-footer-left { display: none; }
+  #wdw-scene #wdw-footer-nav { justify-content: center; width: 100%; flex-wrap: wrap; row-gap: 8px; }
+  #wdw-scene .menu-divider { display: none; }
+  #wdw-scene .menu-item { flex: 0 1 30%; min-width: 0; }
+}
 #wdw-scene #wdw-modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 20px; }
 #wdw-scene #wdw-modal-overlay.open { display: flex; }
 #wdw-scene #wdw-settings-modal { background: linear-gradient(160deg, rgba(33,64,28,0.98) 0%, rgba(16,32,14,0.99) 100%); border: 1px solid rgba(200,169,110,0.3); border-radius: 6px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); overflow: hidden; }
