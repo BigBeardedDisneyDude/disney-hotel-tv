@@ -9,9 +9,10 @@ lost or recreated.
 
 | Path | What it is |
 |---|---|
-| `functions/collect-waits/` | Edge Function: every 15 min, fetches Queue-Times for all six US Disney parks, tags each row with Pacific-time context, inserts to `wait_times`. |
+| `functions/collect-waits/` | Edge Function: every 15 min, fetches Queue-Times for all six US Disney parks, tags each row with Pacific-time context, inserts to `wait_times`; also checks `ride_alerts` thresholds against the live waits it just fetched and sends Web Push notifications. |
 | `functions/prune-waits/` | Edge Function: daily, deletes `wait_times` rows older than 120 days (Supabase free-tier size limit). |
 | `functions/_shared/alerts.ts` | Emails andpcooke@gmail.com via Resend when either function fails, throttled per function. |
+| `functions/_shared/rideAlerts.ts` | Checks `ride_alerts` thresholds against live wait data and sends Web Push via `npm:web-push`, called from `collect-waits`. See `predict.html`/`wdwpredict.html`'s "Wait Alert" modal control for the client half. |
 | `functions/README.md` | Function details, known limitations, env vars, deploy commands. |
 | `schema.sql` | Base table definitions (`wait_times`, `conversations`), their original indexes, and RLS policies. |
 | `migrations/*_add_wait_times_indexes.sql` | The covering index added 2026-09-07 to keep predictor page loads off a full-table scan. |
@@ -19,12 +20,17 @@ lost or recreated.
 | `migrations/*_add_function_alerts_table.sql` | The `function_alerts` throttle table the alert emails use. |
 | `migrations/*_prune_waits_daily.sql` | Moved `prune-waits` from weekly to daily (2026-09-15) after a silent failure — see History. |
 | `migrations/*_add_wait_time_rollups.sql` | The `wait_time_rollups` materialized view (2026-09-15): avg + p25/p75 wait per park/ride/hour/day-of-week/season, refreshed nightly by a direct `pg_cron` SQL command. `predict.html`/`wdwpredict.html` read this instead of aggregating ~1M+ raw `wait_times` rows client-side on every load. |
+| `migrations/*_add_ride_alerts_table.sql` + `*_add_ride_alerts_qt_and_name.sql` | The `ride_alerts` table (2026-10-26): one row per device+ride+threshold for favorite-ride wait alerts — push subscription, `park`, `ride_id`, `qt` (live-match stem), `ride_name`, `threshold_minutes`, `last_state` (above/below latch). Anon RLS policy lets the browser manage its own rows directly; `collect-waits` reads/writes with the service role key. |
 
 ## What is NOT here (and can't be)
 
-- **`SUPABASE_SERVICE_ROLE_KEY`** / **`RESEND_API_KEY`** — the functions read
-  both from their own environment (Supabase dashboard → Edge Functions →
-  Secrets, or `supabase secrets set`). Never committed.
+- **`SUPABASE_SERVICE_ROLE_KEY`** / **`RESEND_API_KEY`** / **`VAPID_PRIVATE_KEY`**
+  — the functions read these from their own environment (Supabase dashboard →
+  Edge Functions → Secrets, or `supabase secrets set`). Never committed. The
+  matching VAPID *public* key is fine to commit (it's meant to be public) and
+  is hardcoded in both `predict-core.js` and `_shared/rideAlerts.ts` — if the
+  private key is ever rotated, the public one must be updated in both places
+  too, or client-signed subscriptions and server-signed pushes will mismatch.
 - **Table data** — `wait_times` history, `conversations`. Not backed up; the
   predictor tolerates a cold history (falls back to its hand-authored baseline
   curves) and rebuilds coverage automatically as the collector runs.
@@ -103,3 +109,22 @@ select cron.alter_job(job_id := <id>, command := $$ ... $$);
   predictor stops reading ~1M+ raw rows per page load; its nightly refresh is
   a plain SQL `pg_cron` command (not a `net.http_post`), specifically to avoid
   the same silent-delivery-failure class of bug.
+- **2026-10-26** — added favorite-ride wait alerts: the `ride_alerts` table,
+  a "🔔 Wait Alert" control in the predictor's ride detail modal (per
+  favorited ride only), `dh-sw.js` push/notificationclick handlers, and a
+  `checkRideAlerts()` pass at the end of every `collect-waits` run that
+  diffs each alert's threshold against the live wait already fetched that
+  cycle and sends a Web Push via `npm:web-push` on an above→below crossing
+  (deleting the row on a 404/410 — a stale/uninstalled subscription).
+  Verified live: deployed `collect-waits` and manually invoked it
+  successfully (`ok:true`, `rideAlerts:{checked:0,...}` since the table was
+  still empty) — confirms the `npm:web-push` import and `setVapidDetails()`
+  call work in Supabase's Edge Runtime, which was the real unknown going in.
+  Client UI verified in a local test server (junctioned to serve the repo
+  under `/disney-hotel-tv/` so `dh-sw.js`'s absolute-path precache list
+  resolves the same way it does on GitHub Pages): service worker registers
+  and activates cleanly, the modal control renders and reads favorite state
+  correctly. Not verified by this session, and not verifiable without a real
+  browser: granting Notification permission (the prompt is native browser
+  chrome, not page content — automation can't click it) and an actual push
+  arriving with the app closed. Both need the user to test on a real device.
