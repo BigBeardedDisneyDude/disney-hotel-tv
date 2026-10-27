@@ -79,3 +79,34 @@ self.addEventListener('fetch', e => {
     })
   );
 });
+
+// Favorite-ride wait alerts: collect-waits sends a push (title/body/url) the
+// moment a favorited ride's live wait crosses below its threshold. This
+// fires even if predict.html/wdwpredict.html isn't open — that's the whole
+// point of true push over a foreground-only check.
+self.addEventListener('push', e => {
+  let data = {};
+  try { data = e.data.json(); } catch (_) { data = {}; }
+  const title = data.title || 'Ride wait alert';
+  const url = data.url || '/disney-hotel-tv/predict.html';
+  e.waitUntil(self.registration.showNotification(title, {
+    body: data.body || '',
+    icon: '/disney-hotel-tv/mainstreet-icon.png',
+    badge: '/disney-hotel-tv/mainstreet-icon.png',
+    data: { url }
+  }));
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || '/disney-hotel-tv/predict.html';
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+      const page = url.split('/').pop();
+      for (const client of clients) {
+        if (client.url.includes(page) && 'focus' in client) return client.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(url);
+    })
+  );
+});

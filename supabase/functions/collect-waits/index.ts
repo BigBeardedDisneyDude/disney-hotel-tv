@@ -4,6 +4,7 @@
 
 import { alertOnFailure } from '../_shared/alerts.ts';
 import { isRide } from '../_shared/nonRideFilter.ts';
+import { buildLiveByPark, checkRideAlerts } from '../_shared/rideAlerts.ts';
 
 const PARKS: Record<string, number> = {
   dl: 16, dca: 17,
@@ -175,6 +176,20 @@ Deno.serve(async (_req: Request) => {
     console.error(`Parks that failed to fetch this run: ${failedParks.join(', ')}`);
   }
 
+  // Favorite-ride wait alerts, using the live waits this run already fetched
+  // (no extra API calls). Deliberately isolated with its own try/catch —
+  // a bug here should never flip the main pipeline's `ok` status, since
+  // alerts are a bonus on top of the actual data collection.
+  let alertResult = { checked: 0, fired: 0, staleRemoved: 0 };
+  try {
+    alertResult = await checkRideAlerts(buildLiveByPark(rows as any[]), SUPABASE_URL, SUPABASE_KEY);
+    if (alertResult.fired > 0 || alertResult.staleRemoved > 0) {
+      console.log(`Ride alerts: checked ${alertResult.checked}, fired ${alertResult.fired}, removed ${alertResult.staleRemoved} stale`);
+    }
+  } catch (err) {
+    console.error('checkRideAlerts threw:', (err as Error).message);
+  }
+
   const ok = insertError === null && failedParks.length === 0;
 
   if (!ok) {
@@ -196,6 +211,7 @@ Deno.serve(async (_req: Request) => {
     ok,
     inserted: rows.length,
     failedParks,
+    rideAlerts: alertResult,
     ...(insertError ? { insertError } : {}),
   }), {
     status: ok ? 200 : 500,

@@ -51,6 +51,12 @@ const SUPABASE_URL = 'https://qumvjdwimpvnaijjwght.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1bXZqZHdpbXB2bmFpamp3Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NzQ4ODcsImV4cCI6MjA5MzQ1MDg4N30.BjBeX8GSZkZoUnW3Ecy3MTPdHVV-6E2U1oJnVHiyr5I';
 const MIN_SAMPLES = 10;
 
+// Public half of the VAPID key pair for favorite-ride wait alerts (Web Push).
+// Safe to be public — it's the server-identity half; only the matching
+// private key (held as a Supabase Edge Function secret, never in this repo)
+// can actually sign pushes. See ride_alerts migration + collect-waits.
+const VAPID_PUBLIC_KEY = 'BGAn-lmNWfAu83quM_hgVOY36Fp2OjXHVCNE4JaCDlFzde9fGZkFhVE3Nrj7AyvrQX1B7_Uld4HTvgSnXxvfOpo';
+
 // ── PARK CONFIG HELPERS ──────────────────────────────────────────────────────
 const parkCfg = k => PREDICT.parks.find(p => p.key === k) || PREDICT.parks[0];
 const ridesOf = k => parkCfg(k).rides;
@@ -342,6 +348,102 @@ function favsKey() { return `favs_${park}`; }
 function loadFavs() { try { return new Set(JSON.parse(localStorage.getItem(favsKey())||'[]')); } catch(e){ return new Set(); } }
 function saveFavs(s) { localStorage.setItem(favsKey(), JSON.stringify([...s])); }
 let favs = loadFavs();
+
+// Local cache of this device's active wait-alert thresholds, keyed by park,
+// so the modal can show "alert set at 20 min" instantly without an extra
+// round trip. Supabase's ride_alerts table (not this cache) is the source
+// of truth collect-waits actually checks — this is purely a UI convenience,
+// same role favs/loadFavs play for the star toggle.
+function alertsKey() { return `dh_ride_alerts_${park}`; }
+function loadAlerts() { try { return JSON.parse(localStorage.getItem(alertsKey())||'{}'); } catch(e){ return {}; } }
+function saveAlerts(a) { localStorage.setItem(alertsKey(), JSON.stringify(a)); }
+let alerts = loadAlerts();
+
+function urlBase64ToUint8Array(base64String) {
+const padding = '='.repeat((4 - base64String.length % 4) % 4);
+const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+return Uint8Array.from([...atob(base64)].map(c => c.charCodeAt(0)));
+}
+
+// Registers dh-sw.js (idempotent — a no-op if already registered from
+// index.html's PWA install) and returns an existing or freshly-created push
+// subscription. Throws with a user-facing message on anything that should
+// stop the alert flow (unsupported browser, permission denied).
+async function ensurePushSubscription() {
+if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+throw new Error("This browser doesn't support push notifications.");
+}
+const reg = await navigator.serviceWorker.register('dh-sw.js');
+await navigator.serviceWorker.ready;
+const existing = await reg.pushManager.getSubscription();
+if (existing) return existing;
+const perm = await Notification.requestPermission();
+if (perm !== 'granted') throw new Error('Notification permission was denied.');
+return reg.pushManager.subscribe({
+userVisibleOnly: true,
+applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+});
+}
+
+async function setRideAlertUI(id) {
+const input = document.getElementById(`alert-input-${id}`);
+const statusEl = document.getElementById(`alert-status-${id}`);
+const threshold = Math.max(5, Math.min(180, parseInt(input?.value, 10) || 20));
+const r = ridesOf(park).find(x => x.id === id);
+if (!r) return;
+if (statusEl) statusEl.textContent = 'Setting up notifications…';
+try {
+const sub = await ensurePushSubscription();
+const res = await fetch(`${SUPABASE_URL}/rest/v1/ride_alerts`, {
+method: 'POST',
+headers: {
+apikey: SUPABASE_KEY,
+Authorization: `Bearer ${SUPABASE_KEY}`,
+'Content-Type': 'application/json',
+Prefer: 'resolution=merge-duplicates,return=minimal'
+},
+body: JSON.stringify({
+endpoint: sub.endpoint,
+subscription: sub.toJSON(),
+park,
+ride_id: id,
+qt: r.qt,
+ride_name: r.name,
+threshold_minutes: threshold,
+last_state: 'above'
+})
+});
+if (!res.ok) throw new Error(`Couldn't save the alert (Supabase ${res.status}).`);
+alerts[id] = threshold;
+saveAlerts(alerts);
+openModal(id);
+} catch (e) {
+console.warn('[predict] setRideAlertUI failed:', e);
+if (statusEl) statusEl.textContent = e.message || 'Could not set alert — try again.';
+}
+}
+
+async function removeRideAlertUI(id) {
+const statusEl = document.getElementById(`alert-status-${id}`);
+try {
+if ('serviceWorker' in navigator) {
+const reg = await navigator.serviceWorker.ready;
+const sub = await reg.pushManager.getSubscription();
+if (sub) {
+await fetch(`${SUPABASE_URL}/rest/v1/ride_alerts?endpoint=eq.${encodeURIComponent(sub.endpoint)}&park=eq.${park}&ride_id=eq.${encodeURIComponent(id)}`, {
+method: 'DELETE',
+headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+});
+}
+}
+delete alerts[id];
+saveAlerts(alerts);
+openModal(id);
+} catch (e) {
+console.warn('[predict] removeRideAlertUI failed:', e);
+if (statusEl) statusEl.textContent = 'Could not remove alert — try again.';
+}
+}
 
 function tick() {
 const n=new Date(); let h=n.getHours(); const m=String(n.getMinutes()).padStart(2,'0'),ap=h>=12?'PM':'AM';
@@ -835,6 +937,30 @@ noteEl.innerHTML = standbyRides.length
 }
 
 // ── DETAIL MODAL ─────────────────────────────────────────────────────────────
+// Favorite-ride wait alerts: only shown for a favorited ride, since the
+// alert is meant to work alongside "My Rides," not as a standalone feature.
+function renderAlertBlock(id) {
+const wrap = inner => `<div style="width:100%;margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(138,110,47,.15)">
+<div style="font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.09em;color:var(--muted);text-transform:uppercase;margin-bottom:.35rem">🔔 Wait Alert</div>
+${inner}
+<div id="alert-status-${id}" style="font-size:.65rem;color:var(--muted);margin-top:.3rem;font-style:italic"></div>
+</div>`;
+const pillBtn = (label, onclick) => `<button onclick="${onclick}" style="font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.07em;padding:.2rem .6rem;border-radius:999px;border:1px solid var(--gold-dim);background:transparent;color:var(--gold-dim);cursor:pointer;-webkit-tap-highlight-color:transparent">${label}</button>`;
+if (!favs.has(id)) {
+return `<div style="width:100%;margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(138,110,47,.15);font-size:.72rem;color:var(--muted);font-style:italic">Add to My Rides (&#9733;) to set a wait alert.</div>`;
+}
+if (alerts[id] != null) {
+return wrap(`<div style="font-family:'Crimson Pro',serif;font-size:.85rem">Notifying when below <strong>${alerts[id]} min</strong></div>
+<div style="margin-top:.4rem">${pillBtn('Remove alert', `removeRideAlertUI('${id}')`)}</div>`);
+}
+return wrap(`<div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
+<span style="font-size:.78rem;font-family:'Crimson Pro',serif">Notify me when below</span>
+<input type="number" id="alert-input-${id}" value="20" min="5" max="180" step="5" style="width:52px;padding:.2rem .3rem;border:1px solid rgba(138,110,47,.3);border-radius:4px;font-size:.78rem">
+<span style="font-size:.78rem;font-family:'Crimson Pro',serif">min</span>
+${pillBtn('Set alert', `setRideAlertUI('${id}')`)}
+</div>`);
+}
+
 function openModal(id) {
 const rides = ridesOf(park);
 const r = rides.find(x=>x.id===id);
@@ -891,7 +1017,8 @@ ${hourBand && !isClosed ? `<div class="modal-stat">
 <div style="font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.09em;color:var(--muted);text-transform:uppercase;margin-bottom:.3rem">Wait heat — today</div>
 <div style="display:flex;gap:2px;align-items:flex-end;height:24px">${heatCells}</div>
 <div style="display:flex;gap:0;margin-top:3px">${heatLabels}</div>
-</div>`;
+</div>
+${renderAlertBlock(id)}`;
 document.getElementById('modal-backdrop').classList.add('open');
 requestAnimationFrame(()=>drawModalChart(p, m, hi, start, end));
 }
@@ -997,6 +1124,7 @@ if(r) openModal(r.id);
 function switchPark(key) {
 park=key; live={}; searchQ='';
 favs = loadFavs();
+alerts = loadAlerts();
 llOpen = false;
 document.getElementById('ll-body').classList.remove('open');
 document.getElementById('ll-toggle').textContent = 'Show ▾';
@@ -1017,6 +1145,8 @@ loadParkHours(key).then(() => refresh());
 // Inline oninput="" / onclick="" handlers in the shell markup call these by name.
 window.switchPark = switchPark;
 window.toggleFav = toggleFav;
+window.setRideAlertUI = setRideAlertUI;
+window.removeRideAlertUI = removeRideAlertUI;
 window.toggleLL = toggleLL;
 window.filter = filter;
 window.closeModal = closeModal;
