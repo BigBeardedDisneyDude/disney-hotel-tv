@@ -1194,6 +1194,39 @@ wrap.appendChild(b);
 });
 })();
 
+// Installing to the home screen is what lets Wait Alert notifications work
+// at all on iOS (a regular Safari tab can't receive push there) — so point
+// new visitors at how, right on the page, instead of leaving them to
+// discover that only after a confusing "not supported" message. Dismissed
+// per-device via localStorage (shared across predict.html/wdwpredict.html,
+// same origin); skipped entirely once already running installed, since
+// `display-mode: standalone` / `navigator.standalone` both flip true then.
+function renderInstallBanner() {
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+if (isStandalone) return;
+if (localStorage.getItem('dh_install_banner_dismissed') === '1') return;
+const header = document.querySelector('header');
+if (!header) return;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const steps = isIOS
+? 'tap the <b>Share</b> icon, then <b>Add to Home Screen</b>'
+: 'tap the <b>&#8942;</b> menu, then <b>Install app</b> (or <b>Add to Home screen</b>)';
+const el = document.createElement('div');
+el.id = 'install-banner';
+el.style.cssText = 'display:flex;align-items:center;gap:.6rem;background:var(--cream-dark);border-bottom:1px solid var(--gold-dim);padding:.55rem 1rem';
+el.innerHTML = `
+<div style="flex:1;font-size:.78rem;line-height:1.4;color:var(--text)">
+&#128241; <strong>Install this app</strong> to get Wait Alert push notifications in the parks — ${steps}.
+</div>
+<button id="install-banner-close" title="Dismiss" style="background:none;border:1px solid var(--gold-dim);color:var(--gold-dim);border-radius:999px;width:22px;height:22px;line-height:1;font-size:.72rem;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent">&#10005;</button>`;
+header.insertAdjacentElement('afterend', el);
+document.getElementById('install-banner-close').onclick = () => {
+localStorage.setItem('dh_install_banner_dismissed', '1');
+el.remove();
+};
+}
+renderInstallBanner();
+
 Promise.all([
 ...PREDICT.parks.map(p => loadParkHours(p.key)),
 loadHistoricalProfiles()
