@@ -622,6 +622,7 @@ el.innerHTML = `
 ${waitRow}
 <canvas class="spark" id="sp-${r.id}-fav"></canvas>
 ${r.trend?`<div class="ctip" style="color:${r.trend.color};font-style:normal;font-weight:600;margin-top:.38rem">${r.trend.arrow} ${r.trend.phrase}</div>`:''}
+${alerts[r.id]!=null?`<div class="ctip" style="color:var(--gold-dim);font-style:normal;font-weight:600;margin-top:.3rem">&#128276; Alert below ${alerts[r.id]} min</div>`:''}
 <div class="ctip" style="margin-top:.2rem">Tap for full day chart</div>`;
 return el;
 }
