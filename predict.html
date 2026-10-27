@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ride Predictor – Magic Key TV</title>
+<link rel="manifest" href="predict-manifest.json">
+<meta name="theme-color" content="#0a4a4a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ride Predictor">
+<link rel="apple-touch-icon" href="mainstreet-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -110,7 +116,7 @@ canvas.spark{margin-top:.42rem;height:22px;width:100%;display:block}
 @media(min-width:520px){.modal-handle{display:none}}
 .modal-close{position:absolute;top:.65rem;right:.85rem;background:none;border:none;font-family:'Cinzel',serif;font-size:.7rem;color:var(--gold-dim);cursor:pointer;letter-spacing:.08em;opacity:.7;transition:opacity .2s;-webkit-tap-highlight-color:transparent}
 .modal-close:hover{opacity:1}
-.modal-ride-name{font-family:'Cinzel',serif;font-size:.88rem;font-weight:600;color:var(--teal);margin-bottom:.12rem;padding-right:3rem;line-height:1.3}
+.modal-ride-name{font-family:'Cinzel',serif;font-size:.88rem;font-weight:600;color:var(--teal);margin-bottom:.12rem;padding-right:5.2rem;line-height:1.3}
 .modal-land{font-size:.7rem;color:var(--muted);font-style:italic;margin-bottom:.85rem}
 .modal-chart-wrap{position:relative;width:100%;height:145px}
 .modal-stats{display:flex;gap:.55rem;margin-top:.8rem;flex-wrap:wrap}
@@ -291,6 +297,7 @@ canvas.spark{margin-top:.42rem;height:22px;width:100%;display:block}
 <div class="modal" id="modal">
 <div class="modal-handle"></div>
 <button class="modal-close" onclick="closeModal()">✕ CLOSE</button>
+<button class="fav-btn" id="modal-fav-btn" style="position:absolute;top:.6rem;right:4.6rem;font-size:17px" title="Add to My Rides">&#9733;</button>
 <div class="modal-ride-name" id="modal-name"></div>
 <div class="modal-land" id="modal-land"></div>
 <div class="modal-chart-wrap">
@@ -378,6 +385,7 @@ const PREDICT = {
 </script>
 <script src="dh-proxy.js?v=20260910"></script>
 <script src="dh-season.js?v=20260919"></script>
-<script src="predict-core.js?v=20261026"></script>
+<script src="predict-core.js?v=20261028"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('dh-sw.js').catch(()=>{});}</script>
 </body>
 </html>

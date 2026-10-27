@@ -605,6 +605,7 @@ if(hi>=0&&hi<pts.length){ctx.beginPath();ctx.arc(pts[hi].x,pts[hi].y,3.5,0,Math.
 function makePickCard(r, m, hi) {
 const el = document.createElement('div');
 el.className = `card ${r.closed?'skip':r.status}`;
+el.dataset.id = r.id;
 el.style.cursor = 'pointer';
 el.style.opacity = r.closed ? '0.6' : '1';
 el.onclick = e => { if(!e.target.classList.contains('fav-btn')) openModal(r.id); };
@@ -730,6 +731,7 @@ const row=document.createElement('div');
 row.className='row'+(searchQ&&!r.name.toLowerCase().includes(searchQ)&&!r.land.toLowerCase().includes(searchQ)?' hide':'')+(r.closed?' closed-row':'');
 row.dataset.name=r.name.toLowerCase();
 row.dataset.land=r.land.toLowerCase();
+row.dataset.id=r.id;
 row.style.cursor='pointer';
 row.onclick = e => { if(!e.target.classList.contains('fav-btn')) openModal(r.id); };
 const waitDisplay = r.closed
@@ -759,9 +761,28 @@ try { window.onPredictRender(predictCoverage()); } catch(e) { console.warn('onPr
 }
 
 function toggleFav(id, btn) {
+// Favoriting a ride can add/remove a whole card in "My Rides" above
+// everything else on the page, which shifts every card below it on
+// screen even though scroll position hasn't moved. Pin the tapped card's
+// on-screen position across that reflow instead of letting it jump.
+const anchor = btn ? btn.closest('[data-id]') : null;
+// A favorited ride's card can exist in both #fav-picks ("My Rides") and
+// #grid at once — scope the before/after lookup to whichever one was
+// actually tapped, or it can anchor against the wrong copy (e.g. the
+// My Rides card, which sits near the top of the page) and scroll wildly.
+const container = anchor ? anchor.closest('#grid, #fav-picks') : null;
+const beforeTop = anchor ? anchor.getBoundingClientRect().top : null;
 if (favs.has(id)) { favs.delete(id); } else { favs.add(id); }
 saveFavs(favs);
 render();
+if (beforeTop !== null && container) {
+const scope = document.getElementById(container.id);
+const after = scope && scope.querySelector(`[data-id="${CSS.escape(id)}"]`);
+if (after) window.scrollBy(0, after.getBoundingClientRect().top - beforeTop);
+}
+if (document.getElementById('modal-backdrop').classList.contains('open') && currentModalId === id) {
+openModal(id);
+}
 }
 
 // ── LIGHTNING LANE ADVISOR ────────────────────────────────────────────────────
@@ -955,22 +976,29 @@ return wrap(`<div style="font-family:'Crimson Pro',serif;font-size:.85rem">Notif
 }
 return wrap(`<div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
 <span style="font-size:.78rem;font-family:'Crimson Pro',serif">Notify me when below</span>
-<input type="number" id="alert-input-${id}" value="20" min="5" max="180" step="5" style="width:52px;padding:.2rem .3rem;border:1px solid rgba(138,110,47,.3);border-radius:4px;font-size:.78rem">
+<input type="number" id="alert-input-${id}" value="20" min="5" max="180" step="5" style="width:52px;padding:.2rem .3rem;border:1px solid rgba(138,110,47,.3);border-radius:4px;font-size:16px">
 <span style="font-size:.78rem;font-family:'Crimson Pro',serif">min</span>
 ${pillBtn('Set alert', `setRideAlertUI('${id}')`)}
 </div>`);
 }
 
+let currentModalId = null;
+
 function openModal(id) {
 const rides = ridesOf(park);
 const r = rides.find(x=>x.id===id);
 if (!r) return;
+currentModalId = id;
 const now=new Date(), dt=dayType(now), s=season(now);
 const cl=crowdLevel(dt,s), m=effectiveMult(cl), hi=hIdx(now);
 const {start, end} = parkOpenRange();
 const {p, real, band} = getProfile(r);
 const hourBand = band ? band[hi] : null;
 document.getElementById('modal-name').textContent = r.name;
+const modalFavBtn = document.getElementById('modal-fav-btn');
+modalFavBtn.className = `fav-btn${favs.has(id)?' on':''}`;
+modalFavBtn.title = favs.has(id)?'Remove from My Rides':'Add to My Rides';
+modalFavBtn.onclick = () => toggleFav(id, modalFavBtn);
 document.getElementById('modal-land').textContent = r.land + (real ? ' · ✦ real data' : ' · est. profile');
 const openVals = p.slice(start, end+1).map(v=>disneyRound(Math.round(v*m), r.id));
 const minWait = Math.min(...openVals);
@@ -1071,6 +1099,7 @@ ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
 function closeModal(e) {
 if (e && e.target !== document.getElementById('modal-backdrop')) return;
 document.getElementById('modal-backdrop').classList.remove('open');
+currentModalId = null;
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.getElementById('modal-backdrop').classList.remove('open'); });
 
@@ -1113,11 +1142,8 @@ document.getElementById('updated').textContent='Live data unavailable — showin
 }
 render();
 setLoading(false);
-if (document.getElementById('modal-backdrop').classList.contains('open')) {
-const rides=ridesOf(park);
-const name=document.getElementById('modal-name').textContent;
-const r=rides.find(x=>x.name===name);
-if(r) openModal(r.id);
+if (document.getElementById('modal-backdrop').classList.contains('open') && currentModalId) {
+openModal(currentModalId);
 }
 }
 
