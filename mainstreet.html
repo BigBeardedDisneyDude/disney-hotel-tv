@@ -17,7 +17,7 @@
 html,body{height:100%;height:100dvh;overflow:hidden;background:var(--cream);font-family:'Crimson Pro',Georgia,serif;color:var(--text);-webkit-text-size-adjust:100%}
 #shell{display:flex;height:100vh;height:100dvh}
 #sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--teal);border-right:1px solid var(--gold-dim);display:flex;flex-direction:column;transition:transform .25s ease;z-index:10}
-#sidebar-header{padding:14px 14px 10px;border-bottom:1px solid rgba(201,168,76,.2);display:flex;align-items:center;gap:8px}
+#sidebar-header{padding:calc(14px + env(safe-area-inset-top,0px)) 14px 10px;border-bottom:1px solid rgba(201,168,76,.2);display:flex;align-items:center;gap:8px}
 #sidebar-title{font-family:'Cinzel',serif;font-size:.75rem;font-weight:600;color:var(--gold-light);letter-spacing:.07em;flex:1}
 #new-chat-btn{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.08em;padding:.22rem .55rem;border-radius:999px;border:1px solid var(--gold-dim);background:transparent;color:var(--gold);cursor:pointer;transition:all .2s;white-space:nowrap}
 #new-chat-btn:hover{background:var(--gold);color:var(--teal)}
@@ -34,7 +34,7 @@ html,body{height:100%;height:100dvh;overflow:hidden;background:var(--cream);font
 .no-chats{font-size:.65rem;color:rgba(201,168,76,.4);font-style:italic;padding:16px 14px;text-align:center;line-height:1.6}
 #sidebar-footer{padding:10px 14px;border-top:1px solid rgba(201,168,76,.15);font-size:.52rem;color:rgba(201,168,76,.35);font-style:italic;font-family:'Cinzel',serif;letter-spacing:.04em}
 #main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
-header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;gap:.6rem}
+header{background:var(--teal);border-bottom:2px solid var(--gold);padding:env(safe-area-inset-top,0px) 1rem 0;display:flex;align-items:center;justify-content:space-between;height:calc(54px + env(safe-area-inset-top,0px));flex-shrink:0;gap:.6rem}
 .hdr-left{display:flex;align-items:center;gap:.65rem;min-width:0;flex:1;overflow:hidden}
 .home-btn{font-family:'Cinzel',serif;font-size:.6rem;color:var(--gold);text-decoration:none;letter-spacing:.07em;opacity:.75;transition:opacity .2s;white-space:nowrap;flex-shrink:0}
 .home-btn:hover{opacity:1}

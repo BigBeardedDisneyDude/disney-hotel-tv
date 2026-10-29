@@ -23,7 +23,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html{height:100%;overflow-x:hidden}
 body{background:var(--cream);font-family:'Cormorant Garamond',Georgia,serif;color:var(--text);min-height:100%;display:flex;flex-direction:column;overflow-x:hidden;-webkit-overflow-scrolling:touch}
-header{background:var(--teal);border-bottom:2px solid var(--gold);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;position:sticky;top:0;z-index:50;gap:.6rem;overflow:hidden}
+header{background:var(--teal);border-bottom:2px solid var(--gold);padding:env(safe-area-inset-top,0px) 1rem 0;display:flex;align-items:center;justify-content:space-between;height:calc(54px + env(safe-area-inset-top,0px));flex-shrink:0;position:sticky;top:0;z-index:50;gap:.6rem;overflow:hidden}
 .hdr-left{display:flex;align-items:center;gap:.65rem;min-width:0;flex:1;overflow:hidden}
 .home-btn{font-family:'Playfair Display',serif;font-size:.6rem;color:var(--gold);text-decoration:none;letter-spacing:.07em;opacity:.75;transition:opacity .2s;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .home-btn:hover{opacity:1}
