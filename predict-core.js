@@ -959,8 +959,8 @@ noteEl.innerHTML = standbyRides.length
 }
 
 // ── DETAIL MODAL ─────────────────────────────────────────────────────────────
-// Favorite-ride wait alerts: only shown for a favorited ride, since the
-// alert is meant to work alongside "My Rides," not as a standalone feature.
+// Wait alerts: available on any ride, favorited or not. Alerts are tracked
+// independently of "My Rides" (keyed by ride id in `alerts`/Supabase `ride_alerts`).
 function renderAlertBlock(id) {
 const wrap = inner => `<div style="width:100%;margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(138,110,47,.15)">
 <div style="font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.09em;color:var(--muted);text-transform:uppercase;margin-bottom:.35rem">🔔 Wait Alert</div>
@@ -968,9 +968,6 @@ ${inner}
 <div id="alert-status-${id}" style="font-size:.65rem;color:var(--muted);margin-top:.3rem;font-style:italic"></div>
 </div>`;
 const pillBtn = (label, onclick) => `<button onclick="${onclick}" style="font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.07em;padding:.2rem .6rem;border-radius:999px;border:1px solid var(--gold-dim);background:transparent;color:var(--gold-dim);cursor:pointer;-webkit-tap-highlight-color:transparent">${label}</button>`;
-if (!favs.has(id)) {
-return `<div style="width:100%;margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(138,110,47,.15);font-size:.72rem;color:var(--muted);font-style:italic">Add to My Rides (&#9733;) to set a wait alert.</div>`;
-}
 if (alerts[id] != null) {
 return wrap(`<div style="font-family:'Crimson Pro',serif;font-size:.85rem">Notifying when below <strong>${alerts[id]} min</strong></div>
 <div style="margin-top:.4rem">${pillBtn('Remove alert', `removeRideAlertUI('${id}')`)}</div>`);
