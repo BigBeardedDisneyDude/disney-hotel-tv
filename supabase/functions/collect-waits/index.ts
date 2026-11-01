@@ -118,7 +118,15 @@ Deno.serve(async (_req: Request) => {
         rows.push({
           park,
           ride_name:   ride.name,
-          wait_time:   ride.is_open ? (ride.wait_time ?? 0) : null,
+          // A ride can be is_open:true with no wait_time at all in a given
+          // Queue-Times snapshot (upstream data hiccup, not a real walk-on).
+          // Store that as null (unknown), never a fabricated 0 -- a real
+          // reported 0 is a legit distinct value and must stay 0, but a
+          // missing one must never masquerade as a real measurement
+          // (predictor-honesty principle: see latest-checkpoint/predictor
+          // memory). checkRideAlerts() already skips wait == null, so this
+          // also stops phantom "0 min" alert pushes from a data gap.
+          wait_time:   ride.is_open ? (typeof ride.wait_time === 'number' ? ride.wait_time : null) : null,
           is_open:     ride.is_open,
           recorded_at: now.toISOString(),
           ...ctx,
