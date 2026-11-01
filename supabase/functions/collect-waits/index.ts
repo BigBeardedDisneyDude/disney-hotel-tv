@@ -77,6 +77,11 @@ Deno.serve(async (_req: Request) => {
   // cron/monitoring that checks the status code) can flag it.
   const failedParks: string[] = [];
   let nonRidesSkipped = 0;
+  // Rides Queue-Times reported open but with no wait_time number at all --
+  // the exact data gap the honesty fix above now stores as null instead of
+  // a fabricated 0. Tracked here purely to email a heads-up if it recurs;
+  // a real reported 0 (a genuine walk-on) never lands in this list.
+  const missingWaitRides: string[] = [];
 
   for (const [park, parkId] of Object.entries(PARKS)) {
     // A single slow/failed response from Queue-Times shouldn't cost a whole
@@ -131,6 +136,9 @@ Deno.serve(async (_req: Request) => {
           recorded_at: now.toISOString(),
           ...ctx,
         });
+        if (ride.is_open && typeof ride.wait_time !== 'number') {
+          missingWaitRides.push(`${park}: ${ride.name}`);
+        }
       }
     }
   }
@@ -196,6 +204,23 @@ Deno.serve(async (_req: Request) => {
     }
   } catch (err) {
     console.error('checkRideAlerts threw:', (err as Error).message);
+  }
+
+  if (missingWaitRides.length > 0) {
+    console.log(`Open rides with no wait_time this run: ${missingWaitRides.join(', ')}`);
+    // Own throttle bucket ('collect-waits-missing-wait') so this heads-up
+    // never shares/consumes the real pipeline-failure alert's 3-hour window.
+    await alertOnFailure(
+      'collect-waits-missing-wait',
+      'disney-hotel-tv: Queue-Times gave an open ride with no wait number',
+      [
+        `Time: ${now.toISOString()}`,
+        `Affected rides this run: ${missingWaitRides.join(', ')}`,
+        `Stored as null (unknown), not 0 -- this is just a heads-up that the data gap is happening again.`,
+      ].join('\n'),
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
   }
 
   const ok = insertError === null && failedParks.length === 0;
