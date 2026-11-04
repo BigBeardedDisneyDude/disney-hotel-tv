@@ -106,14 +106,14 @@ export async function checkRideAlerts(
     // (collect-waits doesn't produce these anyway) a fallback/estimated one.
     if (!match || !match.isOpen || match.wait == null) continue;
 
-    const isBelow = match.wait < row.threshold_minutes;
+    const isBelow = match.wait <= row.threshold_minutes;
     const wasBelow = row.last_state === 'below';
     if (isBelow === wasBelow) continue; // no crossing — nothing to do
 
     if (isBelow && !wasBelow) {
       const payload = JSON.stringify({
         title: `${row.ride_name}: ${match.wait} min`,
-        body: `Dropped below your ${row.threshold_minutes}-min alert.`,
+        body: `At or below your ${row.threshold_minutes}-min alert.`,
         url: PARK_URL[row.park] || '/disney-hotel-tv/predict.html',
       });
       try {

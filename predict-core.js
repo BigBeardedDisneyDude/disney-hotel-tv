@@ -622,7 +622,7 @@ el.innerHTML = `
 ${waitRow}
 <canvas class="spark" id="sp-${r.id}-fav"></canvas>
 ${r.trend?`<div class="ctip" style="color:${r.trend.color};font-style:normal;font-weight:600;margin-top:.38rem">${r.trend.arrow} ${r.trend.phrase}</div>`:''}
-${alerts[r.id]!=null?`<div class="ctip" style="color:var(--gold-dim);font-style:normal;font-weight:600;margin-top:.3rem">&#128276; Alert below ${alerts[r.id]} min</div>`:''}
+${alerts[r.id]!=null?`<div class="ctip" style="color:var(--gold-dim);font-style:normal;font-weight:600;margin-top:.3rem">&#128276; Alert at or below ${alerts[r.id]} min</div>`:''}
 <div class="ctip" style="margin-top:.2rem">Tap for full day chart</div>`;
 return el;
 }
@@ -969,11 +969,11 @@ ${inner}
 </div>`;
 const pillBtn = (label, onclick) => `<button onclick="${onclick}" style="font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.07em;padding:.2rem .6rem;border-radius:999px;border:1px solid var(--gold-dim);background:transparent;color:var(--gold-dim);cursor:pointer;-webkit-tap-highlight-color:transparent">${label}</button>`;
 if (alerts[id] != null) {
-return wrap(`<div style="font-family:'Crimson Pro',serif;font-size:.85rem">Notifying when below <strong>${alerts[id]} min</strong></div>
+return wrap(`<div style="font-family:'Crimson Pro',serif;font-size:.85rem">Notifying at or below <strong>${alerts[id]} min</strong></div>
 <div style="margin-top:.4rem">${pillBtn('Remove alert', `removeRideAlertUI('${id}')`)}</div>`);
 }
 return wrap(`<div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
-<span style="font-size:.78rem;font-family:'Crimson Pro',serif">Notify me when below</span>
+<span style="font-size:.78rem;font-family:'Crimson Pro',serif">Notify me at or below</span>
 <input type="number" id="alert-input-${id}" value="20" min="5" max="180" step="5" style="width:52px;padding:.2rem .3rem;border:1px solid rgba(138,110,47,.3);border-radius:4px;font-size:16px">
 <span style="font-size:.78rem;font-family:'Crimson Pro',serif">min</span>
 ${pillBtn('Set alert', `setRideAlertUI('${id}')`)}
