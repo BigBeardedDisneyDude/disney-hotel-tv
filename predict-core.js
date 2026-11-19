@@ -376,13 +376,28 @@ throw new Error("This browser doesn't support push notifications.");
 const reg = await navigator.serviceWorker.register('dh-sw.js');
 await navigator.serviceWorker.ready;
 const existing = await reg.pushManager.getSubscription();
-if (existing) return existing;
+if (existing) { await rememberPushEndpoint(existing.endpoint); return existing; }
 const perm = await Notification.requestPermission();
 if (perm !== 'granted') throw new Error('Notification permission was denied.');
-return reg.pushManager.subscribe({
+const sub = await reg.pushManager.subscribe({
 userVisibleOnly: true,
 applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
 });
+await rememberPushEndpoint(sub.endpoint);
+return sub;
+}
+
+// Mirrors dh-sw.js's own ENDPOINT_CACHE fallback (same Cache Storage name/key
+// — hand-synced, no build step to share it) so the service worker already
+// has a record of "what endpoint was this" even if it's never received a
+// push yet, in case the browser rotates the subscription before that happens
+// and (on Safari especially) doesn't hand pushsubscriptionchange the old one.
+async function rememberPushEndpoint(endpoint) {
+if (!endpoint || !('caches' in window)) return;
+try {
+const c = await caches.open('dh-push-endpoint');
+await c.put(new Request('https://dh-sw.local/last-push-endpoint'), new Response(endpoint));
+} catch (e) { console.warn('[predict] rememberPushEndpoint failed:', e); }
 }
 
 async function setRideAlertUI(id) {
