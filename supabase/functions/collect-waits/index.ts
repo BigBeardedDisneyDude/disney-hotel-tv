@@ -73,6 +73,12 @@ Deno.serve(async (_req: Request) => {
   const now = new Date();
   const ctx = getContext(now);
   const rows: object[] = [];
+  // Mirrors `rows` but carries Queue-Times' own per-ride last_updated too --
+  // kept entirely separate from `rows` (which gets inserted into wait_times
+  // as-is) so checkRideAlerts() can break ties between duplicate same-ride
+  // entries without risking an insert error from a field wait_times doesn't
+  // have a column for. See rideAlerts.ts's findLive() for why this matters.
+  const liveRaw: { park: string; ride_name: string; wait_time: number | null; is_open: boolean; last_updated?: string }[] = [];
   // Every park that failed to fetch is a silent gap in the prediction history
   // unless we surface it — collected here so the response (and therefore any
   // cron/monitoring that checks the status code) can flag it.
@@ -146,6 +152,10 @@ Deno.serve(async (_req: Request) => {
           recorded_at: now.toISOString(),
           ...ctx,
         });
+        liveRaw.push({
+          park, ride_name: ride.name, wait_time: ride.wait_time ?? null,
+          is_open: ride.is_open, last_updated: ride.last_updated,
+        });
         if (ride.is_open && typeof ride.wait_time !== 'number') {
           missingWaitRides.push(`${park}: ${ride.name}`);
         }
@@ -208,7 +218,7 @@ Deno.serve(async (_req: Request) => {
   // alerts are a bonus on top of the actual data collection.
   let alertResult = { checked: 0, fired: 0, staleRemoved: 0 };
   try {
-    alertResult = await checkRideAlerts(buildLiveByPark(rows as any[]), SUPABASE_URL, SUPABASE_KEY);
+    alertResult = await checkRideAlerts(buildLiveByPark(liveRaw), SUPABASE_URL, SUPABASE_KEY);
     if (alertResult.fired > 0 || alertResult.staleRemoved > 0) {
       console.log(`Ride alerts: checked ${alertResult.checked}, fired ${alertResult.fired}, removed ${alertResult.staleRemoved} stale`);
     }

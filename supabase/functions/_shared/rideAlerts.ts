@@ -11,7 +11,7 @@
 
 import webpush from 'npm:web-push@3.6.7';
 
-type LiveEntry = { wait: number | null; isOpen: boolean };
+type LiveEntry = { wait: number | null; isOpen: boolean; updatedAt: number };
 type LiveByPark = Record<string, Record<string, LiveEntry>>;
 
 type AlertRow = {
@@ -50,20 +50,29 @@ export function normName(s: string): string {
 // Same loose match as predict-core.js's getLive(): exact first, else a
 // 10-char substring either direction, so a seasonal overlay title (e.g.
 // "Soarin' Across America") still matches the roster's stable `qt` stem.
+//
+// Found 2026-11-19: Queue-Times can carry BOTH a ride's pre-overlay name
+// (frozen -- it stops updating that entry once the park renames the ride,
+// but doesn't remove it) and its new overlay name (the one actually live)
+// at the same time, and both can loosely match the same short qt stem
+// ("luigi's", "mater's"). Picking the first substring match risked locking
+// an alert onto the frozen ghost's stale wait/open state instead of the
+// real one -- same bug, same fix, as predict-core.js's getLive().
 function findLive(liveMap: Record<string, LiveEntry>, qt: string): LiveEntry | null {
   const k = normName(qt);
   if (liveMap[k]) return liveMap[k];
-  for (const key of Object.keys(liveMap)) {
-    if (key.includes(k.slice(0, 10)) || k.includes(key.slice(0, 10))) return liveMap[key];
-  }
-  return null;
+  const candidates = Object.entries(liveMap)
+    .filter(([key]) => key.includes(k.slice(0, 10)) || k.includes(key.slice(0, 10)))
+    .map(([, v]) => v);
+  if (!candidates.length) return null;
+  return candidates.reduce((a, b) => (b.updatedAt > a.updatedAt ? b : a));
 }
 
-export function buildLiveByPark(rows: { park: string; ride_name: string; wait_time: number | null; is_open: boolean }[]): LiveByPark {
+export function buildLiveByPark(rows: { park: string; ride_name: string; wait_time: number | null; is_open: boolean; last_updated?: string }[]): LiveByPark {
   const liveByPark: LiveByPark = {};
   for (const row of rows) {
     const byPark = liveByPark[row.park] ??= {};
-    byPark[normName(row.ride_name)] = { wait: row.wait_time, isOpen: row.is_open };
+    byPark[normName(row.ride_name)] = { wait: row.wait_time, isOpen: row.is_open, updatedAt: Date.parse(row.last_updated || '') || 0 };
   }
   return liveByPark;
 }

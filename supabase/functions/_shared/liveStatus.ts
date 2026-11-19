@@ -49,11 +49,29 @@ export async function fetchLiveStatusMap(twId: string): Promise<Record<string, s
 // names don't always match Queue-Times' character-for-character (this has
 // no access to either roster's hand-curated `qt`/`aliases` -- browser-only
 // data, no build step to share it here).
+//
+// Found 2026-11-19 (Luigi's Rollickin' Roadsters / Mater's Junkyard
+// Jamboree at DCA): unlike rideAlerts.ts's findLive(), both names compared
+// here can be long AND independently seasonally overlaid at once -- Queue-
+// Times calling a ride "Luigi's Rollickin' Roadsters" while ThemeParks.wiki
+// calls the same ride "Luigi's Joy to the Whirl" for the holidays. Their
+// only common ground is the short leading stem ("luigi's"), which a fixed
+// 10-char prefix test can miss entirely since each name diverges from the
+// other well before character 10. Falls back to comparing just the first
+// word (5+ chars, to avoid a generic word like "the" causing a false
+// match) when the straight prefix test finds nothing.
+function firstWord(s: string): string { return s.split(' ')[0]; }
 export function findStatus(map: Record<string, string>, rideName: string): string | null {
   const k = normName(rideName);
   if (map[k]) return map[k];
+  const kFirst = firstWord(k);
   for (const key of Object.keys(map)) {
     if (key.includes(k.slice(0, 10)) || k.includes(key.slice(0, 10))) return map[key];
+  }
+  if (kFirst.length >= 5) {
+    for (const key of Object.keys(map)) {
+      if (firstWord(key) === kFirst) return map[key];
+    }
   }
   return null;
 }

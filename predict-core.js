@@ -330,7 +330,12 @@ return { data: {}, stale: false, ageMs: 0 };
 const m = {};
 for (const land of d.lands)
 for (const ride of land.rides)
-m[normName(ride.name)] = {wait:ride.wait_time, open:ride.is_open};
+// updatedAt backs getLive()'s freshness tie-break below — Queue-Times can
+// carry a stale duplicate entry under a ride's pre-overlay name through a
+// seasonal rename (see that function's comment), and the only way to tell
+// it apart from the real current entry is which one Queue-Times is still
+// actually updating.
+m[normName(ride.name)] = {wait:ride.wait_time, open:ride.is_open, updatedAt:Date.parse(ride.last_updated)||0};
 cacheSet(liveCacheKey(parkId), m);
 return { data: m, stale: false, ageMs: 0 };
 }
@@ -588,7 +593,22 @@ function getLive(ride) {
 if (!isParkOpen()) return { wait: null, closed: true };
 if(!live||!Object.keys(live).length) return {wait:null, closed:false};
 const k=normName(ride.qt);
-const match = live[k] || Object.entries(live).find(([key])=>key.includes(k.slice(0,10))||k.includes(key.slice(0,10)))?.[1];
+let match = live[k];
+if (!match) {
+// Found 2026-11-19: during a seasonal overlay rename (e.g. Luigi's
+// Rollickin' Roadsters -> Luigi's Joy to the Whirl for the holidays),
+// Queue-Times can carry BOTH the old name (frozen — it stops updating
+// that entry, but doesn't remove it) and the new name (the one actually
+// live) at once. Both loosely match a short qt stem like "luigi's", so
+// picking the first substring match (previous behaviour) could silently
+// lock onto the frozen ghost instead of the real one, showing a stale
+// wait/open status until Queue-Times eventually drops the old entry.
+// Prefer whichever candidate Queue-Times most recently updated.
+const candidates = Object.entries(live)
+.filter(([key]) => key.includes(k.slice(0,10)) || k.includes(key.slice(0,10)))
+.map(([,v]) => v);
+if (candidates.length) match = candidates.reduce((a,b) => (b.updatedAt > a.updatedAt ? b : a));
+}
 if(!match) return {wait:null, closed:false};
 if(!match.open) return {wait:null, closed:true};
 return {wait:match.wait, closed:false};
