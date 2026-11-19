@@ -50,6 +50,10 @@
 const SUPABASE_URL = 'https://qumvjdwimpvnaijjwght.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1bXZqZHdpbXB2bmFpamp3Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NzQ4ODcsImV4cCI6MjA5MzQ1MDg4N30.BjBeX8GSZkZoUnW3Ecy3MTPdHVV-6E2U1oJnVHiyr5I';
 const MIN_SAMPLES = 10;
+// Honesty threshold for the "average downtime when it breaks" stat, same
+// spirit as MIN_SAMPLES above: don't show a number built from only 1-2
+// observed breakdowns and imply it's a reliable average.
+const MIN_DOWN_INCIDENTS = 3;
 
 // Public half of the VAPID key pair for favorite-ride wait alerts (Web Push).
 // Safe to be public — it's the server-identity half; only the matching
@@ -192,6 +196,47 @@ PREDICT.parks.map(p => `${Object.keys(profiles[p.key]).length} ${p.key}` +
 console.warn('Could not load historical profiles:', e.message);
 }
 }
+
+// downtimeStats[park][canonicalRideName] = { incidents, avgMinutes }. Reads
+// the ride_downtime_stats materialized view (nightly pg_cron refresh — see
+// supabase/migrations/20261119000100_add_ride_downtime_stats.sql), which
+// counts only real unscheduled breakdowns (ThemeParks.wiki status DOWN),
+// never scheduled refurbishment or ordinary closed-for-the-day hours. That
+// status field has only been collected since this shipped (2026-11-19), so
+// expect this to show nothing for a while on rides with few real breakdowns
+// yet — same "wait for real data before claiming a number" rule as
+// MIN_SAMPLES above, via MIN_DOWN_INCIDENTS.
+let downtimeStats = {};
+async function loadDowntimeStats() {
+if (SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
+try {
+const params = new URLSearchParams({ select: 'park,ride_name,down_incidents,avg_down_minutes' });
+const res = await fetch(`${SUPABASE_URL}/rest/v1/ride_downtime_stats?${params}`, {
+headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+signal: AbortSignal.timeout(8000)
+});
+if (!res.ok) throw new Error(`Supabase ${res.status}`);
+const rows = await res.json();
+const stats = {};
+PREDICT.parks.forEach(p => { stats[p.key] = {}; });
+for (const row of rows) {
+if (row.down_incidents < MIN_DOWN_INCIDENTS) continue;
+const cfg = PREDICT.parks.find(pp => pp.key === row.park);
+if (!cfg || !stats[row.park]) continue;
+// Same name-resolution approach as loadHistoricalProfiles() above —
+// ThemeParks.wiki's own ride name doesn't always match the roster's
+// hand-typed one character-for-character.
+const ride = cfg.rides.find(r => normName(r.name) === normName(row.ride_name)
+|| (r.aliases || []).some(a => normName(a) === normName(row.ride_name)));
+const key = ride ? ride.name : row.ride_name;
+stats[row.park][key] = { incidents: row.down_incidents, avgMinutes: row.avg_down_minutes };
+}
+downtimeStats = stats;
+} catch(e) {
+console.warn('Could not load ride downtime stats:', e.message);
+}
+}
+function getDowntimeStat(r) { return (downtimeStats[park] || {})[r.name] || null; }
 
 // The crowd multiplier actually used for display: the hand-authored table,
 // corrected by today's measured drift once there's enough same-day data to
@@ -1054,6 +1099,11 @@ ${hourBand && !isClosed ? `<div class="modal-stat">
 <div class="modal-stat-val">${maxWait} min</div>
 <div class="modal-stat-sub">avoid if possible</div>
 </div>
+${(() => { const ds = getDowntimeStat(r); return ds ? `<div class="modal-stat">
+<div class="modal-stat-lbl">When It Breaks Down</div>
+<div class="modal-stat-val">~${ds.avgMinutes} min</div>
+<div class="modal-stat-sub">avg. of ${ds.incidents} real breakdowns, excludes refurbishment</div>
+</div>` : ''; })()}
 <div style="width:100%;margin-top:.5rem">
 <div style="font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.09em;color:var(--muted);text-transform:uppercase;margin-bottom:.3rem">Wait heat — today</div>
 <div style="display:flex;gap:2px;align-items:flex-end;height:24px">${heatCells}</div>
@@ -1241,7 +1291,8 @@ renderInstallBanner();
 
 Promise.all([
 ...PREDICT.parks.map(p => loadParkHours(p.key)),
-loadHistoricalProfiles()
+loadHistoricalProfiles(),
+loadDowntimeStats()
 ]).then(() => {
 refresh();
 setInterval(refresh, 5*60*1000);
@@ -1249,5 +1300,6 @@ setInterval(render, 60*1000);
 setInterval(() => {
 PREDICT.parks.forEach(p => loadParkHours(p.key));
 loadHistoricalProfiles();
+loadDowntimeStats();
 }, 24*60*60*1000);
 });

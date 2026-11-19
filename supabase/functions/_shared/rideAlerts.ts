@@ -37,7 +37,7 @@ const PARK_URL: Record<string, string> = {
   ak: '/disney-hotel-tv/wdwpredict.html',
 };
 
-function normName(s: string): string {
+export function normName(s: string): string {
   let t = String(s ?? '').toLowerCase().trim();
   t = t.replace(/[™®©]/g, '');
   t = t.replace(/^["“”]+|["“”]+$/g, '');

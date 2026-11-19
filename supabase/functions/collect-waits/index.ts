@@ -5,6 +5,7 @@
 import { alertOnFailure } from '../_shared/alerts.ts';
 import { isRide } from '../_shared/nonRideFilter.ts';
 import { buildLiveByPark, checkRideAlerts } from '../_shared/rideAlerts.ts';
+import { PARK_TWID, fetchLiveStatusMap, findStatus } from '../_shared/liveStatus.ts';
 
 const PARKS: Record<string, number> = {
   dl: 16, dca: 17,
@@ -114,6 +115,14 @@ Deno.serve(async (_req: Request) => {
       continue;
     }
 
+    // Live per-ride status (OPERATING/DOWN/CLOSED/REFURBISHMENT) from
+    // ThemeParks.wiki, feeding ride_downtime_stats -- lets that stat tell a
+    // real unscheduled breakdown (DOWN) apart from announced maintenance
+    // (REFURBISHMENT), which Queue-Times' plain is_open flag can't do. A
+    // failed fetch here is isolated and non-fatal: this run's rows just get
+    // status: null, same as any other temporary data gap.
+    const statusMap = await fetchLiveStatusMap(PARK_TWID[park]);
+
     for (const land of data.lands ?? []) {
       for (const ride of land.rides ?? []) {
         if (!isRide(ride.name, park)) {
@@ -133,6 +142,7 @@ Deno.serve(async (_req: Request) => {
           // also stops phantom "0 min" alert pushes from a data gap.
           wait_time:   ride.is_open ? (typeof ride.wait_time === 'number' ? ride.wait_time : null) : null,
           is_open:     ride.is_open,
+          status:      statusMap ? findStatus(statusMap, ride.name) : null,
           recorded_at: now.toISOString(),
           ...ctx,
         });
